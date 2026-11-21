@@ -51,7 +51,7 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 
 1. As an Analyst, I want to see a clean form when I open the application, so that I can start work at once.
 2. As an Analyst, I want to enter from one field up to the full set of identifiers (nickname, login, e-mail, messenger ID, profile address, public cryptocurrency address, full name), so that the Analysis is as accurate as possible.
-2a. As an Analyst, I want to enter several values of one kind in one field, separated by commas (e.g. two nicknames), so that I can pass everything I know about the person.
+2a. Dropped on 2026-11-21: one value per field, see Implementation Decisions (One value per field).
 3. As an Analyst, I want the form to show which fields are narrowing identifiers and which are additional data (full name), so that I know what I must enter.
 4. As an Analyst, I want one button, "Rozpocznij analizę", that creates the Case and starts the Analysis, so that I do not have to create the Case as a separate step.
 5. As an Analyst, I want the button to always be active, so that clicking it tells me what is missing instead of silently doing nothing.
@@ -136,7 +136,7 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 - **Footer:** one line, "Wszelkie prawa zastrzeżone. Krajowa Administracja Skarbowa, projekt OŁCyŚ." No links.
 - **Font:** Open Sans, as in the gov.pl styleguide.
 - **Identifier fields:** the public cryptocurrency address is an input identifier, as in the challenge text (section 2). It counts as a narrowing identifier.
-- **Several values in one field:** every identifier kind that a person can have more than one of (e.g. nickname, e-mail, cryptocurrency address) accepts several values separated by commas.
+- **One value per field:** every identifier field takes exactly one value, as the backend contract `CreateCaseRequest` does (one `String` per field). A comma is not a separator; the value is only trimmed. Decided on 2026-11-21, replacing "several values separated by commas".
 - **No asterisk:** no single field is required, so fields are not marked with `*`. The rule "at least one" is stated once for the whole group of narrowing identifiers.
 - **Form layout:** decided on the Pencil drafts (frame "[MAIN] Nowa sprawa"). The form is a left column with two groups: "Identyfikatory" (six narrowing identifiers in a grid of two columns and three rows) and, under a divider, "Dane dodatkowe" (full name, marked "(opcjonalnie)"). Every field has an "np. …" example inside and a one-sentence hint below. The actions are the primary button "Rozpocznij analizę" and the text action "Wyczyść" next to it. A grey column on the right, "Co się stanie, gdy rozpoczniesz analizę", lists four steps and a reminder of the minimum data rule. The biała lista pattern of a radio group that shows one field does not apply, because the Analyst fills in many fields at once.
 - **One action creates the Case and starts the Analysis:** "Rozpocznij analizę" on New case. On Case details the button is "Rozpocznij nową analizę" and creates another Analysis of the same Case.
@@ -207,7 +207,7 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 | V5 | Closed on 2026-11-21: the Confidence Level indicator, the history of Analyses and the Excluded Addresses section are described in Implementation Decisions (Case details view). | Design work |
 | V6 | Normalisation for the duplicate rule (e.g. case of e-mail, spaces at the ends). | Case owner (Maksym) |
 | V7 | Closed on 2026-11-21: the layout of the New case form is described in Implementation Decisions (Form layout). | Design work |
-| V8 | The Case contract must accept the public cryptocurrency address and several values per identifier kind; the glossary entry for Case in `BUSINESS-CONTEXT.md` does not list them yet. | Case owner (Maksym) |
+| V8 | Closed on 2026-11-21: the Case contract accepts the wallet address (`walletAddress`, PR #52); the form takes one value per field (Implementation Decisions, One value per field). | Case owner (Maksym) |
 | V9 | The backend must assign a Case Number in the form year and sequence number (e.g. `2026/0006`) and return it with the Case. | Case owner (Maksym) |
 | V10 | The Case list response must carry, per Case: the status and date of the last Analysis, the number of its Attributions and its highest Confidence Level. Without the last two the column "Najwyższy stopień pewności", the highlight and the order of New Results cannot work. | Case owner (Maksym), Bohdan (Analysis) |
 | V11 | The Reviewed state must be saved on the server (the application has no login, so the browser cannot hold it), with an action to set it and to undo it, and it must reset when the next Analysis of the Case ends. Who owns it: Case or Analysis? | Maksym, Bohdan |

@@ -47,39 +47,64 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-navy: var(--navy);
+  --color-primary-light: var(--primary-light);
+  --color-primary-tint: var(--primary-tint);
+  --color-border-strong: var(--border-strong);
+  --color-error-dark: var(--error-dark);
+  --color-error-tint: var(--error-tint);
+  --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
+  --color-warning-text: var(--warning-text);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --color-success-text: var(--success-text);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji";
+    var(--font-open-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 
+/* Light theme: gov.pl / KAS palette, names follow the Pencil variables. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background: #ffffff;
+  --foreground: #1b1b1b;
+  --card: #ffffff;
+  --card-foreground: #1b1b1b;
+  --popover: #ffffff;
+  --popover-foreground: #1b1b1b;
+  --primary: #0052a5;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f1f1;
+  --secondary-foreground: #1b1b1b;
+  --muted: #f1f1f1;
+  --muted-foreground: #656565;
+  --accent: #f0f6fc;
+  --accent-foreground: #1b1b1b;
+  --destructive: #d5233f;
+  --border: #dadada;
+  --input: #b7b7b7;
+  --ring: #0052a5;
+  --navy: #00468d;
+  --primary-light: #006cd7;
+  --primary-tint: #f0f6fc;
+  --border-strong: #b7b7b7;
+  --error-dark: #a7162d;
+  --error-tint: #fbe9ec;
+  --warning: #eba828;
+  --warning-tint: #fdf3dc;
+  --warning-text: #6b4a00;
+  --success: #598527;
+  --success-tint: #eef4e6;
+  --success-text: #3a5a16;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.25rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
