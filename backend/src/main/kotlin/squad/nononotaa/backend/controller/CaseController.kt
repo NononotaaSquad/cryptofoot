@@ -17,6 +17,7 @@ import squad.nononotaa.backend.dto.ScheduleResponse
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
 import squad.nononotaa.backend.service.AnalysisComparisonService
 import squad.nononotaa.backend.service.AnalysisHistoryService
+import squad.nononotaa.backend.service.ScheduleService
 import squad.nononotaa.backend.util.ApiController
 import squad.nononotaa.backend.util.logger
 
@@ -24,6 +25,7 @@ import squad.nononotaa.backend.util.logger
 class CaseController(
     private val analysisHistory: AnalysisHistoryService,
     private val analysisComparison: AnalysisComparisonService,
+    private val schedules: ScheduleService,
 ) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -66,13 +68,19 @@ class CaseController(
     @GetMapping("/{caseId}/schedule")
     fun getSchedule(
         @PathVariable caseId: String,
-    ): ScheduleResponse = TODO("E6.4: schedule state, next execution and last attempt outcome")
+    ): ScheduleResponse {
+        logger.debug("GET /cases/{}/schedule", caseId)
+        return schedules.get(caseId)
+    }
 
     @PutMapping("/{caseId}/schedule")
     fun updateSchedule(
         @PathVariable caseId: String,
         @Valid @RequestBody request: UpdateScheduleRequest,
-    ): ScheduleResponse = TODO("E6.4: enable/disable periodic Analyses; cadence and timezone pending E6-D3")
+    ): ScheduleResponse {
+        logger.debug("PUT /cases/{}/schedule enabled={}", caseId, request.enabled)
+        return schedules.update(caseId, request)
+    }
 
     companion object {
         private val logger = logger()

@@ -100,6 +100,10 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 
 `AnalysisComparisonService` serves `GET /api/1/cases/{caseId}/comparison` from two saved Analyses; `AnalysisComparer` holds the rules (categories, comparability limitations, `absenceVerifiable`) and reads only stored data. `AnalysisRerunService` creates a new `MANUAL` Analysis with the Case's current identifiers (via the proposed `CaseIdentifierSource` port) and refuses while one is running; it is a plain class, not wired, and `startAnalysis` stays a stub until Cases (E1) and module adapters exist. Decisions: `.agents/context/backend/decisions/task-26/`.
 
+### Periodic execution (task #27, partly accepted by the task owner)
+
+`ScheduleService` serves `GET/PUT /api/1/cases/{caseId}/schedule` (collection `schedules`, one record per Case): enable or disable, a predefined cadence (`SchedulePreset`, default `DAILY` 06:00), fixed zone `Europe/Warsaw`, next execution and the last attempt. `ScheduledRunner` (`@Scheduled`, `app.scheduler.tick`) starts due terms through the shared `AnalysisRerunService` with trigger `SCHEDULED`; an overlapping term is skipped and recorded, terms missed during downtime (older than `app.scheduler.grace`) are not made up. `DEMO_EVERY_MINUTE` needs `app.scheduler.demo-enabled=true`. The runner idles until an `AnalysisRerunService` bean exists. Decisions: `.agents/context/backend/decisions/task-27/`.
+
 ## Project Structure
 
 ```

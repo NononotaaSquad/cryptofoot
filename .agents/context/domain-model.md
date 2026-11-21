@@ -24,6 +24,12 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - `Not observed` is not `no longer belongs to the person`: it is flagged unverifiable unless the later Analysis was completed and rechecked the supporting sources and the network.
 - Differences in identifiers, source coverage, networks, algorithm version or completeness are listed as comparability limitations.
 
+### Schedule (proposed, see decisions `D27-001` to `D27-009`; E6-D3 still open in the epic)
+
+- One schedule per Case: enabled or disabled, a predefined cadence (default daily 06:00), fixed zone Europe/Warsaw, next execution, last attempt.
+- Each due term starts an ordinary Analysis with trigger `SCHEDULED`. Attempt outcomes: started, skipped because an Analysis was running, skipped because the term was missed during downtime (not made up), failed to start.
+- A shortened demo cadence exists only in demo mode and is labelled.
+
 ## Lifecycles
 
 States and allowed transitions for each aggregate that has a lifecycle, with who or what triggers each transition.

@@ -11,5 +11,6 @@ export type ScheduleAttemptResponseOutcome =
 export const ScheduleAttemptResponseOutcome = {
   STARTED: "STARTED",
   SKIPPED_OVERLAP: "SKIPPED_OVERLAP",
+  SKIPPED_DOWNTIME: "SKIPPED_DOWNTIME",
   FAILED: "FAILED",
 } as const;

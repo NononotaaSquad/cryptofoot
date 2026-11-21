@@ -410,6 +410,18 @@
                 "properties": {
                     "enabled": {
                         "type": "boolean"
+                    },
+                    "cadence": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "DAILY",
+                            "EVERY_6_HOURS",
+                            "WEEKLY",
+                            "DEMO_EVERY_MINUTE"
+                        ]
                     }
                 }
             },
@@ -425,6 +437,7 @@
                         "enum": [
                             "STARTED",
                             "SKIPPED_OVERLAP",
+                            "SKIPPED_DOWNTIME",
                             "FAILED"
                         ]
                     },
@@ -446,13 +459,19 @@
                         "type": [
                             "string",
                             "null"
+                        ],
+                        "enum": [
+                            "DAILY",
+                            "EVERY_6_HOURS",
+                            "WEEKLY",
+                            "DEMO_EVERY_MINUTE"
                         ]
                     },
+                    "demo": {
+                        "type": "boolean"
+                    },
                     "timezone": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "nextExecutionAt": {
                         "type": [

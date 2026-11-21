@@ -18,7 +18,9 @@ enum class AttributionChangeType { NEW, NOT_OBSERVED, CONFIDENCE_LEVEL_CHANGED, 
 
 enum class ComparabilityLimitation { IDENTIFIERS_DIFFER, SOURCE_COVERAGE_DIFFERS, NETWORKS_DIFFER, ALGORITHM_VERSION_DIFFERS, PARTIAL_ANALYSIS }
 
-enum class ScheduleAttemptOutcome { STARTED, SKIPPED_OVERLAP, FAILED }
+enum class ScheduleAttemptOutcome { STARTED, SKIPPED_OVERLAP, SKIPPED_DOWNTIME, FAILED }
+
+enum class SchedulePreset(val demo: Boolean = false) { DAILY, EVERY_6_HOURS, WEEKLY, DEMO_EVERY_MINUTE(true) }
 
 // TODO E7.1: cover exactly these networks in the demo fixtures; a new network needs a validator branch and api-sync
 enum class Network { BTC, ETH }
