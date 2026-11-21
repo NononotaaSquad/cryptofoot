@@ -11,7 +11,7 @@ A KAS official without IT knowledge, the only user of the application. Works wit
 _Avoid_: user, operator, admin
 
 **Case** (PL: Sprawa):
-The object created for one investigated person from their identifiers (full name, nickname, login, e-mail, messenger ID). It needs at least one narrowing identifier; a full name alone is not enough. Later Analyses return to the Case.
+The object created for one investigated person from their identifiers (full name, nickname, login, e-mail, messenger ID, profile address). It needs at least one narrowing identifier; a full name alone is not enough. Later Analyses return to the Case.
 _Avoid_: investigation, project
 
 **Analysis** (PL: Analiza):
