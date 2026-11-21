@@ -1,0 +1,87 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  type NewCaseFormValues,
+  emptyNewCaseFormValues,
+  narrowingIdentifierKinds,
+} from "./identifier-fields";
+import { decideMinimumData, splitValues } from "./new-case-rules";
+
+function form(values: Partial<NewCaseFormValues>): NewCaseFormValues {
+  return { ...emptyNewCaseFormValues, ...values };
+}
+
+describe("splitValues", () => {
+  it("splits several values in one field and trims them", () => {
+    expect(splitValues(" krypto_janek ,janek2,  jk ")).toEqual([
+      "krypto_janek",
+      "janek2",
+      "jk",
+    ]);
+  });
+
+  it("drops empty parts between commas", () => {
+    expect(splitValues(",a,, ,b,")).toEqual(["a", "b"]);
+  });
+
+  it("returns no values for an empty field", () => {
+    expect(splitValues("")).toEqual([]);
+  });
+});
+
+describe("decideMinimumData", () => {
+  it("returns empty for an empty form", () => {
+    expect(decideMinimumData(form({}))).toEqual({ result: "empty" });
+  });
+
+  it("returns empty when the fields hold only spaces and commas", () => {
+    expect(
+      decideMinimumData(form({ nickname: " , ,", email: "   ", login: ",," }))
+    ).toEqual({ result: "empty" });
+  });
+
+  it("returns fullNameOnly when only the full name is given", () => {
+    expect(decideMinimumData(form({ fullName: "Jan Kowalski" }))).toEqual({
+      result: "fullNameOnly",
+    });
+  });
+
+  it("returns empty when the full name holds only spaces", () => {
+    expect(decideMinimumData(form({ fullName: "   " }))).toEqual({
+      result: "empty",
+    });
+  });
+
+  it.each(narrowingIdentifierKinds)("returns ok for %s alone", (kind) => {
+    const decision = decideMinimumData(form({ [kind]: " value " }));
+
+    expect(decision.result).toBe("ok");
+    if (decision.result === "ok") {
+      expect(decision.identifiers[kind]).toEqual(["value"]);
+      expect(decision.identifiers.fullName).toBeNull();
+    }
+  });
+
+  it("returns ok with the parsed identifiers for a narrowing identifier plus the full name", () => {
+    expect(
+      decideMinimumData(
+        form({
+          nickname: "krypto_janek, janek2",
+          email: "jan@example.com",
+          fullName: "  Jan Kowalski ",
+        })
+      )
+    ).toEqual({
+      result: "ok",
+      identifiers: {
+        nickname: ["krypto_janek", "janek2"],
+        login: [],
+        email: ["jan@example.com"],
+        messengerId: [],
+        profileAddress: [],
+        cryptocurrencyAddress: [],
+        fullName: "Jan Kowalski",
+      },
+    });
+  });
+});

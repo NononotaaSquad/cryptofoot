@@ -19,10 +19,11 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Hackathon Template",
-    template: "%s | Hackathon Template",
+    default: "Projekt OŁCyŚ",
+    template: "%s | Projekt OŁCyŚ",
   },
-  description: "Aplikacja zbudowana na szablonie hackathonowym.",
+  description:
+    "Narzędzie Krajowej Administracji Skarbowej do analizy publicznie dostępnych danych o osobie.",
 };
 
 export default function RootLayout({
