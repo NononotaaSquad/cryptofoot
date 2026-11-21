@@ -1,6 +1,7 @@
 import "@workspace/ui/globals.css";
 
 import type { Metadata } from "next";
+import { Open_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 
 // Imported for its side effect: the root layout is evaluated for every route,
@@ -8,6 +9,13 @@ import type { ReactNode } from "react";
 import "@/lib/env";
 
 import { Providers } from "./providers";
+
+// Self-hosted at build time: the browser never requests Google. The variable
+// feeds `--font-sans` in packages/ui/src/styles/globals.css.
+const openSans = Open_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-open-sans",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +31,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="pl" suppressHydrationWarning>
+    <html lang="pl" className={openSans.variable} suppressHydrationWarning>
       <body className="min-h-svh bg-background font-sans text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>
