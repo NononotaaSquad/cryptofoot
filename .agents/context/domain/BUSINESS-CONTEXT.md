@@ -26,6 +26,18 @@ _Avoid_: ID, identifier (an identifier is a datum of the investigated person)
 One run of search and scoring for a Case, saved in its history. Started manually (priority) or on a schedule.
 _Avoid_: run, scan, pass
 
+**Schedule** (PL: Harmonogram):
+The setting of a Case that makes its Analyses start by themselves at fixed terms. It is enabled or disabled and, when enabled, has one Frequency. A Case has at most one Schedule.
+_Avoid_: scheduler, timer, cron, plan
+
+**Frequency** (PL: Częstotliwość):
+How often an enabled Schedule starts an Analysis, chosen from a fixed list (e.g. daily at 06:00). The Analyst cannot enter their own terms.
+_Avoid_: cadence, interval, preset
+
+**Scheduled Analysis** (PL: Analiza zaplanowana):
+An Analysis started by the Schedule, not by the Analyst. It is saved in the history of the Case like a manual one and does not block the Analyst's work.
+_Avoid_: automatic run, periodic run, cron job
+
 **New Results** (PL: Nowe wyniki):
 The state of a Case whose newest Analysis has ended and which the Analyst has not yet marked as Reviewed.
 _Avoid_: unread, pending, waiting for review
@@ -73,6 +85,7 @@ _Avoid_: indicators, metrics
 ## Relationships
 
 - A **Case** has one investigated person and many **Analyses**.
+- A **Case** has at most one **Schedule**; an enabled **Schedule** has one **Frequency** and starts **Scheduled Analyses**.
 - An **Analysis** collects many **Mentions** and produces zero or more **Attributions**.
 - An **Attribution** is based on one or more **Mentions** and has one **Justification**.
 - An **Excluded Address** does not create an **Attribution**.
