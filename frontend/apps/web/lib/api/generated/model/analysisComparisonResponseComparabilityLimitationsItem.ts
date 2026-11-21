@@ -11,6 +11,7 @@ export type AnalysisComparisonResponseComparabilityLimitationsItem =
 export const AnalysisComparisonResponseComparabilityLimitationsItem = {
   IDENTIFIERS_DIFFER: "IDENTIFIERS_DIFFER",
   SOURCE_COVERAGE_DIFFERS: "SOURCE_COVERAGE_DIFFERS",
+  NETWORKS_DIFFER: "NETWORKS_DIFFER",
   ALGORITHM_VERSION_DIFFERS: "ALGORITHM_VERSION_DIFFERS",
   PARTIAL_ANALYSIS: "PARTIAL_ANALYSIS",
 } as const;

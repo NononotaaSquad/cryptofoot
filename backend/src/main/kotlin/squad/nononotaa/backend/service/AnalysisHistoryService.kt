@@ -30,7 +30,7 @@ class AnalysisHistoryService(
         return toResponse(record)
     }
 
-    private fun toResponse(record: AnalysisRecord): AnalysisResponse {
+    fun toResponse(record: AnalysisRecord): AnalysisResponse {
         val result = record.result
         val mentions = result?.mentions.orEmpty()
         return AnalysisResponse(

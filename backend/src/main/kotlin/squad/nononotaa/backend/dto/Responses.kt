@@ -129,6 +129,9 @@ data class AttributionChangeResponse(
     val laterConfidenceLevel: Int?,
     val earlierExclusionReason: ExclusionReason?,
     val laterExclusionReason: ExclusionReason?,
+    val earlierMentionIds: List<String>,
+    val laterMentionIds: List<String>,
+    val absenceVerifiable: Boolean?,
 )
 
 data class AnalysisComparisonResponse(

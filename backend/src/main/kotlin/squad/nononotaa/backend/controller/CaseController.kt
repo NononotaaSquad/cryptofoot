@@ -15,6 +15,7 @@ import squad.nononotaa.backend.dto.CaseResponse
 import squad.nononotaa.backend.dto.CreateCaseRequest
 import squad.nononotaa.backend.dto.ScheduleResponse
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
+import squad.nononotaa.backend.service.AnalysisComparisonService
 import squad.nononotaa.backend.service.AnalysisHistoryService
 import squad.nononotaa.backend.util.ApiController
 import squad.nononotaa.backend.util.logger
@@ -22,6 +23,7 @@ import squad.nononotaa.backend.util.logger
 @ApiController("/cases")
 class CaseController(
     private val analysisHistory: AnalysisHistoryService,
+    private val analysisComparison: AnalysisComparisonService,
 ) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -56,7 +58,10 @@ class CaseController(
         @PathVariable caseId: String,
         @RequestParam earlierAnalysisId: String,
         @RequestParam laterAnalysisId: String,
-    ): AnalysisComparisonResponse = TODO("E6.3: match Attributions by network + canonical address, report changes and comparability limitations")
+    ): AnalysisComparisonResponse {
+        logger.debug("GET /cases/{}/comparison earlier={} later={}", caseId, earlierAnalysisId, laterAnalysisId)
+        return analysisComparison.compare(caseId, earlierAnalysisId, laterAnalysisId)
+    }
 
     @GetMapping("/{caseId}/schedule")
     fun getSchedule(
