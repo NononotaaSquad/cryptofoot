@@ -3,3 +3,9 @@ app:
   scheduler:
     demo-enabled: true
     tick: PT5S
+sources:
+  # the local demo and the E2E suites run on the synthetic sources only
+  github:
+    enabled: false
+  bitcointalk:
+    enabled: false
