@@ -1,0 +1,20 @@
+meta {
+  name: Report of an unknown Analysis is 404
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/e2e-missing-analysis/report
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('404 Not Found', () => expect(res.getStatus()).to.equal(404));
+  test('error body carries code 404 and the Polish message', () => {
+    expect(body.code).to.equal(404);
+    expect(body.message).to.equal('Nie znaleziono analizy o podanym identyfikatorze.');
+  });
+}

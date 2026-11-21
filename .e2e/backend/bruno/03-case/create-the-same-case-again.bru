@@ -1,0 +1,32 @@
+meta {
+  name: Create the same Case again
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nickname": "zenek_fx"
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('duplicateCaseId', body.id);
+}
+
+tests {
+  const body = res.getBody();
+  test('201 Created', () => expect(res.getStatus()).to.equal(201));
+  test('Cases are never deduplicated: the same data gives a new id', () => expect(body.id).to.not.equal(bru.getVar('caseId')));
+}

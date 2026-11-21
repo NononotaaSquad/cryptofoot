@@ -30,6 +30,7 @@ npm run api:gen    # regenerate the API client from openapi.json
 ```bash
 cd backend && ./gradlew test integrationTest   # Spock unit + integration specs (Docker for Testcontainers)
 cd frontend/apps/web && npm run test           # Vitest
+./scripts/e2e-backend.sh                       # Postman + Bruno E2E suites in .e2e/backend against a running backend
 ```
 
 ## Skills

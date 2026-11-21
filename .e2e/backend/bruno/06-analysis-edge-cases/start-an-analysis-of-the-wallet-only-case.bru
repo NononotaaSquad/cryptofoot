@@ -1,0 +1,22 @@
+meta {
+  name: Start an Analysis of the wallet-only Case
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases/{{walletCaseId}}/analyses
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('walletAnalysisId', body.id);
+}
+
+tests {
+  const body = res.getBody();
+  test('202 Accepted', () => expect(res.getStatus()).to.equal(202));
+  test('the canonical wallet is among the identifiers used', () => expect(body.identifiers.walletAddress).to.equal('0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed'));
+}

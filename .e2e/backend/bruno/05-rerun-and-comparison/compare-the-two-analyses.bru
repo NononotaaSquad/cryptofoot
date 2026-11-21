@@ -1,0 +1,26 @@
+meta {
+  name: Compare the two Analyses
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/comparison?earlierAnalysisId={{analysisId}}&laterAnalysisId={{laterAnalysisId}}
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('compares the earlier with the later Analysis', () => {
+    expect(body.earlierAnalysis.id).to.equal(bru.getVar('analysisId'));
+    expect(body.laterAnalysis.id).to.equal(bru.getVar('laterAnalysisId'));
+  });
+  test('partial Analyses are flagged as a comparability limitation', () => expect(body.comparabilityLimitations).to.include('PARTIAL_ANALYSIS'));
+  test('the same input gives the same BTC Attributions: no change on BTC', () => {
+    expect(body.changes).to.be.an('array');
+    expect(body.changes.filter((c) => c.network === 'BTC')).to.eql([]);
+    body.changes.forEach((c) => expect(c.change).to.be.oneOf(['NEW', 'NOT_OBSERVED', 'CONFIDENCE_LEVEL_CHANGED', 'EXCLUSION_CHANGED']));
+  });
+}

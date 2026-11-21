@@ -1,0 +1,17 @@
+meta {
+  name: The no-results Analysis has no Mentions
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/{{noResultsAnalysisId}}/mentions
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('no Mentions', () => expect(body).to.eql([]));
+}

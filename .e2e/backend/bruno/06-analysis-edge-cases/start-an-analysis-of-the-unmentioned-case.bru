@@ -1,0 +1,20 @@
+meta {
+  name: Start an Analysis of the unmentioned Case
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases/{{noResultsCaseId}}/analyses
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('noResultsAnalysisId', body.id);
+}
+
+tests {
+  test('202 Accepted', () => expect(res.getStatus()).to.equal(202));
+}

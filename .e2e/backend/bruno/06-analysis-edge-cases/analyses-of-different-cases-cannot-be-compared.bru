@@ -1,0 +1,20 @@
+meta {
+  name: Analyses of different Cases cannot be compared
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/comparison?earlierAnalysisId={{analysisId}}&laterAnalysisId={{walletAnalysisId}}
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('400 Bad Request', () => expect(res.getStatus()).to.equal(400));
+  test('error body carries code 400 and the Polish message', () => {
+    expect(body.code).to.equal(400);
+    expect(body.message).to.equal('Porównać można tylko analizy tej samej sprawy.');
+  });
+}

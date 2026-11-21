@@ -1,0 +1,30 @@
+meta {
+  name: Reject a Case without identifiers
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {}
+}
+
+tests {
+  const body = res.getBody();
+  test('400 Bad Request', () => expect(res.getStatus()).to.equal(400));
+  test('rejects the Case as a whole only', () => {
+    expect(body.message).to.equal('Popraw błędy w formularzu.');
+    expect(body.errors).to.have.lengthOf(1);
+    expect(body.errors[0].field).to.equal(null);
+    expect(body.errors[0].message).to.equal('Podaj przynajmniej jeden identyfikator zawężający: pseudonim, login, adres e-mail, identyfikator w komunikatorze, adres profilu lub adres portfela kryptowalutowego. Samo imię i nazwisko nie wystarcza.');
+  });
+}

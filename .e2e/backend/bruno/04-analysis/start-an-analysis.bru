@@ -1,0 +1,27 @@
+meta {
+  name: Start an Analysis
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/analyses
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('analysisId', body.id);
+}
+
+tests {
+  const body = res.getBody();
+  test('202 Accepted', () => expect(res.getStatus()).to.equal(202));
+  test('a manual Analysis of the Case starts with the identifiers used', () => {
+    expect(body.caseId).to.equal(bru.getVar('caseId'));
+    expect(body.trigger).to.equal('MANUAL');
+    expect(body.status).to.be.oneOf(['RUNNING', 'COMPLETED', 'PARTIAL', 'FAILED']);
+    expect(body.identifiers.nickname).to.equal('zenek_fx');
+  });
+}

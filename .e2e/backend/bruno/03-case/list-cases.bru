@@ -1,0 +1,23 @@
+meta {
+  name: List Cases
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  const ids = body.map((c) => c.id);
+  test('lists the created Cases', () => {
+    expect(ids).to.include(bru.getVar('caseId'));
+    expect(ids).to.include(bru.getVar('walletCaseId'));
+    expect(ids).to.include(bru.getVar('duplicateCaseId'));
+  });
+  test('newest Case first', () => expect(ids.indexOf(bru.getVar('duplicateCaseId'))).to.be.below(ids.indexOf(bru.getVar('caseId'))));
+}

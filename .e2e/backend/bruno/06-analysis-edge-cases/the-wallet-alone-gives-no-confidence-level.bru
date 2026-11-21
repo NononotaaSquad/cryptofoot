@@ -1,0 +1,54 @@
+meta {
+  name: The wallet alone gives no Confidence Level
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/{{walletAnalysisId}}/report
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  const byAddress = (address) => body.attributions.find((a) => a.address === address);
+  test('every Attribution is 0%: nothing links the address to the person', () => {
+    expect(body.attributions).to.not.be.empty;
+    body.attributions.forEach((a) => {
+      expect(a.confidenceLevel).to.equal(0);
+      expect(a.scoringRules.map((r) => r.rule)).to.include('NO_PERSON_LINK');
+    });
+  });
+  test('BTC 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa found next to the wallet gets no Confidence Level', () => {
+    expect(byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').scoringRules.map((r) => r.rule)).to.eql(['NO_PERSON_LINK']);
+  });
+  test("the Analyst's own wallet is marked as entered, not as evidence (unless excluded)", () => {
+  {
+    const attributed = body.attributions.filter((a) => a.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
+    const excluded = body.excludedAddresses.filter((e) => e.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
+    expect(attributed.length + excluded.length, 'exactly one outcome').to.equal(1);
+    if (excluded.length) {
+      expect(excluded[0].network).to.equal('ETH');
+      expect(excluded[0].reason).to.equal('SMART_CONTRACT');
+      expect(excluded[0].classificationSource).to.be.a('string').and.not.empty;
+      expect(excluded[0].mentions.map((m) => m.url).sort()).to.eql(['https://forum.example/t/porady-p2p-od-zenka/123','https://x.example/zenek_fx/status/555']);
+    } else {
+      const a = attributed[0];
+      expect(a.network).to.equal('ETH');
+      expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);
+      // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence
+      const unavailable = a.classificationStatus === 'UNAVAILABLE';
+      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];
+      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';
+      if (unavailable) expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');
+      expect(a.scoringRules.map((r) => r.rule)).to.eql(['ENTERED_BY_ANALYST', 'NO_PERSON_LINK'].concat(flagRules));
+      expect(a.justification).to.equal(
+        'Adres został wpisany przez analityka jako dane sprawy; samo wpisanie nie jest dowodem. ' +
+        'Żadna wzmianka nie łączy tego adresu z danymi badanej osoby.' + flagText
+      );
+    }
+  }
+  });
+}
