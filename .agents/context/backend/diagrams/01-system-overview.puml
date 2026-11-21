@@ -125,8 +125,8 @@ rectangle "Analysis engine" as ENG #FFF8E1 {
   rectangle S4 [
   **4 · ConfidenceScoring**
   ----
-  ProvisionalConfidenceScoring
-  placeholder for #9
+  ConfidenceScoringService
+  algorithm confidence-1 (#9)
   ]
   rectangle S5 [
   **5 · AnalysisRecorder**

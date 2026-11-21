@@ -1,0 +1,28 @@
+meta {
+  name: Unsupported media type is 415
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: text
+  auth: none
+}
+
+headers {
+  Content-Type: text/plain
+}
+
+body:text {
+  nickname=zenek_fx
+}
+
+tests {
+  const body = res.getBody();
+  test('415 Unsupported Media Type', () => expect(res.getStatus()).to.equal(415));
+  test('error body carries code 415 and the Polish message', () => {
+    expect(body.code).to.equal(415);
+    expect(body.message).to.equal('Nieobsługiwany format danych.');
+  });
+}

@@ -82,9 +82,10 @@ export interface MentionView {
 }
 
 export interface ScoringLine {
-  /** "Adres przy identyfikatorze osoby (GitHub, Forum)", or the raw code. */
+  /** "Adres na profilu osoby (GitHub, Forum)", or the raw code. */
   label: string;
-  /** "40" for the first line, "+15" for the next ones. */
+  /** "40" for the first line, "+15" for the next ones, "0" for a rule
+   *  that adds nothing. */
   points: string;
 }
 
@@ -108,7 +109,8 @@ export interface AttributionView {
   scoringLines: ScoringLine[];
   /** "55%", the bold "Stopień pewności" line. */
   confidenceTotal: string;
-  justification: string[];
+  /** The backend's Justification text; empty hides the block. */
+  justification: string;
   /** "Wzmianki (2)" */
   mentionsHeading: string;
   mentions: MentionView[];
@@ -268,7 +270,7 @@ function attributionView(
   const address = attribution.address ?? "";
   const network = attribution.network ?? "";
   const percent = attribution.confidenceLevel ?? 0;
-  const mentions = attribution.justification ?? [];
+  const mentions = attribution.mentions ?? [];
   const rules = attribution.scoringRules ?? [];
   const sourceNames = unique(mentions.map((m) => m.sourceName ?? "")).join(
     ", "
@@ -306,18 +308,19 @@ function attributionView(
         label:
           known === null
             ? (rule.rule ?? "")
-            : withSources(known.label, sourceNames),
+            : known.withSources
+              ? withSources(known.label, sourceNames)
+              : known.label,
+        // A rule that adds nothing reads "0", not "+0".
         points:
-          index > 0 && contribution >= 0
+          index > 0 && contribution > 0
             ? `+${String(contribution)}`
             : String(contribution),
       };
     }),
     confidenceTotal: `${String(percent)}%`,
-    justification: rules.flatMap((rule) => {
-      const known = scoringRule(rule.rule ?? "");
-      return known === null ? [] : [known.justification];
-    }),
+    // Built by the backend, one sentence per applied rule; shown as is.
+    justification: attribution.justification?.trim() ?? "",
     mentionsHeading: `Wzmianki (${String(mentions.length)})`,
     mentions: mentions.map(mentionView),
     verification: [
@@ -350,7 +353,7 @@ function excludedAddressView(
     reasonLabel:
       excluded.reason === undefined ? "" : excludedReasonLabel(excluded.reason),
     classificationSource: excluded.classificationSource ?? "",
-    mentions: (excluded.justification ?? []).map(mentionView),
+    mentions: (excluded.mentions ?? []).map(mentionView),
   };
 }
 

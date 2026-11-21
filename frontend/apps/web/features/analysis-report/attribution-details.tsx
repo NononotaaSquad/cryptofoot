@@ -19,11 +19,9 @@ export function AttributionDetails({
     <div className="flex flex-col gap-6">
       <Scoring attribution={attribution} />
 
-      {attribution.justification.length > 0 ? (
+      {attribution.justification !== "" ? (
         <Block heading="Uzasadnienie">
-          {attribution.justification.map((sentence) => (
-            <p key={sentence}>{sentence}</p>
-          ))}
+          <p>{attribution.justification}</p>
         </Block>
       ) : null}
 

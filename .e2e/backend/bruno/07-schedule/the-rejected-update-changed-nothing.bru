@@ -1,0 +1,17 @@
+meta {
+  name: The rejected update changed nothing
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/schedule
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('still disabled and weekly', () => expect([body.enabled, body.cadence]).to.eql([false, 'WEEKLY']));
+}

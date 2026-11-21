@@ -15,7 +15,8 @@ export interface AttributionResponse {
   network?: AttributionResponseNetwork;
   confidenceLevel?: number;
   classificationStatus?: AttributionResponseClassificationStatus;
-  justification?: MentionResponse[];
+  justification?: string;
+  mentions?: MentionResponse[];
   scoringRules?: ScoringRuleContributionResponse[];
   addressActivity?: AddressActivityResponse | null;
 }

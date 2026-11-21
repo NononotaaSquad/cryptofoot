@@ -1,0 +1,17 @@
+meta {
+  name: Health is UP
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/actuator/health
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('status is UP', () => expect(body.status).to.equal('UP'));
+}

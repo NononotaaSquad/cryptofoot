@@ -1,0 +1,43 @@
+meta {
+  name: Create a Case from the full set of identifiers
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nickname": "  zenek_fx  ",
+    "login": "   ",
+    "email": "zenon.fikcyjny@example.com",
+    "messengerId": "zenek.fx@signal",
+    "profileUrl": "https://x.example/zenek_fx",
+    "fullName": " Zenon Fikcyjny ",
+    "walletAddress": "BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  test('201 Created', () => expect(res.getStatus()).to.equal(201));
+  test('values are trimmed, blank ones are not stored, bech32 is lowercased', () => {
+    expect(body.identifiers).to.eql({
+      nickname: 'zenek_fx',
+      login: null,
+      email: 'zenon.fikcyjny@example.com',
+      messengerId: 'zenek.fx@signal',
+      profileUrl: 'https://x.example/zenek_fx',
+      fullName: 'Zenon Fikcyjny',
+      walletAddress: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4',
+    });
+  });
+}

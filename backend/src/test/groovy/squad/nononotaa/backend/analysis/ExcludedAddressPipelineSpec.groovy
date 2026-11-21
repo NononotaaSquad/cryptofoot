@@ -69,13 +69,15 @@ class ExcludedAddressPipelineSpec extends Specification {
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        1 * scoring.score([person, unchecked], _) >> new ScoringResult([
+        1 * scoring.score({
+            it.accepted == [person] && it.unclassified == [unchecked]
+        }) >> new ScoringResult([
             new ScoredAttribution(person, 70, [
                 new AppliedRule('forum-post', 70)
-            ], ClassificationStatus.NOT_EXCLUDED),
+            ], '', ClassificationStatus.NOT_EXCLUDED),
             new ScoredAttribution(unchecked, 70, [
                 new AppliedRule('forum-post', 70)
-            ], ClassificationStatus.NOT_EXCLUDED)
+            ], '', ClassificationStatus.NOT_EXCLUDED)
         ], 'v1')
         finished.excluded.collectEntries {
             [(it.candidate.address): it.reason]
@@ -105,7 +107,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        0 * scoring.score(_, _)
+        0 * scoring.score(_)
         finished.status == AnalysisStatus.COMPLETED
         finished.attributions.isEmpty()
         finished.unclassified.isEmpty()
@@ -123,10 +125,12 @@ class ExcludedAddressPipelineSpec extends Specification {
         offline.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        1 * scoring.score([person], _) >> new ScoringResult([
+        1 * scoring.score({
+            it.accepted.isEmpty() && it.unclassified == [person]
+        }) >> new ScoringResult([
             new ScoredAttribution(person, 70, [
                 new AppliedRule('forum-post', 70)
-            ], ClassificationStatus.NOT_EXCLUDED)
+            ], '', ClassificationStatus.NOT_EXCLUDED)
         ], 'v1')
         finished.excluded*.candidate == [exchange]
         finished.attributions*.classificationStatus == [
@@ -149,7 +153,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         def run = crashing.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        0 * scoring.score(_, _)
+        0 * scoring.score(_)
         run.status == AnalysisStatus.FAILED
         finished.status == AnalysisStatus.FAILED
         finished.failures == [

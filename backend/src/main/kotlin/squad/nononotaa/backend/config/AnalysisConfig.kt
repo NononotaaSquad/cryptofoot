@@ -13,7 +13,6 @@ import squad.nononotaa.backend.repository.AnalysisRepository
 import squad.nononotaa.backend.service.AnalysisHistoryService
 import squad.nononotaa.backend.service.AnalysisRerunService
 import squad.nononotaa.backend.service.CaseIdentifierSource
-import squad.nononotaa.backend.service.ProvisionalConfidenceScoring
 import squad.nononotaa.backend.util.logger
 import java.util.concurrent.Executors
 
@@ -21,9 +20,6 @@ import java.util.concurrent.Executors
 class AnalysisConfig {
     // kept out of the context: an Executor bean would replace Spring Boot's applicationTaskExecutor
     private val analysisExecutor = Executors.newVirtualThreadPerTaskExecutor()
-
-    @Bean
-    fun confidenceScoring(): ConfidenceScoring = ProvisionalConfidenceScoring()
 
     @Bean
     fun analysisOrchestrator(

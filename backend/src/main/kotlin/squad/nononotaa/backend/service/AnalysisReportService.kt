@@ -48,7 +48,8 @@ class AnalysisReportService(
                         network = Network.valueOf(it.candidate.network),
                         confidenceLevel = it.confidenceLevel,
                         classificationStatus = it.classificationStatus,
-                        justification = it.candidate.mentionIds.mapNotNull(mentions::get),
+                        justification = it.justification,
+                        mentions = it.candidate.mentionIds.mapNotNull(mentions::get),
                         scoringRules = it.appliedRules.map { rule -> ScoringRuleContributionResponse(rule.rule, rule.contribution) },
                         addressActivity = null,
                     )
@@ -60,7 +61,7 @@ class AnalysisReportService(
                     network = Network.valueOf(it.candidate.network),
                     reason = it.reason,
                     classificationSource = it.classificationSource,
-                    justification = it.candidate.mentionIds.mapNotNull(mentions::get),
+                    mentions = it.candidate.mentionIds.mapNotNull(mentions::get),
                 )
             }
         logger.debug("Report read analysis={} attributions={} excluded={}", analysisId, attributions.size, excluded.size)

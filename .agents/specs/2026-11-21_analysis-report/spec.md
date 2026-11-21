@@ -84,7 +84,7 @@ A failed Analysis shows the summary and a grey block instead of the Attributions
 38. As an Analyst, I want to expand a row, so that I see why it was created.
 39. As an Analyst, I want the block "Punktacja" (collapsed, "Rozwiń" / "Zwiń") with one line per scoring rule and its points and the bold line "Stopień pewności", so that I can recompute the result.
 40. As an Analyst, I want an unknown scoring rule shown with its code and points rather than hidden, so that the sum always matches.
-41. As an Analyst, I want the block "Uzasadnienie" with plain sentences built from the applied rules, without numbers, so that I understand the reason in words.
+41. As an Analyst, I want the block "Uzasadnienie" with plain sentences built from the applied rules, without numbers, so that I understand the reason in words. *(Since Q46 the sentences are the backend `justification` text.)*
 42. As an Analyst, I want the block "Wzmianki (N)" with source name, link, collection time and the quoted fragment, so that I can open and check each source.
 43. As an Analyst, I want the block "Weryfikacja adresu" saying the format is valid, the network, and the result of the exchange and contract check, so that I see the address was verified.
 44. As an Analyst, I want the block "Aktywność adresu w sieci {network}" with total volume, number of transactions, period and dated events, so that I see what the address did.
@@ -127,16 +127,16 @@ The New case feature loses its mock and calls the Analysis run hook. The route f
 
 - One public entry: `toReportView(report, mentions, caseIdentifiers)` → a view model that components render without reading API types.
 - Inside it, one function per section (summary, Attribution, Excluded Address, Rejected Address); they are not exported and are tested only through `toReportView`.
-- It decides: status and trigger labels; band of the Confidence Level; order of the Attributions (Confidence Level descending, then address for stability); Punktacja lines and their sum; Justification sentences from rule codes; the unchecked-classification warning (`classificationStatus: UNAVAILABLE`); the input-address flag (address equals the Case `walletAddress`, compared in the canonical form the backend stores); the "Weryfikacja adresu" lines (from the Mention's `detectedAddresses` entry for this address and from `classificationStatus`); Report Limitation sentences; reason labels for Excluded and Rejected Addresses; the source lines (check time, "Dane testowe", "niedostępne"); which top-level state to show (running, failed, partial, completed, no Attributions).
+- It decides: status and trigger labels; band of the Confidence Level; order of the Attributions (Confidence Level descending, then address for stability); Punktacja lines and their sum; Justification sentences from rule codes (*superseded by Q46: the Justification is the backend `justification` text, passed through*); the unchecked-classification warning (`classificationStatus: UNAVAILABLE`); the input-address flag (address equals the Case `walletAddress`, compared in the canonical form the backend stores); the "Weryfikacja adresu" lines (from the Mention's `detectedAddresses` entry for this address and from `classificationStatus`); Report Limitation sentences; reason labels for Excluded and Rejected Addresses; the source lines (check time, "Dane testowe", "niedostępne"); which top-level state to show (running, failed, partial, completed, no Attributions).
 - Rejected Addresses come from `GET /analyses/{analysisId}/mentions`: every `detectedAddresses` entry with `valid: false`, de-duplicated by address and reason, with the source name of its Mention.
 
 ### Labels (Q27)
 
-- One file with every code → Polish text map used by the report: Analysis status, trigger, Confidence Level bands, Excluded reasons, Rejected reasons, Report Limitations, scoring rule codes (Punktacja label and Justification sentence).
+- One file with every code → Polish text map used by the report: Analysis status, trigger, Confidence Level bands, Excluded reasons, Rejected reasons, Report Limitations, scoring rule codes (Punktacja label and Justification sentence). *Since Q45–Q46: Punktacja label only.*
 - Status: `RUNNING` "W toku", `COMPLETED` "Zakończona", `PARTIAL` "Częściowa", `FAILED` "Nieudana". Trigger: `MANUAL` "Ręczna", `SCHEDULED` "Zaplanowana" (closes V2).
-- Scoring rules known today (`provisional-1`): `MENTIONED_WITH_IDENTIFIER` and `INDEPENDENT_SOURCES`. An unknown code is shown with the raw code and its points in Punktacja and adds no Justification sentence.
+- Scoring rules known today (`provisional-1`): `MENTIONED_WITH_IDENTIFIER` and `INDEPENDENT_SOURCES`. An unknown code is shown with the raw code and its points in Punktacja and adds no Justification sentence. *Superseded by Q45: the codes are the 13 codes of `confidence-1`; an unknown code still gets its raw code and points in Punktacja.*
 - Report Limitations: `SOURCE_UNAVAILABLE`, `BLOCKCHAIN_DATA_UNAVAILABLE`, `CLASSIFICATION_UNAVAILABLE`, `ANALYSIS_INCOMPLETE`, one sentence each; an unknown code is shown as a generic sentence with the code.
-- The exact wording of the Justification sentences and the Report Limitation sentences is written in task 03 and task 02 and reviewed by the lead; it follows the glossary (no numbers in the Justification, no technical terms).
+- The exact wording of the Justification sentences (*superseded by Q46: written by the backend, D9-006*) and the Report Limitation sentences is written in task 03 and task 02 and reviewed by the lead; it follows the glossary (no numbers in the Justification, no technical terms).
 
 ### Address Activity figures (seam S2, Q17, Q25)
 
@@ -188,10 +188,21 @@ Answers of the lead to the open questions raised while the task files were writt
 | Q43 | 03 | Excluded Addresses keep the table; each row gets a chevron and its Mentions expand below the row at full width. |
 | Q44 | 03 | Formatting with `Intl` `pl-PL`: date and time "21.11.2026, 14:32"; amounts with a decimal comma, up to 8 decimals without trailing zeros, unit after the amount ("2,41 BTC"); period "03.2025 – 11.2026". |
 
+## Decisions after merging confidence-1, #58 (Q45–Q48, 2026-11-21)
+
+Master brought the backend algorithm `confidence-1` (#58, D9-006). The lead decided as below. These answers win over anything older in this spec and in the task files.
+
+| # | Task | Decision |
+|---|---|---|
+| Q45 | 03 | The report shows the scoring breakdown. Punktacja stays on Case details as in Q38: rule label with the source names in brackets, points, bold "Stopień pewności". Every one of the 13 `confidence-1` rule codes has a Polish label in `features/analysis-report/report-labels.ts`. Replaces the `provisional-1` codes. D9-006 is amended to match. |
+| Q46 | 03 | Uzasadnienie shows the backend `AttributionResponse.justification` text as returned. The frontend has no Justification sentences of its own per rule. |
+| Q47 | 03 | The Mentions of an Attribution and of an Excluded Address are read from `mentions`. The field `justification` is now the text, not the Mention list. |
+| Q48 | 01 | New case keeps the Analysis run of `lib/analysis-run/`. The duplicate `features/new-case/analysis-flow.ts` from #59 is removed. |
+
 ## Testing Decisions
 
 - **A good test here** checks external behaviour of pure logic: API-shaped data in, view model out. No test looks at components, hooks, markup or private helpers.
-- **S1 `toReportView`** (main seam): status and trigger labels; band edges (39/40, 59/60, 79/80, 100); sort order; Punktacja lines and sum, including an unknown rule code; Justification sentences per known rule and none for unknown; `UNAVAILABLE` warning; input-address flag on and off; "Weryfikacja adresu" lines; source lines (`synthetic`, `UNAVAILABLE`, `checkedAt` null); Report Limitation sentences including an unknown code; Excluded reason labels; Rejected Addresses from Mentions (only `valid: false`, de-duplicated, each reason label); top-level state for `RUNNING`, `FAILED`, `PARTIAL`, `COMPLETED` with and without Attributions.
+- **S1 `toReportView`** (main seam): status and trigger labels; band edges (39/40, 59/60, 79/80, 100); sort order; Punktacja lines and sum, including an unknown rule code; Justification sentences per known rule and none for unknown (*superseded by Q46: the view model passes the `justification` text through*); `UNAVAILABLE` warning; input-address flag on and off; "Weryfikacja adresu" lines; source lines (`synthetic`, `UNAVAILABLE`, `checkedAt` null); Report Limitation sentences including an unknown code; Excluded reason labels; Rejected Addresses from Mentions (only `valid: false`, de-duplicated, each reason label); top-level state for `RUNNING`, `FAILED`, `PARTIAL`, `COMPLETED` with and without Attributions.
 - **S2 `toAddressActivityFigures`:** `null` activity; volume with both totals, with one `null`; transaction count; period from unsorted events; single event; no events; sort order.
 - **S3 poll interval rule:** 1500 for `RUNNING` and for no data yet; stop for `COMPLETED`, `PARTIAL`, `FAILED`.
 - **Not tested by Vitest** (ADR-0010): components, the loader, the Reviewed store, navigation. Verified in the running app with a clean console.
@@ -213,7 +224,7 @@ Answers of the lead to the open questions raised while the task files were writt
 
 ## Further Notes
 
-- **Scoring bands (Q13):** `provisional-1` gives only 40% or 55%, so the bands 60–79% and 80–100% never appear with today's backend. The frontend shows what the backend returns; the problem is described for the team in #9. The demo will look different from the Pencil frames (95%) until #9 changes.
+- **Scoring bands (Q13):** *Superseded by #58: `confidence-1` uses bases 80, 60, 40, 10 and +15 (D9-002), so every band can appear; demo-v1 scores are in D9-008.* `provisional-1` gives only 40% or 55%, so the bands 60–79% and 80–100% never appear with today's backend. The frontend shows what the backend returns; the problem is described for the team in #9. The demo will look different from the Pencil frames (95%) until #9 changes.
 - **Address Activity (G7):** `addressActivity` is always `null` today; the "no data" message is what the demo shows until E4 (#23).
 - **Input address (G3):** the frontend flag is a stopgap; a backend flag is a note for #9. The glossary says a Wallet address never makes an Attribution by itself, and the backend does not enforce it yet.
 - **Rejected Address demo (G1):** the demo-v1 fixture produces no Rejected Address; the section will be empty until the fixture changes.

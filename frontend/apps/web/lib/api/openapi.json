@@ -941,6 +941,9 @@
                         ]
                     },
                     "justification": {
+                        "type": "string"
+                    },
+                    "mentions": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/MentionResponse"
@@ -1022,7 +1025,7 @@
                     "classificationSource": {
                         "type": "string"
                     },
-                    "justification": {
+                    "mentions": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/MentionResponse"

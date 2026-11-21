@@ -73,24 +73,48 @@ export function confidenceBandLabel(level: number): string {
   return "Niski / szum";
 }
 
-// Known codes of the scoring version `provisional-1`.
+// Known codes of the scoring version `confidence-1` (ScoringRule in the
+// backend). `withSources` marks the rules that are evidence from Mentions:
+// their line names the sources in brackets. The others (analyst input,
+// missing link, rejected Mentions, no classification) name none.
 const scoringRules = {
-  MENTIONED_WITH_IDENTIFIER: {
-    label: "Adres przy identyfikatorze osoby",
-    justification:
-      "Adres pojawił się w źródle razem z identyfikatorem tej osoby.",
+  ENTERED_BY_ANALYST: {
+    label: "Adres wpisany przez analityka",
+    withSources: false,
   },
+  OWN_PROFILE: { label: "Adres na profilu osoby", withSources: true },
+  SALE_OR_SETTLEMENT: {
+    label: "Ogłoszenie sprzedaży lub rozliczenie",
+    withSources: true,
+  },
+  DISCUSSION: { label: "Adres w dyskusji", withSources: true },
+  MASS_COMMENT: { label: "Wpis konkursowy lub promocyjny", withSources: true },
+  NO_PERSON_LINK: { label: "Brak powiązania z osobą", withSources: false },
   INDEPENDENT_SOURCES: {
     label: "Potwierdzenie w niezależnych źródłach",
-    justification:
-      "Adres pojawił się także w innych, niezależnych źródłach o różnej treści.",
+    withSources: true,
+  },
+  SAME_SERVICE: {
+    label: "Kolejna wzmianka z tego samego serwisu",
+    withSources: false,
+  },
+  COPIED_TEXT: { label: "Skopiowana treść", withSources: false },
+  NICKNAME_ONLY: {
+    label: "Powiązanie tylko przez nick lub login",
+    withSources: false,
+  },
+  WARNING_CONTEXT: { label: "Adres w ostrzeżeniu", withSources: false },
+  CONFLICTING_EMAIL: { label: "E-mail innej osoby", withSources: false },
+  CLASSIFICATION_UNAVAILABLE: {
+    label: "Klasyfikacja niedostępna",
+    withSources: false,
   },
 };
 
-/** Punktacja label and Justification sentence; `null` for an unknown code. */
+/** Punktacja label of a rule; `null` for an unknown code. */
 export function scoringRule(
   code: string
-): { label: string; justification: string } | null {
+): { label: string; withSources: boolean } | null {
   return isKnownCode(scoringRules, code) ? scoringRules[code] : null;
 }
 

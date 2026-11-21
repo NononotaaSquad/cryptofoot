@@ -1,0 +1,107 @@
+meta {
+  name: Get the report
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/{{analysisId}}/report
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('reportJson', JSON.stringify(body));
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  const attributions = body.attributions;
+  const byAddress = (address) => attributions.find((a) => a.address === address);
+  test('the report belongs to the Analysis', () => expect(body.analysis.id).to.equal(bru.getVar('analysisId')));
+  test('Attributions are sorted by Confidence Level, highest first', () => {
+    const levels = attributions.map((a) => a.confidenceLevel);
+    expect(levels).to.eql(levels.slice().sort((a, b) => b - a));
+  });
+  test('BTC 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa: 75, sale plus independent sources, nickname only', () => {
+    const btc = byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
+    expect(btc.network).to.equal('BTC');
+    expect(btc.confidenceLevel).to.equal(75);
+    expect(btc.classificationStatus).to.equal('NOT_EXCLUDED');
+    expect(btc.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'INDEPENDENT_SOURCES', 'NICKNAME_ONLY']);
+    expect(btc.mentions.map((m) => m.url).sort()).to.eql(['https://forum.example/t/porady-p2p-od-zenka/123', 'https://x.example/zenek_fx/status/555']);
+  });
+  test('BTC Justification is the Polish template text', () => {
+    expect(byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').justification).to.equal(
+      'Adres podano w ogłoszeniu sprzedaży lub w kontekście rozliczenia (forum.example). ' +
+      'Niezależne źródła różnego pochodzenia (forum.example, x.example) wskazują na ten sam adres. ' +
+      'Adres łączy z badaną osobą tylko nick lub login, które mogą należeć do innej osoby.'
+    );
+  });
+  test('ETH 0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed (canonical): an Excluded Address, or 75 with the same rules as BTC', () => {
+  {
+    const attributed = body.attributions.filter((a) => a.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
+    const excluded = body.excludedAddresses.filter((e) => e.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
+    expect(attributed.length + excluded.length, 'exactly one outcome').to.equal(1);
+    if (excluded.length) {
+      expect(excluded[0].network).to.equal('ETH');
+      expect(excluded[0].reason).to.equal('SMART_CONTRACT');
+      expect(excluded[0].classificationSource).to.be.a('string').and.not.empty;
+      expect(excluded[0].mentions.map((m) => m.url).sort()).to.eql(['https://forum.example/t/porady-p2p-od-zenka/123','https://x.example/zenek_fx/status/555']);
+    } else {
+      const a = attributed[0];
+      expect(a.network).to.equal('ETH');
+      expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);
+      // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence
+      const unavailable = a.classificationStatus === 'UNAVAILABLE';
+      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];
+      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';
+      if (unavailable) expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');
+      expect(a.confidenceLevel).to.equal(75);
+      expect(a.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'INDEPENDENT_SOURCES', 'NICKNAME_ONLY'].concat(flagRules));
+    }
+  }
+  });
+  test('bech32 bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4: 60, one sale Mention only', () => {
+    const bech32 = byAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');
+    expect(bech32.confidenceLevel).to.equal(60);
+    expect(bech32.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'NICKNAME_ONLY']);
+    expect(bech32.mentions.map((m) => m.url)).to.eql(['https://p2p.example/ad/987']);
+  });
+  test('the exchange hot-wallet contract is an Excluded Address, or flagged UNAVAILABLE when its check failed', () => {
+  {
+    const attributed = body.attributions.filter((a) => a.address === '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae');
+    const excluded = body.excludedAddresses.filter((e) => e.address === '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae');
+    expect(attributed.length + excluded.length, 'exactly one outcome').to.equal(1);
+    if (excluded.length) {
+      expect(excluded[0].network).to.equal('ETH');
+      expect(excluded[0].reason).to.equal('SMART_CONTRACT');
+      expect(excluded[0].classificationSource).to.be.a('string').and.not.empty;
+      expect(excluded[0].mentions.map((m) => m.url).sort()).to.eql(['https://p2p.example/ad/987']);
+    } else {
+      const a = attributed[0];
+      expect(a.network).to.equal('ETH');
+      expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);
+      // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence
+      const unavailable = a.classificationStatus === 'UNAVAILABLE';
+      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];
+      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';
+      if (unavailable) expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');
+      expect(a.classificationStatus).to.equal('UNAVAILABLE');
+      expect(a.confidenceLevel).to.equal(60);
+      expect(a.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'NICKNAME_ONLY'].concat(flagRules));
+    }
+  }
+  });
+  test('every Attribution has a Justification and the Mentions it rests on', () => {
+    attributions.forEach((a) => {
+      expect(a.justification).to.be.a('string').and.not.empty;
+      expect(a.mentions).to.not.be.empty;
+    });
+  });
+  test('limitations name the unavailable source and the incomplete Analysis', () => {
+    expect(body.limitations).to.include.members(['SOURCE_UNAVAILABLE', 'ANALYSIS_INCOMPLETE']);
+  });
+}

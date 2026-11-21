@@ -1,0 +1,21 @@
+meta {
+  name: Get the Case
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('returns the stored Case', () => {
+    expect(body.id).to.equal(bru.getVar('caseId'));
+    expect(body.identifiers.nickname).to.equal('zenek_fx');
+    expect(body.latestAnalysis).to.equal(null);
+  });
+}

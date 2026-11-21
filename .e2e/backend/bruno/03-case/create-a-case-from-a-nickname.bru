@@ -1,0 +1,39 @@
+meta {
+  name: Create a Case from a nickname
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nickname": "zenek_fx"
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('caseId', body.id);
+}
+
+tests {
+  const body = res.getBody();
+  test('201 Created', () => expect(res.getStatus()).to.equal(201));
+  test('the Case has a stable id, a creation time and no Analysis yet', () => {
+    expect(body.id).to.be.a('string').and.not.empty;
+    expect(body.createdAt).to.be.a('string');
+    expect(body.latestAnalysis).to.equal(null);
+  });
+  test('only the nickname is stored', () => {
+    expect(body.identifiers).to.eql({ nickname: 'zenek_fx', login: null, email: null, messengerId: null, profileUrl: null, fullName: null, walletAddress: null });
+  });
+}

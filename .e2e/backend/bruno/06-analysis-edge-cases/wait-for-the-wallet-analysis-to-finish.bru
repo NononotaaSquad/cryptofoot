@@ -1,0 +1,35 @@
+meta {
+  name: Wait for the wallet Analysis to finish
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/{{walletAnalysisId}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  // Polls the Analysis until it leaves RUNNING (at most 60 s); the request itself then reads the finished Analysis.
+  const axios = require('axios');
+  const url = bru.getEnvVar('baseUrl') + '/api/1/analyses/' + bru.getVar('walletAnalysisId');
+  const deadline = Date.now() + 60000;
+  while (Date.now() < deadline) {
+    const res = await axios.get(url, { validateStatus: () => true });
+    if (res.status !== 200 || res.data.status !== 'RUNNING') break;
+    await bru.sleep(500);
+  }
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('the Analysis has finished as PARTIAL', () => {
+    expect(body.status).to.equal('PARTIAL');
+    expect(body.finishedAt).to.be.a('string');
+    expect(body.trigger).to.equal('MANUAL');
+    expect(body.networks).to.eql(['BTC', 'ETH']);
+    expect(body.algorithmVersion).to.equal('confidence-1');
+  });
+}

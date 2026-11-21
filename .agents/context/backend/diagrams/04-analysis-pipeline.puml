@@ -52,7 +52,7 @@ if (accepted + unclassified empty?) then (yes)
   stop
 endif
 
-:SCORING: ConfidenceScoring.score(accepted + unclassified, mentions)
+:SCORING: ConfidenceScoring.score(ScoringInput(accepted, unclassified, mentions, identifiers))
 Excluded Addresses never reach scoring;
 if (module threw?) then (yes)
   :FAILED

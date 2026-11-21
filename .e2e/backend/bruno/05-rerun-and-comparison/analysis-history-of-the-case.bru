@@ -1,0 +1,17 @@
+meta {
+  name: Analysis history of the Case
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/analyses
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('both Analyses are kept, newest first', () => expect(body.map((a) => a.id)).to.eql([bru.getVar('laterAnalysisId'), bru.getVar('analysisId')]));
+}

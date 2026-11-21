@@ -1,0 +1,17 @@
+meta {
+  name: The earlier report is unchanged
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/{{analysisId}}/report
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('reopening the earlier Analysis returns the same saved result', () => expect(body).to.eql(JSON.parse(bru.getVar('reportJson'))));
+}

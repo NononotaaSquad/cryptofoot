@@ -1,0 +1,28 @@
+meta {
+  name: Repeating the same cadence keeps the next execution
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/schedule
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "enabled": true,
+    "cadence": "DAILY"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('next execution unchanged', () => expect(body.nextExecutionAt).to.equal(bru.getVar('dailyNextExecutionAt')));
+}

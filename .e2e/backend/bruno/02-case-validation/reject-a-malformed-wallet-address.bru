@@ -1,0 +1,32 @@
+meta {
+  name: Reject a malformed wallet address
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "walletAddress": "0x123"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  test('400 Bad Request', () => expect(res.getStatus()).to.equal(400));
+  test('rejects walletAddress only', () => {
+    expect(body.message).to.equal('Popraw błędy w formularzu.');
+    expect(body.errors).to.have.lengthOf(1);
+    expect(body.errors[0].field).to.equal('walletAddress');
+    expect(body.errors[0].message).to.equal('Adres portfela ma nieprawidłowy format.');
+  });
+}

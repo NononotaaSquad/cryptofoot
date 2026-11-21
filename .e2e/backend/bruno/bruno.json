@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Cryptofoot backend E2E",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

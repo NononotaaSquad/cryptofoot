@@ -53,7 +53,8 @@ function attribution(values: Partial<AttributionResponse> = {}) {
     network: "BTC",
     confidenceLevel: 55,
     classificationStatus: "NOT_EXCLUDED",
-    justification: [],
+    justification: "",
+    mentions: [],
     scoringRules: [],
     addressActivity: null,
     ...values,
@@ -270,7 +271,7 @@ function excluded(values: Partial<ExcludedAddressResponse> = {}) {
     network: "ETH",
     reason: "SMART_CONTRACT",
     classificationSource: "Etherscan",
-    justification: [mention({ id: "m-x", sourceName: "x.example" })],
+    mentions: [mention({ id: "m-x", sourceName: "x.example" })],
     ...values,
   } satisfies ExcludedAddressResponse;
 }
@@ -292,7 +293,7 @@ function onlyAttribution(
 }
 
 const knownRules = [
-  { rule: "MENTIONED_WITH_IDENTIFIER", contribution: 40 },
+  { rule: "DISCUSSION", contribution: 40 },
   { rule: "INDEPENDENT_SOURCES", contribution: 15 },
 ];
 
@@ -333,7 +334,7 @@ describe("toReportView Attributions", () => {
     const result = onlyAttribution({
       confidenceLevel: 55,
       scoringRules: knownRules,
-      justification: [
+      mentions: [
         mention({ id: "1", sourceName: "forum.example" }),
         mention({ id: "2", sourceName: "x.example" }),
         mention({ id: "3", sourceName: "forum.example" }),
@@ -342,7 +343,7 @@ describe("toReportView Attributions", () => {
 
     expect(result.scoringLines).toEqual([
       {
-        label: "Adres przy identyfikatorze osoby (forum.example, x.example)",
+        label: "Adres w dyskusji (forum.example, x.example)",
         points: "40",
       },
       {
@@ -362,19 +363,62 @@ describe("toReportView Attributions", () => {
     expect(result.scoringLines[2]).toEqual({ label: "NEW_RULE", points: "+5" });
   });
 
-  it("writes one Justification sentence per known rule and none for an unknown one", () => {
+  it("names no sources and shows 0 without a sign for a rule that is not evidence", () => {
     const result = onlyAttribution({
-      scoringRules: [...knownRules, { rule: "NEW_RULE", contribution: 5 }],
+      confidenceLevel: 80,
+      scoringRules: [
+        { rule: "OWN_PROFILE", contribution: 80 },
+        { rule: "SAME_SERVICE", contribution: 0 },
+        { rule: "CLASSIFICATION_UNAVAILABLE", contribution: 0 },
+      ],
+      mentions: [mention({ sourceName: "github.example" })],
     });
 
-    expect(result.justification).toEqual([
-      "Adres pojawił się w źródle razem z identyfikatorem tej osoby.",
-      "Adres pojawił się także w innych, niezależnych źródłach o różnej treści.",
+    expect(result.scoringLines).toEqual([
+      { label: "Adres na profilu osoby (github.example)", points: "80" },
+      { label: "Kolejna wzmianka z tego samego serwisu", points: "0" },
+      { label: "Klasyfikacja niedostępna", points: "0" },
     ]);
-    for (const sentence of result.justification) {
-      expect(sentence).not.toMatch(/\d/);
+  });
+
+  it("labels every rule code of confidence-1", () => {
+    const codes = [
+      "ENTERED_BY_ANALYST",
+      "OWN_PROFILE",
+      "SALE_OR_SETTLEMENT",
+      "DISCUSSION",
+      "MASS_COMMENT",
+      "NO_PERSON_LINK",
+      "INDEPENDENT_SOURCES",
+      "SAME_SERVICE",
+      "COPIED_TEXT",
+      "NICKNAME_ONLY",
+      "WARNING_CONTEXT",
+      "CONFLICTING_EMAIL",
+      "CLASSIFICATION_UNAVAILABLE",
+    ];
+    const result = onlyAttribution({
+      scoringRules: codes.map((rule) => ({ rule, contribution: 0 })),
+    });
+
+    for (const [index, line] of result.scoringLines.entries()) {
+      expect(line.label).not.toBe(codes[index]);
     }
   });
+
+  it("passes the backend Justification text through as is", () => {
+    const text =
+      "Adres pojawił się w dyskusji (p2p.example); taki ślad wymaga potwierdzenia drugim źródłem.";
+
+    expect(onlyAttribution({ justification: text }).justification).toBe(text);
+  });
+
+  it.each([[undefined], [""], ["   "]])(
+    "gives an empty Justification for %j, which hides the block",
+    (justification) => {
+      expect(onlyAttribution({ justification }).justification).toBe("");
+    }
+  );
 
   it("warns when the classification is UNAVAILABLE", () => {
     expect(
@@ -424,7 +468,7 @@ describe("toReportView Attributions", () => {
       address: ETH_ADDRESS,
       network: "ETH",
       classificationStatus: "NOT_EXCLUDED",
-      justification: [
+      mentions: [
         mention({
           detectedAddresses: [
             detected({ address: ETH_ADDRESS_EIP55, network: "ETH" }),
@@ -447,7 +491,7 @@ describe("toReportView Attributions", () => {
     const result = onlyAttribution({
       address: BTC_ADDRESS,
       classificationStatus: "UNAVAILABLE",
-      justification: [mention()],
+      mentions: [mention()],
     });
 
     expect(result.verification).toEqual([
@@ -463,7 +507,7 @@ describe("toReportView Attributions", () => {
   it("says the format check is missing when no detected address matches", () => {
     const result = onlyAttribution({
       address: BTC_ADDRESS,
-      justification: [
+      mentions: [
         mention({ detectedAddresses: [detected({ address: "bc1qother" })] }),
       ],
     });
@@ -477,7 +521,7 @@ describe("toReportView Attributions", () => {
 
   it("lists the Mentions with source, link, collection time and fragment", () => {
     const result = onlyAttribution({
-      justification: [mention(), mention({ id: "m-2", context: null })],
+      mentions: [mention(), mention({ id: "m-2", context: null })],
     });
 
     expect(result.mentionsHeading).toBe("Wzmianki (2)");
@@ -495,7 +539,7 @@ describe("toReportView Attributions", () => {
 
   it("never makes a link of a non-http address", () => {
     const result = onlyAttribution({
-      justification: [mention({ url: "javascript:alert(1)" })],
+      mentions: [mention({ url: "javascript:alert(1)" })],
     });
 
     expect(result.mentions[0]?.url).toBe(null);

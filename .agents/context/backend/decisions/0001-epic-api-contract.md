@@ -24,7 +24,7 @@ Define the whole contract first: controllers whose bodies are `TODO("<story>: ..
 
 - Analysis runs asynchronously; the client polls `GET /analyses/{id}`.
 - The report reads the saved Analysis only; it never reruns it (E5.4).
-- `Justification` is a list of `MentionResponse`, no text (E3).
+- `Justification` is a list of `MentionResponse`, no text (E3). *Superseded by [D9-006](task-9/006-justification-text-and-contract.md): `justification: String` (template text) and `mentions: List<MentionResponse>`.*
 - `addressActivity` is nullable: E4 is on hold.
 - `network` is a free string until supported networks are decided. *Superseded by [0002](0002-address-candidate-validation.md): enum `Network { BTC, ETH }`.*
 
@@ -32,5 +32,5 @@ Define the whole contract first: controllers whose bodies are `TODO("<story>: ..
 
 - "At least one narrowing identifier" class-level constraint on `CreateCaseRequest` (TODO in `Requests.kt`).
 - Schedule cadence/timezone in `UpdateScheduleRequest` (E6-D3).
-- Scoring rule names and Confidence Level bands (E3), exclusion visibility (mentor question 1).
+- Scoring rule names and Confidence Level bands (E3) *(decided in [task-9](task-9/README.md))*, exclusion visibility (mentor question 1).
 - E4 Address Activity scope; E7 demo Case reset has no endpoint.

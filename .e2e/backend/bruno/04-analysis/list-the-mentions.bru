@@ -1,0 +1,36 @@
+meta {
+  name: List the Mentions
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/1/analyses/{{analysisId}}/mentions
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('three Mentions with provenance', () => {
+    expect(body).to.have.lengthOf(3);
+    body.forEach((m) => {
+      expect(m.sourceName).to.equal('synthetic');
+      expect(m.url).to.be.a('string').and.not.empty;
+      expect(m.collectedAt).to.be.a('string');
+      expect(m.context).to.include('zenek_fx');
+    });
+  });
+  test('every detected address is validated', () => {
+    body.forEach((m) => m.detectedAddresses.forEach((d) => {
+      expect(d.valid).to.equal(true);
+      expect(d.network).to.be.oneOf(['BTC', 'ETH']);
+      expect(d.validationFailure).to.equal(null);
+    }));
+  });
+  test('the P2P ad yields bech32 and the contract, not the broken address', () => {
+    const ad = body.find((m) => m.url === 'https://p2p.example/ad/987');
+    expect(ad.detectedAddresses.map((d) => d.address)).to.eql(['bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4', '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae']);
+  });
+}

@@ -1,0 +1,2555 @@
+{
+  "info": {
+    "_postman_id": "63245040-c608-5abc-a8af-fdfd19c37805",
+    "name": "Cryptofoot backend E2E",
+    "description": "End-to-end tests of the backend REST API (/api/1) against a running backend with the synthetic demo-v1 sources. Run the folders in order: later folders use ids saved by earlier ones. Generated together with the Bruno collection in ../bruno; keep both in sync. See ../README.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Health",
+      "description": "The backend and its readiness probes are up.",
+      "item": [
+        {
+          "name": "Health is UP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('status is UP', () => pm.expect(body.status).to.equal('UP'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Liveness is UP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('status is UP', () => pm.expect(body.status).to.equal('UP'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/liveness",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health",
+                "liveness"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Readiness is UP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('status is UP', () => pm.expect(body.status).to.equal('UP'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health/readiness",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health",
+                "readiness"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Case validation",
+      "description": "A Case needs at least one narrowing identifier; a full name alone, blank values and invalid wallets or e-mails are rejected in Polish.",
+      "item": [
+        {
+          "name": "Reject a Case without identifiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects the Case as a whole only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal(null);",
+                  "  pm.expect(body.errors[0].message).to.equal('Podaj przynajmniej jeden identyfikator zawężający: pseudonim, login, adres e-mail, identyfikator w komunikatorze, adres profilu lub adres portfela kryptowalutowego. Samo imię i nazwisko nie wystarcza.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Reject a Case with only a full name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects the Case as a whole only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal(null);",
+                  "  pm.expect(body.errors[0].message).to.equal('Podaj przynajmniej jeden identyfikator zawężający: pseudonim, login, adres e-mail, identyfikator w komunikatorze, adres profilu lub adres portfela kryptowalutowego. Samo imię i nazwisko nie wystarcza.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Zenon Fikcyjny\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject a Case with blank identifiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects the Case as a whole only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal(null);",
+                  "  pm.expect(body.errors[0].message).to.equal('Podaj przynajmniej jeden identyfikator zawężający: pseudonim, login, adres e-mail, identyfikator w komunikatorze, adres profilu lub adres portfela kryptowalutowego. Samo imię i nazwisko nie wystarcza.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"  \",\n  \"login\": \"\",\n  \"email\": \" \",\n  \"messengerId\": \"\\t\",\n  \"profileUrl\": \" \",\n  \"walletAddress\": \"   \",\n  \"fullName\": \"Zenon Fikcyjny\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject a malformed wallet address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects walletAddress only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal('walletAddress');",
+                  "  pm.expect(body.errors[0].message).to.equal('Adres portfela ma nieprawidłowy format.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"walletAddress\": \"0x123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject an ETH wallet with a bad checksum",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects walletAddress only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal('walletAddress');",
+                  "  pm.expect(body.errors[0].message).to.equal('Adres portfela ma nieprawidłową sumę kontrolną.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"walletAddress\": \"0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAEd\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject a wallet of an unsupported network",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects walletAddress only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal('walletAddress');",
+                  "  pm.expect(body.errors[0].message).to.equal('Nieobsługiwany format adresu portfela. Obsługiwane są adresy Bitcoin (BTC) i Ethereum (ETH).');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"zenek_fx\",\n  \"walletAddress\": \"LdP8Qox1VAhCzLJNqrr74YovaWYyNBUWvL\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject an invalid e-mail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('rejects email only', () => {",
+                  "  pm.expect(body.message).to.equal('Popraw błędy w formularzu.');",
+                  "  pm.expect(body.errors).to.have.lengthOf(1);",
+                  "  pm.expect(body.errors[0].field).to.equal('email');",
+                  "  pm.expect(body.errors[0].message).to.equal('Podaj poprawny adres e-mail.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"zenek_fx\",\n  \"email\": \"not-an-email\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject malformed JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('error body carries code 400 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(400);",
+                  "  pm.expect(body.message).to.equal('Nieprawidłowe żądanie.');",
+                  "});",
+                  "pm.test('no parser details leak', () => pm.expect(body.errors).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{not json"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Case",
+      "description": "Cases are created from narrowing identifiers, store only the canonical wallet, are never deduplicated and can be read back.",
+      "item": [
+        {
+          "name": "Create a Case from a nickname",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('caseId', body.id);",
+                  "pm.test('201 Created', () => pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('the Case has a stable id, a creation time and no Analysis yet', () => {",
+                  "  pm.expect(body.id).to.be.a('string').and.not.empty;",
+                  "  pm.expect(body.createdAt).to.be.a('string');",
+                  "  pm.expect(body.latestAnalysis).to.equal(null);",
+                  "});",
+                  "pm.test('only the nickname is stored', () => {",
+                  "  pm.expect(body.identifiers).to.eql({ nickname: 'zenek_fx', login: null, email: null, messengerId: null, profileUrl: null, fullName: null, walletAddress: null });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"zenek_fx\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create a Case from a wallet address only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('walletCaseId', body.id);",
+                  "pm.test('201 Created', () => pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('the wallet is trimmed and stored in canonical (lowercase) form', () => {",
+                  "  pm.expect(body.identifiers.walletAddress).to.equal('0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');",
+                  "});",
+                  "pm.test('the wallet is the only identifier', () => {",
+                  "  pm.expect(body.identifiers.nickname).to.equal(null);",
+                  "  pm.expect(body.identifiers.email).to.equal(null);",
+                  "  pm.expect(body.identifiers.fullName).to.equal(null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"walletAddress\": \"  0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed  \"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create a Case from the full set of identifiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('201 Created', () => pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('values are trimmed, blank ones are not stored, bech32 is lowercased', () => {",
+                  "  pm.expect(body.identifiers).to.eql({",
+                  "    nickname: 'zenek_fx',",
+                  "    login: null,",
+                  "    email: 'zenon.fikcyjny@example.com',",
+                  "    messengerId: 'zenek.fx@signal',",
+                  "    profileUrl: 'https://x.example/zenek_fx',",
+                  "    fullName: 'Zenon Fikcyjny',",
+                  "    walletAddress: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4',",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"  zenek_fx  \",\n  \"login\": \"   \",\n  \"email\": \"zenon.fikcyjny@example.com\",\n  \"messengerId\": \"zenek.fx@signal\",\n  \"profileUrl\": \"https://x.example/zenek_fx\",\n  \"fullName\": \" Zenon Fikcyjny \",\n  \"walletAddress\": \"BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create a Case nobody mentions",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('unknownEmail', 'e2e-nobody-' + Date.now() + '@example.com');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('noResultsCaseId', body.id);",
+                  "pm.test('201 Created', () => pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('the e-mail is stored', () => pm.expect(body.identifiers.email).to.equal(pm.collectionVariables.get('unknownEmail')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{unknownEmail}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create the same Case again",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('duplicateCaseId', body.id);",
+                  "pm.test('201 Created', () => pm.expect(pm.response.code).to.equal(201));",
+                  "pm.test('Cases are never deduplicated: the same data gives a new id', () => pm.expect(body.id).to.not.equal(pm.collectionVariables.get('caseId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"zenek_fx\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get the Case",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('returns the stored Case', () => {",
+                  "  pm.expect(body.id).to.equal(pm.collectionVariables.get('caseId'));",
+                  "  pm.expect(body.identifiers.nickname).to.equal('zenek_fx');",
+                  "  pm.expect(body.latestAnalysis).to.equal(null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Cases",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "const ids = body.map((c) => c.id);",
+                  "pm.test('lists the created Cases', () => {",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get('caseId'));",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get('walletCaseId'));",
+                  "  pm.expect(ids).to.include(pm.collectionVariables.get('duplicateCaseId'));",
+                  "});",
+                  "pm.test('newest Case first', () => pm.expect(ids.indexOf(pm.collectionVariables.get('duplicateCaseId'))).to.be.below(ids.indexOf(pm.collectionVariables.get('caseId'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unknown Case is 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono sprawy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/e2e-missing-case",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "e2e-missing-case"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Analysis",
+      "description": "One click runs a manual Analysis of the demo person over the synthetic sources; the report scores, sorts and justifies the addresses and keeps the contract out.",
+      "item": [
+        {
+          "name": "Start an Analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('analysisId', body.id);",
+                  "pm.test('202 Accepted', () => pm.expect(pm.response.code).to.equal(202));",
+                  "pm.test('a manual Analysis of the Case starts with the identifiers used', () => {",
+                  "  pm.expect(body.caseId).to.equal(pm.collectionVariables.get('caseId'));",
+                  "  pm.expect(body.trigger).to.equal('MANUAL');",
+                  "  pm.expect(body.status).to.be.oneOf(['RUNNING', 'COMPLETED', 'PARTIAL', 'FAILED']);",
+                  "  pm.expect(body.identifiers.nickname).to.equal('zenek_fx');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/analyses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "analyses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Wait for the Analysis to finish",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Polls the Analysis until it leaves RUNNING (at most 60 s); the request itself then reads the finished Analysis.",
+                  "const url = pm.variables.replaceIn('{{baseUrl}}/api/1/analyses/{{analysisId}}');",
+                  "const deadline = Date.now() + 60000;",
+                  "const poll = () => pm.sendRequest(url, (err, res) => {",
+                  "  if (!err && res.code === 200 && res.json().status === 'RUNNING' && Date.now() < deadline) setTimeout(poll, 500);",
+                  "});",
+                  "poll();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('the Analysis has finished as PARTIAL', () => {",
+                  "  pm.expect(body.status).to.equal('PARTIAL');",
+                  "  pm.expect(body.finishedAt).to.be.a('string');",
+                  "  pm.expect(body.trigger).to.equal('MANUAL');",
+                  "  pm.expect(body.networks).to.eql(['BTC', 'ETH']);",
+                  "  pm.expect(body.algorithmVersion).to.equal('confidence-1');",
+                  "});",
+                  "pm.test('source coverage: the synthetic source was checked, the broken one is unavailable', () => {",
+                  "  const coverage = {};",
+                  "  body.sources.forEach((s) => { coverage[s.sourceName] = [s.status, s.synthetic, s.mentionCount]; });",
+                  "  pm.expect(coverage).to.eql({ synthetic: ['CHECKED', true, 3], 'synthetic-broken': ['UNAVAILABLE', true, 0] });",
+                  "});",
+                  "pm.test('four valid candidates, each an Attribution or an Excluded Address; both BTC addresses are attributed', () => {",
+                  "  pm.expect(body.attributionCount + body.excludedAddressCount).to.equal(4);",
+                  "  pm.expect(body.attributionCount).to.be.at.least(2);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{analysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{analysisId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get the report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('reportJson', JSON.stringify(body));",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "const attributions = body.attributions;",
+                  "const byAddress = (address) => attributions.find((a) => a.address === address);",
+                  "pm.test('the report belongs to the Analysis', () => pm.expect(body.analysis.id).to.equal(pm.collectionVariables.get('analysisId')));",
+                  "pm.test('Attributions are sorted by Confidence Level, highest first', () => {",
+                  "  const levels = attributions.map((a) => a.confidenceLevel);",
+                  "  pm.expect(levels).to.eql(levels.slice().sort((a, b) => b - a));",
+                  "});",
+                  "pm.test('BTC 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa: 75, sale plus independent sources, nickname only', () => {",
+                  "  const btc = byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');",
+                  "  pm.expect(btc.network).to.equal('BTC');",
+                  "  pm.expect(btc.confidenceLevel).to.equal(75);",
+                  "  pm.expect(btc.classificationStatus).to.equal('NOT_EXCLUDED');",
+                  "  pm.expect(btc.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'INDEPENDENT_SOURCES', 'NICKNAME_ONLY']);",
+                  "  pm.expect(btc.mentions.map((m) => m.url).sort()).to.eql(['https://forum.example/t/porady-p2p-od-zenka/123', 'https://x.example/zenek_fx/status/555']);",
+                  "});",
+                  "pm.test('BTC Justification is the Polish template text', () => {",
+                  "  pm.expect(byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').justification).to.equal(",
+                  "    'Adres podano w ogłoszeniu sprzedaży lub w kontekście rozliczenia (forum.example). ' +",
+                  "    'Niezależne źródła różnego pochodzenia (forum.example, x.example) wskazują na ten sam adres. ' +",
+                  "    'Adres łączy z badaną osobą tylko nick lub login, które mogą należeć do innej osoby.'",
+                  "  );",
+                  "});",
+                  "pm.test('ETH 0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed (canonical): an Excluded Address, or 75 with the same rules as BTC', () => {",
+                  "{",
+                  "  const attributed = body.attributions.filter((a) => a.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');",
+                  "  const excluded = body.excludedAddresses.filter((e) => e.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');",
+                  "  pm.expect(attributed.length + excluded.length, 'exactly one outcome').to.equal(1);",
+                  "  if (excluded.length) {",
+                  "    pm.expect(excluded[0].network).to.equal('ETH');",
+                  "    pm.expect(excluded[0].reason).to.equal('SMART_CONTRACT');",
+                  "    pm.expect(excluded[0].classificationSource).to.be.a('string').and.not.empty;",
+                  "    pm.expect(excluded[0].mentions.map((m) => m.url).sort()).to.eql(['https://forum.example/t/porady-p2p-od-zenka/123','https://x.example/zenek_fx/status/555']);",
+                  "  } else {",
+                  "    const a = attributed[0];",
+                  "    pm.expect(a.network).to.equal('ETH');",
+                  "    pm.expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);",
+                  "    // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence",
+                  "    const unavailable = a.classificationStatus === 'UNAVAILABLE';",
+                  "    const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];",
+                  "    const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';",
+                  "    if (unavailable) pm.expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');",
+                  "    pm.expect(a.confidenceLevel).to.equal(75);",
+                  "    pm.expect(a.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'INDEPENDENT_SOURCES', 'NICKNAME_ONLY'].concat(flagRules));",
+                  "  }",
+                  "}",
+                  "});",
+                  "pm.test('bech32 bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4: 60, one sale Mention only', () => {",
+                  "  const bech32 = byAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');",
+                  "  pm.expect(bech32.confidenceLevel).to.equal(60);",
+                  "  pm.expect(bech32.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'NICKNAME_ONLY']);",
+                  "  pm.expect(bech32.mentions.map((m) => m.url)).to.eql(['https://p2p.example/ad/987']);",
+                  "});",
+                  "pm.test('the exchange hot-wallet contract is an Excluded Address, or flagged UNAVAILABLE when its check failed', () => {",
+                  "{",
+                  "  const attributed = body.attributions.filter((a) => a.address === '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae');",
+                  "  const excluded = body.excludedAddresses.filter((e) => e.address === '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae');",
+                  "  pm.expect(attributed.length + excluded.length, 'exactly one outcome').to.equal(1);",
+                  "  if (excluded.length) {",
+                  "    pm.expect(excluded[0].network).to.equal('ETH');",
+                  "    pm.expect(excluded[0].reason).to.equal('SMART_CONTRACT');",
+                  "    pm.expect(excluded[0].classificationSource).to.be.a('string').and.not.empty;",
+                  "    pm.expect(excluded[0].mentions.map((m) => m.url).sort()).to.eql(['https://p2p.example/ad/987']);",
+                  "  } else {",
+                  "    const a = attributed[0];",
+                  "    pm.expect(a.network).to.equal('ETH');",
+                  "    pm.expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);",
+                  "    // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence",
+                  "    const unavailable = a.classificationStatus === 'UNAVAILABLE';",
+                  "    const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];",
+                  "    const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';",
+                  "    if (unavailable) pm.expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');",
+                  "    pm.expect(a.classificationStatus).to.equal('UNAVAILABLE');",
+                  "    pm.expect(a.confidenceLevel).to.equal(60);",
+                  "    pm.expect(a.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'NICKNAME_ONLY'].concat(flagRules));",
+                  "  }",
+                  "}",
+                  "});",
+                  "pm.test('every Attribution has a Justification and the Mentions it rests on', () => {",
+                  "  attributions.forEach((a) => {",
+                  "    pm.expect(a.justification).to.be.a('string').and.not.empty;",
+                  "    pm.expect(a.mentions).to.not.be.empty;",
+                  "  });",
+                  "});",
+                  "pm.test('limitations name the unavailable source and the incomplete Analysis', () => {",
+                  "  pm.expect(body.limitations).to.include.members(['SOURCE_UNAVAILABLE', 'ANALYSIS_INCOMPLETE']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{analysisId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{analysisId}}",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List the Mentions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('three Mentions with provenance', () => {",
+                  "  pm.expect(body).to.have.lengthOf(3);",
+                  "  body.forEach((m) => {",
+                  "    pm.expect(m.sourceName).to.equal('synthetic');",
+                  "    pm.expect(m.url).to.be.a('string').and.not.empty;",
+                  "    pm.expect(m.collectedAt).to.be.a('string');",
+                  "    pm.expect(m.context).to.include('zenek_fx');",
+                  "  });",
+                  "});",
+                  "pm.test('every detected address is validated', () => {",
+                  "  body.forEach((m) => m.detectedAddresses.forEach((d) => {",
+                  "    pm.expect(d.valid).to.equal(true);",
+                  "    pm.expect(d.network).to.be.oneOf(['BTC', 'ETH']);",
+                  "    pm.expect(d.validationFailure).to.equal(null);",
+                  "  }));",
+                  "});",
+                  "pm.test('the P2P ad yields bech32 and the contract, not the broken address', () => {",
+                  "  const ad = body.find((m) => m.url === 'https://p2p.example/ad/987');",
+                  "  pm.expect(ad.detectedAddresses.map((d) => d.address)).to.eql(['bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4', '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{analysisId}}/mentions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{analysisId}}",
+                "mentions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unknown Analysis is 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono analizy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/e2e-missing-analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "e2e-missing-analysis"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Report of an unknown Analysis is 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono analizy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/e2e-missing-analysis/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "e2e-missing-analysis",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mentions of an unknown Analysis are 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono analizy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/e2e-missing-analysis/mentions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "e2e-missing-analysis",
+                "mentions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Analysis of an unknown Case cannot start",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono sprawy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/e2e-missing-case/analyses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "e2e-missing-case",
+                "analyses"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Rerun and comparison",
+      "description": "A rerun is a new Analysis that never overwrites the earlier one; two finished Analyses of one Case compare by network and canonical address.",
+      "item": [
+        {
+          "name": "Rerun the Analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('laterAnalysisId', body.id);",
+                  "pm.test('202 Accepted', () => pm.expect(pm.response.code).to.equal(202));",
+                  "pm.test('a rerun is a new Analysis', () => pm.expect(body.id).to.not.equal(pm.collectionVariables.get('analysisId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/analyses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "analyses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Wait for the rerun to finish",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Polls the Analysis until it leaves RUNNING (at most 60 s); the request itself then reads the finished Analysis.",
+                  "const url = pm.variables.replaceIn('{{baseUrl}}/api/1/analyses/{{laterAnalysisId}}');",
+                  "const deadline = Date.now() + 60000;",
+                  "const poll = () => pm.sendRequest(url, (err, res) => {",
+                  "  if (!err && res.code === 200 && res.json().status === 'RUNNING' && Date.now() < deadline) setTimeout(poll, 500);",
+                  "});",
+                  "poll();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('the Analysis has finished as PARTIAL', () => {",
+                  "  pm.expect(body.status).to.equal('PARTIAL');",
+                  "  pm.expect(body.finishedAt).to.be.a('string');",
+                  "  pm.expect(body.trigger).to.equal('MANUAL');",
+                  "  pm.expect(body.networks).to.eql(['BTC', 'ETH']);",
+                  "  pm.expect(body.algorithmVersion).to.equal('confidence-1');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{laterAnalysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{laterAnalysisId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The earlier report is unchanged",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('reopening the earlier Analysis returns the same saved result', () => pm.expect(body).to.eql(JSON.parse(pm.collectionVariables.get('reportJson'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{analysisId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{analysisId}}",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Analysis history of the Case",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('both Analyses are kept, newest first', () => pm.expect(body.map((a) => a.id)).to.eql([pm.collectionVariables.get('laterAnalysisId'), pm.collectionVariables.get('analysisId')]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/analyses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "analyses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The Case shows the latest Analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('latestAnalysis is the rerun', () => {",
+                  "  pm.expect(body.latestAnalysis.id).to.equal(pm.collectionVariables.get('laterAnalysisId'));",
+                  "  pm.expect(body.latestAnalysis.status).to.equal('PARTIAL');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Compare the two Analyses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('compares the earlier with the later Analysis', () => {",
+                  "  pm.expect(body.earlierAnalysis.id).to.equal(pm.collectionVariables.get('analysisId'));",
+                  "  pm.expect(body.laterAnalysis.id).to.equal(pm.collectionVariables.get('laterAnalysisId'));",
+                  "});",
+                  "pm.test('partial Analyses are flagged as a comparability limitation', () => pm.expect(body.comparabilityLimitations).to.include('PARTIAL_ANALYSIS'));",
+                  "pm.test('the same input gives the same BTC Attributions: no change on BTC', () => {",
+                  "  pm.expect(body.changes).to.be.an('array');",
+                  "  pm.expect(body.changes.filter((c) => c.network === 'BTC')).to.eql([]);",
+                  "  body.changes.forEach((c) => pm.expect(c.change).to.be.oneOf(['NEW', 'NOT_OBSERVED', 'CONFIDENCE_LEVEL_CHANGED', 'EXCLUSION_CHANGED']));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/comparison?earlierAnalysisId={{analysisId}}&laterAnalysisId={{laterAnalysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "comparison"
+              ],
+              "query": [
+                {
+                  "key": "earlierAnalysisId",
+                  "value": "{{analysisId}}"
+                },
+                {
+                  "key": "laterAnalysisId",
+                  "value": "{{laterAnalysisId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Comparison in reversed order is rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('error body carries code 400 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(400);",
+                  "  pm.expect(body.message).to.equal('Analiza wcześniejsza musi rozpocząć się przed późniejszą.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/comparison?earlierAnalysisId={{laterAnalysisId}}&laterAnalysisId={{analysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "comparison"
+              ],
+              "query": [
+                {
+                  "key": "earlierAnalysisId",
+                  "value": "{{laterAnalysisId}}"
+                },
+                {
+                  "key": "laterAnalysisId",
+                  "value": "{{analysisId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Comparison with an unknown Analysis is 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono analizy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/comparison?earlierAnalysisId={{analysisId}}&laterAnalysisId=e2e-missing-analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "comparison"
+              ],
+              "query": [
+                {
+                  "key": "earlierAnalysisId",
+                  "value": "{{analysisId}}"
+                },
+                {
+                  "key": "laterAnalysisId",
+                  "value": "e2e-missing-analysis"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Analysis edge cases",
+      "description": "The Analyst's wallet is input, never evidence; an identifier nobody mentions finishes with no results, which is not a failure.",
+      "item": [
+        {
+          "name": "Start an Analysis of the wallet-only Case",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('walletAnalysisId', body.id);",
+                  "pm.test('202 Accepted', () => pm.expect(pm.response.code).to.equal(202));",
+                  "pm.test('the canonical wallet is among the identifiers used', () => pm.expect(body.identifiers.walletAddress).to.equal('0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{walletCaseId}}/analyses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{walletCaseId}}",
+                "analyses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Wait for the wallet Analysis to finish",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Polls the Analysis until it leaves RUNNING (at most 60 s); the request itself then reads the finished Analysis.",
+                  "const url = pm.variables.replaceIn('{{baseUrl}}/api/1/analyses/{{walletAnalysisId}}');",
+                  "const deadline = Date.now() + 60000;",
+                  "const poll = () => pm.sendRequest(url, (err, res) => {",
+                  "  if (!err && res.code === 200 && res.json().status === 'RUNNING' && Date.now() < deadline) setTimeout(poll, 500);",
+                  "});",
+                  "poll();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('the Analysis has finished as PARTIAL', () => {",
+                  "  pm.expect(body.status).to.equal('PARTIAL');",
+                  "  pm.expect(body.finishedAt).to.be.a('string');",
+                  "  pm.expect(body.trigger).to.equal('MANUAL');",
+                  "  pm.expect(body.networks).to.eql(['BTC', 'ETH']);",
+                  "  pm.expect(body.algorithmVersion).to.equal('confidence-1');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{walletAnalysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{walletAnalysisId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The wallet alone gives no Confidence Level",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "const byAddress = (address) => body.attributions.find((a) => a.address === address);",
+                  "pm.test('every Attribution is 0%: nothing links the address to the person', () => {",
+                  "  pm.expect(body.attributions).to.not.be.empty;",
+                  "  body.attributions.forEach((a) => {",
+                  "    pm.expect(a.confidenceLevel).to.equal(0);",
+                  "    pm.expect(a.scoringRules.map((r) => r.rule)).to.include('NO_PERSON_LINK');",
+                  "  });",
+                  "});",
+                  "pm.test('BTC 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa found next to the wallet gets no Confidence Level', () => {",
+                  "  pm.expect(byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').scoringRules.map((r) => r.rule)).to.eql(['NO_PERSON_LINK']);",
+                  "});",
+                  "pm.test(\"the Analyst's own wallet is marked as entered, not as evidence (unless excluded)\", () => {",
+                  "{",
+                  "  const attributed = body.attributions.filter((a) => a.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');",
+                  "  const excluded = body.excludedAddresses.filter((e) => e.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');",
+                  "  pm.expect(attributed.length + excluded.length, 'exactly one outcome').to.equal(1);",
+                  "  if (excluded.length) {",
+                  "    pm.expect(excluded[0].network).to.equal('ETH');",
+                  "    pm.expect(excluded[0].reason).to.equal('SMART_CONTRACT');",
+                  "    pm.expect(excluded[0].classificationSource).to.be.a('string').and.not.empty;",
+                  "    pm.expect(excluded[0].mentions.map((m) => m.url).sort()).to.eql(['https://forum.example/t/porady-p2p-od-zenka/123','https://x.example/zenek_fx/status/555']);",
+                  "  } else {",
+                  "    const a = attributed[0];",
+                  "    pm.expect(a.network).to.equal('ETH');",
+                  "    pm.expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);",
+                  "    // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence",
+                  "    const unavailable = a.classificationStatus === 'UNAVAILABLE';",
+                  "    const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];",
+                  "    const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';",
+                  "    if (unavailable) pm.expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');",
+                  "    pm.expect(a.scoringRules.map((r) => r.rule)).to.eql(['ENTERED_BY_ANALYST', 'NO_PERSON_LINK'].concat(flagRules));",
+                  "    pm.expect(a.justification).to.equal(",
+                  "      'Adres został wpisany przez analityka jako dane sprawy; samo wpisanie nie jest dowodem. ' +",
+                  "      'Żadna wzmianka nie łączy tego adresu z danymi badanej osoby.' + flagText",
+                  "    );",
+                  "  }",
+                  "}",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{walletAnalysisId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{walletAnalysisId}}",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Analyses of different Cases cannot be compared",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('error body carries code 400 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(400);",
+                  "  pm.expect(body.message).to.equal('Porównać można tylko analizy tej samej sprawy.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/comparison?earlierAnalysisId={{analysisId}}&laterAnalysisId={{walletAnalysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "comparison"
+              ],
+              "query": [
+                {
+                  "key": "earlierAnalysisId",
+                  "value": "{{analysisId}}"
+                },
+                {
+                  "key": "laterAnalysisId",
+                  "value": "{{walletAnalysisId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start an Analysis of the unmentioned Case",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('noResultsAnalysisId', body.id);",
+                  "pm.test('202 Accepted', () => pm.expect(pm.response.code).to.equal(202));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{noResultsCaseId}}/analyses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{noResultsCaseId}}",
+                "analyses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Wait for the no-results Analysis to finish",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Polls the Analysis until it leaves RUNNING (at most 60 s); the request itself then reads the finished Analysis.",
+                  "const url = pm.variables.replaceIn('{{baseUrl}}/api/1/analyses/{{noResultsAnalysisId}}');",
+                  "const deadline = Date.now() + 60000;",
+                  "const poll = () => pm.sendRequest(url, (err, res) => {",
+                  "  if (!err && res.code === 200 && res.json().status === 'RUNNING' && Date.now() < deadline) setTimeout(poll, 500);",
+                  "});",
+                  "poll();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('the Analysis has finished as PARTIAL', () => {",
+                  "  pm.expect(body.status).to.equal('PARTIAL');",
+                  "  pm.expect(body.finishedAt).to.be.a('string');",
+                  "  pm.expect(body.trigger).to.equal('MANUAL');",
+                  "  pm.expect(body.networks).to.eql(['BTC', 'ETH']);",
+                  "});",
+                  "pm.test('no results is not a failure: the source was checked and found nothing', () => {",
+                  "  const synthetic = body.sources.find((s) => s.sourceName === 'synthetic');",
+                  "  pm.expect(synthetic.status).to.equal('CHECKED');",
+                  "  pm.expect(synthetic.mentionCount).to.equal(0);",
+                  "  pm.expect(body.attributionCount).to.equal(0);",
+                  "  pm.expect(body.excludedAddressCount).to.equal(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{noResultsAnalysisId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{noResultsAnalysisId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The no-results report is empty with its limitations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('no Attributions, no Excluded Addresses', () => {",
+                  "  pm.expect(body.attributions).to.eql([]);",
+                  "  pm.expect(body.excludedAddresses).to.eql([]);",
+                  "});",
+                  "pm.test('limitations name the unavailable source only', () => pm.expect(body.limitations).to.eql(['SOURCE_UNAVAILABLE', 'ANALYSIS_INCOMPLETE']));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{noResultsAnalysisId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{noResultsAnalysisId}}",
+                "report"
+              ]
+            }
+          }
+        },
+        {
+          "name": "The no-results Analysis has no Mentions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('no Mentions', () => pm.expect(body).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/analyses/{{noResultsAnalysisId}}/mentions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "analyses",
+                "{{noResultsAnalysisId}}",
+                "mentions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Schedule",
+      "description": "One schedule per Case: off by default, daily 06:00 Europe/Warsaw when enabled, predefined cadences only. The suite leaves it disabled.",
+      "item": [
+        {
+          "name": "The schedule is off by default",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('disabled, no cadence, fixed zone', () => {",
+                  "  pm.expect(body).to.eql({ enabled: false, cadence: null, demo: false, timezone: 'Europe/Warsaw', nextExecutionAt: null, lastAttempt: null });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Enable the default daily schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('dailyNextExecutionAt', body.nextExecutionAt);",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "const warsaw = (iso) => {",
+                  "  const instant = new Date(iso);",
+                  "  const lastSunday = (month) => {",
+                  "    const day = new Date(Date.UTC(instant.getUTCFullYear(), month + 1, 0, 1));",
+                  "    day.setUTCDate(day.getUTCDate() - day.getUTCDay());",
+                  "    return day;",
+                  "  };",
+                  "  const offset = instant >= lastSunday(2) && instant < lastSunday(9) ? 2 : 1;",
+                  "  const local = new Date(instant.getTime() + offset * 3600000);",
+                  "  return { weekday: local.getUTCDay(), hour: local.getUTCHours(), minute: local.getUTCMinutes() };",
+                  "};",
+                  "pm.test('daily at 06:00 Europe/Warsaw, next execution in the future', () => {",
+                  "  pm.expect(body.enabled).to.equal(true);",
+                  "  pm.expect(body.cadence).to.equal('DAILY');",
+                  "  pm.expect(body.demo).to.equal(false);",
+                  "  pm.expect(new Date(body.nextExecutionAt).getTime()).to.be.above(Date.now());",
+                  "  const next = warsaw(body.nextExecutionAt);",
+                  "  pm.expect([next.hour, next.minute]).to.eql([6, 0]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Repeating the same cadence keeps the next execution",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('next execution unchanged', () => pm.expect(body.nextExecutionAt).to.equal(pm.collectionVariables.get('dailyNextExecutionAt')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"cadence\": \"DAILY\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Switch to the weekly cadence",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "const warsaw = (iso) => {",
+                  "  const instant = new Date(iso);",
+                  "  const lastSunday = (month) => {",
+                  "    const day = new Date(Date.UTC(instant.getUTCFullYear(), month + 1, 0, 1));",
+                  "    day.setUTCDate(day.getUTCDate() - day.getUTCDay());",
+                  "    return day;",
+                  "  };",
+                  "  const offset = instant >= lastSunday(2) && instant < lastSunday(9) ? 2 : 1;",
+                  "  const local = new Date(instant.getTime() + offset * 3600000);",
+                  "  return { weekday: local.getUTCDay(), hour: local.getUTCHours(), minute: local.getUTCMinutes() };",
+                  "};",
+                  "pm.test('weekly on Monday 06:00 Europe/Warsaw', () => {",
+                  "  pm.expect(body.cadence).to.equal('WEEKLY');",
+                  "  const next = warsaw(body.nextExecutionAt);",
+                  "  pm.expect([next.weekday, next.hour, next.minute]).to.eql([1, 6, 0]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"cadence\": \"WEEKLY\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Disable the schedule",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('disabled, cadence kept, no next execution', () => {",
+                  "  pm.expect(body.enabled).to.equal(false);",
+                  "  pm.expect(body.cadence).to.equal('WEEKLY');",
+                  "  pm.expect(body.nextExecutionAt).to.equal(null);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject an unknown cadence",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('the cadence field is reported', () => pm.expect(body.errors.map((e) => e.field)).to.eql(['cadence']));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"cadence\": \"EVERY_SECOND\"\n}"
+            }
+          }
+        },
+        {
+          "name": "The rejected update changed nothing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('still disabled and weekly', () => pm.expect([body.enabled, body.cadence]).to.eql([false, 'WEEKLY']));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}",
+                "schedule"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Schedule of an unknown Case is 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono sprawy o podanym identyfikatorze.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/e2e-missing-case/schedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "e2e-missing-case",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 API errors and CORS",
+      "description": "Every error is a JSON body with code and a Polish message; the public API allows any origin.",
+      "item": [
+        {
+          "name": "Unknown route is 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('404 Not Found', () => pm.expect(pm.response.code).to.equal(404));",
+                  "pm.test('error body carries code 404 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(404);",
+                  "  pm.expect(body.message).to.equal('Nie znaleziono zasobu.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/e2e-unknown-route",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "e2e-unknown-route"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Wrong HTTP method is 405",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('405 Method Not Allowed', () => pm.expect(pm.response.code).to.equal(405));",
+                  "pm.test('error body carries code 405 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(405);",
+                  "  pm.expect(body.message).to.equal('Ta operacja nie jest dostępna dla tego zasobu.');",
+                  "});",
+                  "pm.test('Allow header lists the supported methods', () => pm.expect(pm.response.headers.get('allow')).to.include('GET'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unsupported API version is 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('400 Bad Request', () => pm.expect(pm.response.code).to.equal(400));",
+                  "pm.test('error body carries code 400 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(400);",
+                  "  pm.expect(body.message).to.equal('Nieprawidłowe żądanie.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/2/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "2",
+                "cases"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Unsupported media type is 415",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('415 Unsupported Media Type', () => pm.expect(pm.response.code).to.equal(415));",
+                  "pm.test('error body carries code 415 and the Polish message', () => {",
+                  "  pm.expect(body.code).to.equal(415);",
+                  "  pm.expect(body.message).to.equal('Nieobsługiwany format danych.');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "nickname=zenek_fx"
+            }
+          }
+        },
+        {
+          "name": "CORS allows any origin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Access-Control-Allow-Origin is *', () => pm.expect(pm.response.headers.get('access-control-allow-origin')).to.equal('*'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "https://e2e.example"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/1/cases/{{caseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "1",
+                "cases",
+                "{{caseId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "caseId",
+      "value": ""
+    },
+    {
+      "key": "walletCaseId",
+      "value": ""
+    },
+    {
+      "key": "noResultsCaseId",
+      "value": ""
+    },
+    {
+      "key": "duplicateCaseId",
+      "value": ""
+    },
+    {
+      "key": "unknownEmail",
+      "value": ""
+    },
+    {
+      "key": "analysisId",
+      "value": ""
+    },
+    {
+      "key": "laterAnalysisId",
+      "value": ""
+    },
+    {
+      "key": "walletAnalysisId",
+      "value": ""
+    },
+    {
+      "key": "noResultsAnalysisId",
+      "value": ""
+    },
+    {
+      "key": "reportJson",
+      "value": ""
+    },
+    {
+      "key": "dailyNextExecutionAt",
+      "value": ""
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Unknown route is 404
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/1/e2e-unknown-route
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('404 Not Found', () => expect(res.getStatus()).to.equal(404));
+  test('error body carries code 404 and the Polish message', () => {
+    expect(body.code).to.equal(404);
+    expect(body.message).to.equal('Nie znaleziono zasobu.');
+  });
+}

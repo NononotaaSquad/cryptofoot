@@ -1,0 +1,20 @@
+meta {
+  name: Analysis of an unknown Case cannot start
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases/e2e-missing-case/analyses
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('404 Not Found', () => expect(res.getStatus()).to.equal(404));
+  test('error body carries code 404 and the Polish message', () => {
+    expect(body.code).to.equal(404);
+    expect(body.message).to.equal('Nie znaleziono sprawy o podanym identyfikatorze.');
+  });
+}

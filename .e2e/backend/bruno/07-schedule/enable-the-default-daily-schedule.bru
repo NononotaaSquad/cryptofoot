@@ -1,0 +1,50 @@
+meta {
+  name: Enable the default daily schedule
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/schedule
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "enabled": true
+  }
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('dailyNextExecutionAt', body.nextExecutionAt);
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  const warsaw = (iso) => {
+    const instant = new Date(iso);
+    const lastSunday = (month) => {
+      const day = new Date(Date.UTC(instant.getUTCFullYear(), month + 1, 0, 1));
+      day.setUTCDate(day.getUTCDate() - day.getUTCDay());
+      return day;
+    };
+    const offset = instant >= lastSunday(2) && instant < lastSunday(9) ? 2 : 1;
+    const local = new Date(instant.getTime() + offset * 3600000);
+    return { weekday: local.getUTCDay(), hour: local.getUTCHours(), minute: local.getUTCMinutes() };
+  };
+  test('daily at 06:00 Europe/Warsaw, next execution in the future', () => {
+    expect(body.enabled).to.equal(true);
+    expect(body.cadence).to.equal('DAILY');
+    expect(body.demo).to.equal(false);
+    expect(new Date(body.nextExecutionAt).getTime()).to.be.above(Date.now());
+    const next = warsaw(body.nextExecutionAt);
+    expect([next.hour, next.minute]).to.eql([6, 0]);
+  });
+}

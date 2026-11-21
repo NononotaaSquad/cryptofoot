@@ -78,10 +78,19 @@ data class AppliedRule(
     val contribution: Int,
 )
 
+data class ScoringInput(
+    val accepted: List<Candidate>,
+    val unclassified: List<Candidate>,
+    val mentions: List<FoundMention>,
+    val identifiers: List<CaseIdentifier>,
+)
+
 data class ScoredAttribution(
     val candidate: Candidate,
     val confidenceLevel: Int,
     val appliedRules: List<AppliedRule>,
+    // Analyses stored before algorithm confidence-1 have no Justification text
+    val justification: String = "",
     val classificationStatus: ClassificationStatus = ClassificationStatus.NOT_EXCLUDED,
 )
 
@@ -126,10 +135,7 @@ interface ExclusionClassifier {
 }
 
 interface ConfidenceScoring {
-    fun score(
-        candidates: List<Candidate>,
-        mentions: List<FoundMention>,
-    ): ScoringResult
+    fun score(input: ScoringInput): ScoringResult
 }
 
 interface AnalysisRecorder {
