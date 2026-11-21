@@ -74,6 +74,7 @@ data class MentionResponse(
     val collectedAt: Instant,
     val context: String?,
     val detectedAddresses: List<DetectedAddressResponse>,
+    val author: String?,
 )
 
 data class ScoringRuleContributionResponse(

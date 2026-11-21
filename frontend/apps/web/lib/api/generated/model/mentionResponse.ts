@@ -14,4 +14,6 @@ export interface MentionResponse {
   /** @nullable */
   context?: string | null;
   detectedAddresses?: DetectedAddressResponse[];
+  /** @nullable */
+  author?: string | null;
 }
