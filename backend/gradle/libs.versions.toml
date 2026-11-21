@@ -7,6 +7,7 @@ spotless = "8.11.0"
 ktlint = "1.8.0"
 spock = "2.5-groovy-5.0"
 bouncycastle = "1.81"
+jsoup = "1.21.2"
 
 [libraries]
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
@@ -24,6 +25,7 @@ springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openap
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

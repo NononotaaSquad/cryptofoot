@@ -8,7 +8,7 @@ import java.security.MessageDigest
 import java.time.Instant
 
 @Document("mentions")
-data class Mention(
+data class Mention @JvmOverloads constructor(
     @Id val id: String? = null,
     val sourceName: String,
     val url: String,
@@ -16,8 +16,9 @@ data class Mention(
     val context: String?,
     val detectedAddresses: List<String> = emptyList(),
     @Indexed val identity: String,
+    val author: String? = null,
 ) {
-    fun toFoundMention(): FoundMention = FoundMention(checkNotNull(id), sourceName, url, collectedAt, context, detectedAddresses)
+    fun toFoundMention(): FoundMention = FoundMention(checkNotNull(id), sourceName, url, collectedAt, context, detectedAddresses, author)
 
     companion object {
         @JvmStatic
@@ -32,12 +33,14 @@ data class Mention(
         }
 
         @JvmStatic
+        @JvmOverloads
         fun create(
             sourceName: String,
             url: String,
             collectedAt: Instant,
             context: String?,
             detectedAddresses: List<String> = emptyList(),
+            author: String? = null,
         ): Mention = Mention(
             sourceName = sourceName,
             url = url,
@@ -45,6 +48,7 @@ data class Mention(
             context = context,
             detectedAddresses = detectedAddresses,
             identity = computeIdentity(sourceName, url, context),
+            author = author,
         )
     }
 }

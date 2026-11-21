@@ -51,8 +51,11 @@ class SearchService(
         identifiers: List<CaseIdentifier>,
     ): Pair<SourceReport, List<RawMention>> = try {
         SourceReport(source.sourceName, SourceStatus.CHECKED, source.synthetic, Instant.now()) to source.findMentions(identifiers)
+    } catch (e: SourceNotCheckedException) {
+        logger.info("Source outcome source={} outcome=NOT_CHECKED reason={}", source.sourceName, e.message)
+        SourceReport(source.sourceName, SourceStatus.NOT_CHECKED, source.synthetic, null) to emptyList()
     } catch (e: Exception) {
-        logger.warn("Source outcome source={} outcome=ERROR", source.sourceName)
+        logger.warn("Source outcome source={} outcome=ERROR reason={}", source.sourceName, e.message)
         unavailable(source) to emptyList()
     }
 
@@ -79,13 +82,13 @@ class SearchService(
         identifiers: List<CaseIdentifier>,
         seenIdentities: MutableSet<String>,
     ): Mention? {
-        val match = findMatch(raw.content, identifiers) ?: return null
+        val match = findMatch(raw.content, identifiers) ?: findByProvenance(raw, identifiers) ?: return null
         val context = snippet(raw.content, match)
         val detectedAddresses = detector.detect("", context).map { it.rawAddress }
         val identity = Mention.computeIdentity(source.sourceName, raw.url, context)
         if (!seenIdentities.add(identity)) return null
         mentionRepository.findByIdentity(identity).firstOrNull()?.let { return it }
-        return mentionRepository.save(Mention.create(source.sourceName, raw.url, raw.collectedAt, context, detectedAddresses))
+        return mentionRepository.save(Mention.create(source.sourceName, raw.url, raw.collectedAt, context, detectedAddresses, raw.author))
     }
 
     private fun findMatch(
@@ -102,6 +105,41 @@ class SearchService(
         }
         return null
     }
+
+    // the source fetched this resource for the identifier (author or profile URL); only an address it publishes is evidence
+    private fun findByProvenance(
+        raw: RawMention,
+        identifiers: List<CaseIdentifier>,
+    ): Match? {
+        val owned =
+            identifiers.any {
+                val value = it.value.trim()
+                when (it.type) {
+                    IdentifierType.NICKNAME, IdentifierType.LOGIN -> value.isNotEmpty() && raw.author.equals(value.removePrefix("@"), ignoreCase = true)
+                    IdentifierType.PROFILE_URL -> value.isNotEmpty() && isUnder(raw.url, value)
+                    else -> false
+                }
+            }
+        if (!owned) return null
+        return detector.detect("", raw.content).firstOrNull()?.let { Match(raw.content.indexOf(it.rawAddress), it.rawAddress.length) }
+    }
+
+    private fun isUnder(
+        url: String,
+        profile: String,
+    ): Boolean {
+        val page = bare(url)
+        val prefix = bare(profile)
+        return page == prefix || listOf('/', '?', '#').any { page.startsWith("$prefix$it") }
+    }
+
+    private fun bare(url: String) = url
+        .trim()
+        .lowercase()
+        .removePrefix("https://")
+        .removePrefix("http://")
+        .removePrefix("www.")
+        .trimEnd('/')
 
     private fun findText(
         content: String,
