@@ -23,6 +23,7 @@ States and allowed transitions for each aggregate that has a lifecycle, with who
 - `COMPLETED`: every stage ran and nothing was unavailable. Zero Mentions from healthy sources is still `COMPLETED` ("no results").
 - `PARTIAL`: some sources or classifications were unavailable; the rest of the result is kept. Candidates with unavailable classification are still scored but their Attribution is flagged `classificationStatus = UNAVAILABLE` (D24-006).
 - `FAILED`: no usable Attributions can be produced (all sources unavailable, or the search, candidate preparation, exclusion or scoring module failed). Retained in history; never shown as an Analysis with zero findings.
+- Excluded Address classification (`backend/decisions/0003`): every valid address candidate is exactly one of accepted (goes to the Confidence Level algorithm), excluded (reason + classification source; never an Attribution) or unavailable (scored, flagged `UNAVAILABLE`). A confirmed exclusion is never inferred from a failed source.
 - Orchestration (#24) derives the status; storage of the Analysis (#25) is a separate responsibility.
 
 ## Relationships
