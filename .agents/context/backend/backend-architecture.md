@@ -88,6 +88,12 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 - **Negative:** None significant
 - **Location:** `squad.nononotaa.backend.exception.RestExceptionHandler`
 
+### Later ADRs
+
+ADRs from ADR-0005 on live in `decisions/`, one file each:
+- [ADR-0005: Address Validation and Canonical Form](decisions/0005-address-validation-and-canonical-form.md)
+- [ADR-0006: Input for the Confidence Level Algorithm](decisions/0006-confidence-level-input.md)
+
 ## Project Structure
 
 ```
