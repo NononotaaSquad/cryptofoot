@@ -101,3 +101,42 @@ export function StartAnalysisErrorDialog({
     </AlertDialog>
   );
 }
+
+interface PollingErrorDialogProps {
+  open: boolean;
+  error: unknown;
+  // Goes to the Case details; the dialog stays open until the page changes.
+  onConfirm: () => void;
+}
+
+// Checking the status of a started Analysis failed. The Analysis exists, so
+// the only way on is its Case: one button, no retry.
+export function PollingErrorDialog({
+  open,
+  error,
+  onConfirm,
+}: PollingErrorDialogProps) {
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onConfirm();
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Coś poszło nie tak</AlertDialogTitle>
+          <AlertDialogDescription>
+            {toUserMessage(error)} Analiza została rozpoczęta. Jej wynik
+            zobaczysz w szczegółach sprawy.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <Button size="xl" onClick={onConfirm}>
+            Rozumiem
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
