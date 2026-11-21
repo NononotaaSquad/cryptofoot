@@ -4,12 +4,13 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { ExcludedAddressResponseNetwork } from "./excludedAddressResponseNetwork";
 import type { ExcludedAddressResponseReason } from "./excludedAddressResponseReason";
 import type { MentionResponse } from "./mentionResponse";
 
 export interface ExcludedAddressResponse {
   address?: string;
-  network?: string;
+  network?: ExcludedAddressResponseNetwork;
   reason?: ExcludedAddressResponseReason;
   classificationSource?: string;
   justification?: MentionResponse[];

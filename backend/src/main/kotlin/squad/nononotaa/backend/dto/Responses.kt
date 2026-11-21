@@ -1,12 +1,14 @@
 package squad.nononotaa.backend.dto
 
 import squad.nononotaa.backend.model.AddressActivityEventType
+import squad.nononotaa.backend.model.AddressValidationFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
 import squad.nononotaa.backend.model.AttributionChangeType
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation
 import squad.nononotaa.backend.model.ExclusionReason
+import squad.nononotaa.backend.model.Network
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.ScheduleAttemptOutcome
 import squad.nononotaa.backend.model.SourceStatus
@@ -55,10 +57,12 @@ data class AnalysisResponse(
     val excludedAddressCount: Int?,
 )
 
+// TODO E2.2: fill network, valid and validationFailure from AddressValidator, never from the detection alone
 data class DetectedAddressResponse(
     val address: String,
-    val network: String?,
+    val network: Network?,
     val valid: Boolean,
+    val validationFailure: AddressValidationFailure?,
 )
 
 data class MentionResponse(
@@ -93,7 +97,7 @@ data class AddressActivityResponse(
 
 data class AttributionResponse(
     val address: String,
-    val network: String,
+    val network: Network,
     val confidenceLevel: Int,
     val classificationStatus: ClassificationStatus,
     val justification: List<MentionResponse>,
@@ -103,7 +107,7 @@ data class AttributionResponse(
 
 data class ExcludedAddressResponse(
     val address: String,
-    val network: String,
+    val network: Network,
     val reason: ExclusionReason,
     val classificationSource: String,
     val justification: List<MentionResponse>,
@@ -118,7 +122,7 @@ data class ReportResponse(
 
 data class AttributionChangeResponse(
     val address: String,
-    val network: String,
+    val network: Network,
     val change: AttributionChangeType,
     val earlierConfidenceLevel: Int?,
     val laterConfidenceLevel: Int?,

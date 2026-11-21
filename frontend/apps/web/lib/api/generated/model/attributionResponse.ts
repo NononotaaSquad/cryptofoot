@@ -6,12 +6,13 @@
  */
 import type { AddressActivityResponse } from "./addressActivityResponse";
 import type { AttributionResponseClassificationStatus } from "./attributionResponseClassificationStatus";
+import type { AttributionResponseNetwork } from "./attributionResponseNetwork";
 import type { MentionResponse } from "./mentionResponse";
 import type { ScoringRuleContributionResponse } from "./scoringRuleContributionResponse";
 
 export interface AttributionResponse {
   address?: string;
-  network?: string;
+  network?: AttributionResponseNetwork;
   confidenceLevel?: number;
   classificationStatus?: AttributionResponseClassificationStatus;
   justification?: MentionResponse[];

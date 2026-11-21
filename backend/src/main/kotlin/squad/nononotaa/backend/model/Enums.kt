@@ -19,3 +19,8 @@ enum class AttributionChangeType { NEW, NOT_OBSERVED, CONFIDENCE_LEVEL_CHANGED, 
 enum class ComparabilityLimitation { IDENTIFIERS_DIFFER, SOURCE_COVERAGE_DIFFERS, ALGORITHM_VERSION_DIFFERS, PARTIAL_ANALYSIS }
 
 enum class ScheduleAttemptOutcome { STARTED, SKIPPED_OVERLAP, FAILED }
+
+// TODO E7.1: cover exactly these networks in the demo fixtures; a new network needs a validator branch and api-sync
+enum class Network { BTC, ETH }
+
+enum class AddressValidationFailure { MALFORMED, CHECKSUM_MISMATCH, UNSUPPORTED_NETWORK, NETWORK_MISMATCH }

@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.kotlin.reflect)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.jackson.module.kotlin)
+    implementation(libs.bouncycastle.bcprov)
 }
 
 testing {
