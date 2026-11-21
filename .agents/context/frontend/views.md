@@ -125,7 +125,8 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
   - **Note:** "Powiązania są tropami do dalszej weryfikacji, a nie dowodami." above the Attributions; not shown when there are none.
   - **Attributions "Powiązania (N)":** a list sorted by Confidence Level, all rows collapsed on entry. A collapsed row is one line: address with the network below it, the Confidence Level, the number of Mentions, a chevron.
   - **Confidence Level indicator:** the percent in bold, the band label and a single-colour bar. Bands follow the challenge text: 80–100% "Bardzo wysokie prawdopodobieństwo", 60–79% "Prawdopodobny", 40–59% "Średni", 10–39% "Niski / szum".
-  - **Expanded Attribution** (frame "[STAN] Szczegóły sprawy – powiązanie rozwinięte"): three blocks stacked in one column, never side by side: "Uzasadnienie" (the Justification text), "Wzmianki (N)" (source name, link, collection time, quoted fragment) and "Aktywność adresu w sieci {network}" (volume, number of transactions, period, dated events). A cash-out signal is a plain line under its event: "Możliwe wyjście do walut tradycyjnych." The row has no badges, no small category labels, no scoring breakdown and no algorithm version.
+  - **Expanded Attribution** (frame "[STAN] Szczegóły sprawy – powiązanie rozwinięte"): three blocks stacked in one column, never side by side: "Uzasadnienie" (the Justification text), "Wzmianki (N)" (source name, link, collection time, quoted fragment) and "Aktywność adresu w sieci {network}" (volume, number of transactions, period, dated events). A cash-out signal is a plain line under its event: "Możliwe wyjście do walut tradycyjnych." The row has no badges, no small category labels and no algorithm version.
+  - **Scoring "Punktacja":** the first block of an expanded Attribution, directly under the row with the Confidence Level. Collapsed by default to one line with the text action "Rozwiń" (expanded: "Zwiń"; frame "[STAN] Szczegóły sprawy – punktacja rozwinięta"). Expanded, it lists one line per scoring component: a short name with the data that triggered it on the left ("Adres na własnym profilu osoby (GitHub)") and the points it added on the right ("80", "+15"). The last line, in bold, is "Stopień pewności" with the result ("95%"). Added on 2026-11-21 after the review against the challenge text (cheat sheet, step 4: "reguły punktacji").
   - **Justification:** shown only after the row is expanded. A short text from a template of the applied scoring rules, without numbers (see the glossary). The template wording is open (V13).
   - **No Address Activity data:** "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności."
   - **No Attributions** (frame "[STAN] Szczegóły sprawy – brak powiązań"): the heading "Powiązania (0)" and a grey block with "Nie znaleziono powiązań w sprawdzonych źródłach." and "Brak powiązań nie oznacza, że osoba nie ma adresów kryptowalut."
@@ -168,8 +169,26 @@ Deferred. Test seams are decided after the views are laid out in Pencil. The tes
 - Visual design details (colors, typography, components): see `kas-ui-ux/`.
 - Comparison of two Analyses (E6.3) and the schedule controls (E6.4): later phases, placed in the Case scope of Case details.
 - Print, PDF export and passing the report outside the application (E5-D2).
-- On Case details: the scoring breakdown (rule values, contributions) and the algorithm version. The team treats this as an MVP for the hackathon; the challenge text asks for "reguły punktacji", which the Justification text covers in words only.
+- On Case details: the algorithm version. The scoring breakdown is in scope since 2026-11-21 (block "Punktacja").
 - On the Case list: pagination, a sort control, filters by status and server-side search. The demo has a handful of Cases.
+
+## Deferred against the challenge text
+
+Result of the review of the Pencil views against `../domain/hacknation-2026-task/MF - Pełna Treść Zadania Konkursowego.md` on 2026-11-21. The lead decided to defer every point below on purpose; only the scoring breakdown was added. Each point names the part of the challenge text it falls short of, so that the team can defend it before the jury.
+
+| # | Deferred | Challenge text | State in the views |
+|---|---|---|---|
+| D1 | Periodic Analyses | §2 "cykliczne wykonywanie analiz" | No schedule view; only the word "Ręczna" in the Analysis select (E6.4). |
+| D2 | Comparing results and detecting a replaced address over time | §2 "porównywanie rezultatów"; §3 optional criterion | Analyses can be switched, but there is no view of differences (E6.3). |
+| D3 | Marking source facts, calculation results and conclusions that need verification | §7; judging criterion 3 | One general sentence, "Powiązania są tropami…"; the blocks are not labelled this way. |
+| D4 | Full name alone as input | §2 lists it as a sufficient identifier | The form rejects it (minimum data rule). |
+| D5 | Category of an Attribution | §3 "kategoryzować znalezione powiązania" | Only the Confidence Level band; the source kind appears in the "Punktacja" line and the Justification, not as a category. |
+| D6 | Cash-out signals | §3 Fiat Cash-Out | The signal is only on the transfer to an exchange, not on the swap to a stablecoin; no signal kind (P2P, payment gateway, card), no name or address of the counterparty; visible only after expanding the row. |
+| D7 | Evidence for Excluded Addresses | §3; cheat sheet steps 1 and 3 | No Mention (where found, URL, time); "Źródło klasyfikacji" is general, without the API tag (e.g. `Kraken: Hot Wallet`); no smart contract or mixer example. |
+| D8 | Metadata to reproduce an Analysis | Acceptance criteria | A Mention has URL, collection time and quote; search parameters, publication date of the post and the algorithm version are missing. |
+| D9 | Chronological description of the flow of funds | §7 | Two dated outgoing events; no incoming transfers, counterparties or full timeline. |
+| D10 | Verification of the address | §6 mandatory scenario | The report does not show that the address was verified (format, exists on the network, not a contract). |
+| D11 | Complete OSINT report as output | §7 | The report exists only on screen; print and export are out of scope (E5-D2). |
 
 ## Further Notes
 
