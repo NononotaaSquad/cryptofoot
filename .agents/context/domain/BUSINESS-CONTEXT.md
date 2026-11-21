@@ -54,6 +54,14 @@ _Avoid_: premises, explanation, AI narrative
 An address that must not be connected with a person (exchange, smart contract, mixer, fundraiser). It has a Confidence Level of 0% and a stated reason.
 _Avoid_: false positive, reject
 
+**Rejected Address** (PL: Adres odrzucony):
+Text in a Mention that looks like a cryptocurrency address but fails validation (bad format, bad checksum, unsupported or mismatched network). It is not an address at all, so it is neither an Attribution nor an Excluded Address.
+_Avoid_: invalid candidate, excluded (an Excluded Address is a valid address of a shared service)
+
+**Report Limitation** (PL: Ograniczenie raportu):
+A stated reason why the report of an Analysis may be incomplete (a source was unavailable, blockchain data or classification could not be fetched, the Analysis did not finish).
+_Avoid_: error, warning
+
 **Address Activity** (PL: Aktywność adresu):
 What an address from an Attribution did on the blockchain: volume, swaps, signals of exit to traditional currencies (Cash-Out).
 _Avoid_: indicators, metrics

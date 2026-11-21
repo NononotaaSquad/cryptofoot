@@ -157,6 +157,33 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 - **Language:** UI copy in Polish, addressing the Analyst as "Ty" with imperative verbs ("Rozpocznij", "Sprawdź"), as in the gov.pl materials. No technical terms.
 - **Accessibility:** target WCAG 2.1 AA (contrast 4.5:1 for text, keyboard operation, information not carried by color alone).
 
+## Report view against the real contract (2026-11-21, after backend #53)
+
+Decided by the lead in the grilling of 2026-11-21 against `frontend/apps/web/lib/api/openapi.json`. Where this section and Implementation Decisions differ, this section wins. The Case list (`/cases`) stays an empty page in this step.
+
+- **Start and wait:** "Rozpocznij analizę" calls `POST /cases`, then `POST /cases/{caseId}/analyses` (202, status `RUNNING`). The blocking loader polls `GET /analyses/{analysisId}` every 1.5 s while the status is `RUNNING`, then opens `/cases/{caseId}?analysis={analysisId}`, which reads `GET /analyses/{analysisId}/report`. "Rozpocznij nową analizę" does the same without `POST /cases`.
+- **Justification from rule codes:** the backend returns no Justification text (gap G4), only `scoringRules` (`rule`, `contribution`) and the Mentions in `justification`. The frontend maps each known rule code to a Polish sentence (Justification) and a Polish line label (Punktacja). An unknown code is shown as is, with its points. Known codes: `MENTIONED_WITH_IDENTIFIER` (base 40), `INDEPENDENT_SOURCES` (+15).
+- **Case Number hidden:** not in `CaseResponse` yet; issue #56. The Case header shows the label without the number until then.
+- **Reviewed state in the browser:** "Oznacz jako przejrzaną" and "Cofnij oznaczenie" stay; the state is stored in `localStorage` per Case until the backend holds it (V11). Known limit: it is per browser.
+- **Address Activity unavailable:** `addressActivity` is always null today (gap G7); the block shows the existing message "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności."
+- **Test data label:** each source in "Sprawdzone źródła" with `synthetic: true` gets the label "Dane testowe".
+- **Unchecked classification:** an Attribution with `classificationStatus: UNAVAILABLE` shows, in its collapsed row, "Nie sprawdzono, czy adres należy do serwisu (np. giełdy)."
+- **Report limitations:** each item of `limitations` is one Polish sentence in a warning list in the report summary.
+- **Address verification (closes D10):** an expanded Attribution gets the block "Weryfikacja adresu": format valid, network, result of the exchange and contract check (from `detectedAddresses` and `classificationStatus`).
+- **Failed and partial Analysis (closes V16 for the report):** `FAILED` shows the summary and, in place of the Attributions, a grey block "Analiza nie powiodła się" with the limitations. `PARTIAL` shows the full report with a warning in the summary.
+- **No new Pencil frames:** the new states (loader, `FAILED`, `PARTIAL`, "Weryfikacja adresu", Address Activity unavailable, "Dane testowe", limitations) are built from existing patterns (grey block, warning, label) without drawing them first.
+- **Status and trigger labels (closes V2):** `RUNNING` "W toku", `COMPLETED` "Zakończona", `PARTIAL` "Częściowa", `FAILED` "Nieudana"; `MANUAL` "Ręczna", `SCHEDULED` "Zaplanowana".
+- **Loader errors:** no time limit. A network error while polling closes the loader and shows a dialog with "Rozumiem", then opens Case details.
+- **Opening a running Analysis:** the summary with the badge "W toku" and the message "Analiza jeszcze trwa"; the report polls every 1.5 s in the background without blocking and refreshes itself when the Analysis ends.
+- **Address entered by the Analyst (gap G3):** when an Attribution's address equals the Case `walletAddress`, the row shows "Adres podany przy uruchomieniu analizy". A backend flag is a note for #9.
+- **Rejected addresses:** a collapsed section "Adresy odrzucone (N)" below Excluded Addresses, from `GET /analyses/{analysisId}/mentions`, entries with `valid: false`. Columns: address, reason (`MALFORMED` "Błędny format", `CHECKSUM_MISMATCH` "Błędna suma kontrolna", `UNSUPPORTED_NETWORK` "Nieobsługiwana sieć", `NETWORK_MISMATCH` "Niezgodna sieć"), source.
+- **Excluded Address evidence (D7, part):** a row expands to its Mentions (source name and link, no collection time). Reason labels: `EXCHANGE` "Adres giełdy kryptowalut", `SMART_CONTRACT` "Adres programu w sieci (smart kontrakt)", `MIXER` "Adres miksera", `FUNDRAISER` "Adres zbiórki publicznej". `classificationSource` is shown as returned.
+- **No Case counter:** the counter next to "Lista spraw" is removed in this step; it returns with the Case list.
+- **Address Activity figures:** "Łączny wolumen" = `totalReceived + totalSent` in `unit`; "Liczba transakcji" = `events.length`; "Okres" = earliest to latest `occurredAt`; events sorted by `occurredAt`; `CASH_OUT_SIGNAL` is its own event with the line "Możliwe wyjście do walut tradycyjnych."; `coverageLimitation` is a warning under the block. These figures are computed in one separate frontend module with a seam, so the backend can supply them later without changing the view.
+- **Scoring bands (Q13):** `provisional-1` gives only 40% or 55%; the gap is described for the team in #9. The frontend shows what the backend returns.
+- **Copy decided after the task review (Q28–Q44, 2026-11-21):** full list in `.agents/specs/2026-11-21_analysis-report/spec.md`. Polling error: "Utracono połączenie" / "Analiza może nadal trwać. Sprawdź jej wynik w szczegółach sprawy." / "Rozumiem". No Analysis: "Ta sprawa nie ma jeszcze analizy.". Unknown Analysis in the address: "Nie znaleziono tej analizy w sprawie." with "Pokaż najnowszą analizę". Partial: "Analiza zakończyła się częściowo. Raport może być niepełny.". Empty sections show "(0)" and "Nie znaleziono adresów wykluczonych." / "Nie znaleziono adresów odrzuconych.". Missing format check: "Brak danych o sprawdzeniu formatu adresu.". Below 40% is "Niski / szum".
+- **Source check time:** every source shows "· sprawdzono o HH:MM" from `checkedAt`; a source with `status: UNAVAILABLE` shows "· niedostępne" as a warning.
+
 ## Testing Decisions
 
 Deferred. Test seams are decided after the views are laid out in Pencil. The test scope of ADR-0010 applies.
@@ -208,7 +235,7 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 | V6 | Normalisation for the duplicate rule (e.g. case of e-mail, spaces at the ends). | Case owner (Maksym) |
 | V7 | Closed on 2026-11-21: the layout of the New case form is described in Implementation Decisions (Form layout). | Design work |
 | V8 | Closed on 2026-11-21: the Case contract accepts the wallet address (`walletAddress`, PR #52); the form takes one value per field (Implementation Decisions, One value per field). | Case owner (Maksym) |
-| V9 | The backend must assign a Case Number in the form year and sequence number (e.g. `2026/0006`) and return it with the Case. | Case owner (Maksym) |
+| V9 | The backend must assign a Case Number in the form year and sequence number (e.g. `2026/0006`) and return it with the Case. Issue #56. | Case owner (Maksym) |
 | V10 | The Case list response must carry, per Case: the status and date of the last Analysis, the number of its Attributions and its highest Confidence Level. Without the last two the column "Najwyższy stopień pewności", the highlight and the order of New Results cannot work. | Case owner (Maksym), Bohdan (Analysis) |
 | V11 | The Reviewed state must be saved on the server (the application has no login, so the browser cannot hold it), with an action to set it and to undo it, and it must reset when the next Analysis of the Case ends. Who owns it: Case or Analysis? | Maksym, Bohdan |
 | V12 | Measure the contrast of the tint variables added in Pencil against WCAG 2.1 AA (4.5:1 for text). | Design work |
