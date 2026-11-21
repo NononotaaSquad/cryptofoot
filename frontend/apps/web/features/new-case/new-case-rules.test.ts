@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { narrowingIdentifierKinds } from "@/lib/identifiers/identifier-kinds";
+
 import {
   type NewCaseFormValues,
   emptyNewCaseFormValues,
-  narrowingIdentifierKinds,
 } from "./identifier-fields";
 import { decideMinimumData } from "./new-case-rules";
 
