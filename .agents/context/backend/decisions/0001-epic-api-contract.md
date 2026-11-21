@@ -26,7 +26,7 @@ Define the whole contract first: controllers whose bodies are `TODO("<story>: ..
 - The report reads the saved Analysis only; it never reruns it (E5.4).
 - `Justification` is a list of `MentionResponse`, no text (E3).
 - `addressActivity` is nullable: E4 is on hold.
-- `network` is a free string until supported networks are decided.
+- `network` is a free string until supported networks are decided. *Superseded by [0002](0002-address-candidate-validation.md): enum `Network { BTC, ETH }`.*
 
 ## Open (contract will change)
 

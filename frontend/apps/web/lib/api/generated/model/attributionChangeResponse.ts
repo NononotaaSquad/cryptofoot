@@ -7,10 +7,11 @@
 import type { AttributionChangeResponseChange } from "./attributionChangeResponseChange";
 import type { AttributionChangeResponseEarlierExclusionReason } from "./attributionChangeResponseEarlierExclusionReason";
 import type { AttributionChangeResponseLaterExclusionReason } from "./attributionChangeResponseLaterExclusionReason";
+import type { AttributionChangeResponseNetwork } from "./attributionChangeResponseNetwork";
 
 export interface AttributionChangeResponse {
   address?: string;
-  network?: string;
+  network?: AttributionChangeResponseNetwork;
   change?: AttributionChangeResponseChange;
   /** @nullable */
   earlierConfidenceLevel?: number | null;

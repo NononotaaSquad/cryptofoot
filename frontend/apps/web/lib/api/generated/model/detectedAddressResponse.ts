@@ -4,10 +4,14 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { DetectedAddressResponseNetwork } from "./detectedAddressResponseNetwork";
+import type { DetectedAddressResponseValidationFailure } from "./detectedAddressResponseValidationFailure";
 
 export interface DetectedAddressResponse {
   address?: string;
   /** @nullable */
-  network?: string | null;
+  network?: DetectedAddressResponseNetwork;
   valid?: boolean;
+  /** @nullable */
+  validationFailure?: DetectedAddressResponseValidationFailure;
 }
