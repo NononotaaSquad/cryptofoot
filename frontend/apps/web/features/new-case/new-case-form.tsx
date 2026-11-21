@@ -1,15 +1,16 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { Button } from "@workspace/ui/components/button";
-import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { AnalysisLoader } from "@/lib/analysis-run/analysis-loader";
+import { PollingErrorDialog } from "@/lib/analysis-run/polling-error-dialog";
+import { StartAnalysisErrorDialog } from "@/lib/analysis-run/start-analysis-error-dialog";
+import { useAnalysisRun } from "@/lib/analysis-run/use-analysis-run";
 import { isApiError } from "@/lib/api/client";
 
-import { AnalysisLoader } from "./analysis-loader";
 import { IdentifierField } from "./identifier-field";
 import {
   type IdentifierFieldDefinition,
@@ -19,13 +20,8 @@ import {
   fullNameField,
   narrowingIdentifierFields,
 } from "./identifier-fields";
-import {
-  type ValidationProblem,
-  StartAnalysisErrorDialog,
-  ValidationDialog,
-} from "./new-case-dialogs";
-import { type NewCaseIdentifiers, decideMinimumData } from "./new-case-rules";
-import { startAnalysis } from "./start-analysis";
+import { type ValidationProblem, ValidationDialog } from "./new-case-dialogs";
+import { decideMinimumData } from "./new-case-rules";
 
 const formFieldDefinitions: readonly IdentifierFieldDefinition[] = [
   ...narrowingIdentifierFields,
@@ -36,11 +32,6 @@ const formFieldDefinitions: readonly IdentifierFieldDefinition[] = [
 function toFormFieldName(field: string): NewCaseFieldName | undefined {
   return formFieldDefinitions.find((definition) => definition.name === field)
     ?.name;
-}
-
-interface FailedStart {
-  error: unknown;
-  identifiers: NewCaseIdentifiers;
 }
 
 interface FieldGroupProps {
@@ -71,23 +62,16 @@ function FieldGroup({ id, heading, description, children }: FieldGroupProps) {
 }
 
 export function NewCaseForm() {
-  const router = useRouter();
   const { register, handleSubmit, reset, setError, clearErrors, formState } =
     useForm<NewCaseFormValues>({ defaultValues: emptyNewCaseFormValues });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [problem, setProblem] = useState<ValidationProblem>("empty");
   const [formErrors, setFormErrors] = useState<string[]>([]);
-  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-  // Kept after the pop-up closes, so its text does not change while the
-  // closing animation runs and "Spróbuj ponownie" has the identifiers.
-  const [failedStart, setFailedStart] = useState<FailedStart | null>(null);
 
-  const analysis = useMutation({
-    mutationFn: startAnalysis,
-    onSuccess: ({ caseId, analysisId }) => {
-      router.push(`/cases/${caseId}?analysis=${analysisId}`);
-    },
-    onError: (error, identifiers) => {
+  // A failed start keeps the typed values; a 400 puts its field errors next
+  // to their fields and the rest above the form.
+  const run = useAnalysisRun({
+    onStartError: (error) => {
       const unmatched: string[] = [];
       if (isApiError(error)) {
         for (const fieldError of error.fieldErrors) {
@@ -103,21 +87,12 @@ export function NewCaseForm() {
         }
       }
       setFormErrors(unmatched);
-      setFailedStart({ error, identifiers });
-      setErrorDialogOpen(true);
     },
   });
 
-  // After success the loader stays until the navigation unmounts this form,
-  // so the form does not flash back; the tab-close warning stops at once.
-  const analysisRunning = analysis.isPending || analysis.isSuccess;
-
-  const start = (identifiers: NewCaseIdentifiers) => {
-    // No second Analysis while one runs or while navigating to its Case.
-    if (analysisRunning) return;
+  const clearServerErrors = () => {
     clearErrors();
     setFormErrors([]);
-    analysis.mutate(identifiers);
   };
 
   const onSubmit = (values: NewCaseFormValues) => {
@@ -127,7 +102,8 @@ export function NewCaseForm() {
       setDialogOpen(true);
       return;
     }
-    start(decision.identifiers);
+    clearServerErrors();
+    run.startNewCase(decision.identifiers);
   };
 
   const renderField = (definition: IdentifierFieldDefinition) => (
@@ -208,20 +184,23 @@ export function NewCaseForm() {
       />
 
       <StartAnalysisErrorDialog
-        open={errorDialogOpen}
-        error={failedStart?.error}
-        onClose={() => {
-          setErrorDialogOpen(false);
-        }}
+        open={run.startErrorOpen}
+        error={run.startError}
+        onClose={run.closeStartError}
         onRetry={() => {
-          setErrorDialogOpen(false);
-          if (failedStart !== null) start(failedStart.identifiers);
+          clearServerErrors();
+          run.retryStart();
         }}
       />
 
+      <PollingErrorDialog
+        open={run.pollingFailed}
+        onConfirm={run.confirmPollingFailure}
+      />
+
       <AnalysisLoader
-        open={analysisRunning}
-        warnBeforeUnload={analysis.isPending}
+        open={run.isRunning}
+        warnBeforeUnload={run.warnBeforeUnload}
       />
     </>
   );
