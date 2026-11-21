@@ -4,7 +4,10 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { UpdateScheduleRequestCadence } from "./updateScheduleRequestCadence";
 
 export interface UpdateScheduleRequest {
   enabled?: boolean;
+  /** @nullable */
+  cadence?: UpdateScheduleRequestCadence;
 }

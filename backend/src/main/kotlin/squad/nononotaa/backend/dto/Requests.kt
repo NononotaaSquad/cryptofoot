@@ -2,6 +2,7 @@ package squad.nononotaa.backend.dto
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import squad.nononotaa.backend.model.SchedulePreset
 
 data class TestRequest(
     @field:NotBlank val name: String,
@@ -17,7 +18,7 @@ data class CreateCaseRequest(
     val fullName: String? = null,
 )
 
-// TODO E6.4: add cadence/timezone once E6-D3 is decided
 data class UpdateScheduleRequest(
     val enabled: Boolean,
+    val cadence: SchedulePreset? = null,
 )

@@ -23,7 +23,11 @@ class AnalysisRerunService(
     private val history: AnalysisHistoryService,
     private val executor: Executor,
 ) {
-    fun rerun(caseId: String): AnalysisResponse {
+    @JvmOverloads
+    fun rerun(
+        caseId: String,
+        trigger: AnalysisTrigger = AnalysisTrigger.MANUAL,
+    ): AnalysisResponse {
         val current =
             identifiers.currentIdentifiers(caseId) ?: run {
                 logger.warn("Rerun rejected: case not found case={}", caseId)
@@ -33,7 +37,7 @@ class AnalysisRerunService(
             logger.warn("Rerun rejected: an analysis is already running case={}", caseId)
             throw ConflictException("Analiza tej sprawy już trwa.")
         }
-        val request = AnalysisRequest(caseId, AnalysisTrigger.MANUAL, current)
+        val request = AnalysisRequest(caseId, trigger, current)
         val analysisId = orchestrator.start(request)
         executor.execute { execute(analysisId, request) }
         return history.get(analysisId)

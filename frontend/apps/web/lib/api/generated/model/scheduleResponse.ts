@@ -5,13 +5,14 @@
  * OpenAPI spec version: v0
  */
 import type { ScheduleAttemptResponse } from "./scheduleAttemptResponse";
+import type { ScheduleResponseCadence } from "./scheduleResponseCadence";
 
 export interface ScheduleResponse {
   enabled?: boolean;
   /** @nullable */
-  cadence?: string | null;
-  /** @nullable */
-  timezone?: string | null;
+  cadence?: ScheduleResponseCadence;
+  demo?: boolean;
+  timezone?: string;
   /** @nullable */
   nextExecutionAt?: string | null;
   lastAttempt?: ScheduleAttemptResponse | null;
