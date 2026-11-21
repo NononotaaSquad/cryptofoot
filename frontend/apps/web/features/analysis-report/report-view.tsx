@@ -22,6 +22,9 @@ import type {
   PersonIdentifiersResponse,
 } from "@/lib/api/generated/model";
 
+import { AttributionList } from "./attribution-list";
+import { ExcludedAddresses } from "./excluded-addresses";
+import { RejectedAddresses } from "./rejected-addresses";
 import { ReportSummary } from "./report-summary";
 import { toReportView } from "./report-view-model";
 
@@ -96,9 +99,23 @@ export function ReportView({
   return (
     <div className="flex flex-col gap-10">
       <ReportSummary view={view} />
-      {/* TASK 03 SLOT: the Attributions, Excluded and Rejected sections go
-          here, rendered from `view` (state "failed" renders none of them;
-          "noAttributions" renders the "Powiązania (0)" empty state). */}
+      {/* A failed Analysis shows only the summary with its grey block. */}
+      {view.state === "failed" ? null : (
+        <>
+          <AttributionList
+            heading={view.attributionsHeading}
+            attributions={view.attributions}
+          />
+          <ExcludedAddresses
+            heading={view.excludedHeading}
+            excludedAddresses={view.excludedAddresses}
+          />
+          <RejectedAddresses
+            heading={view.rejectedHeading}
+            rejectedAddresses={view.rejectedAddresses}
+          />
+        </>
+      )}
     </div>
   );
 }

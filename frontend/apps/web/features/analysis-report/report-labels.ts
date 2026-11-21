@@ -1,11 +1,15 @@
 import type {
+  AddressActivityEventResponseType,
   AnalysisResponseStatus,
   AnalysisResponseTrigger,
+  DetectedAddressResponseValidationFailure,
+  ExcludedAddressResponseReason,
   ReportResponseLimitationsItem,
 } from "@/lib/api/generated/model";
 
-// Every code -> Polish text map of the report (Q27). Task 03 adds the
-// Confidence Level bands, Excluded and Rejected reasons and scoring rules here.
+// Every code -> Polish text map of the report (Q27). Lookups that take a plain
+// string do so because the backend may send a code newer than the generated
+// client; such a code is shown as is, never hidden.
 
 export const analysisStatusLabels: Record<AnalysisResponseStatus, string> = {
   RUNNING: "W toku",
@@ -37,15 +41,16 @@ const reportLimitationSentences: Record<ReportResponseLimitationsItem, string> =
  * be shown, not hidden.
  */
 export function reportLimitationSentence(code: string): string {
-  return isKnownReportLimitation(code)
+  return isKnownCode(reportLimitationSentences, code)
     ? reportLimitationSentences[code]
     : `Raport może być niepełny (kod: ${code}).`;
 }
 
-function isKnownReportLimitation(
+function isKnownCode<T extends object>(
+  map: T,
   code: string
-): code is ReportResponseLimitationsItem {
-  return Object.prototype.hasOwnProperty.call(reportLimitationSentences, code);
+): code is Extract<keyof T, string> {
+  return Object.prototype.hasOwnProperty.call(map, code);
 }
 
 export const reportNotices = {
@@ -58,6 +63,109 @@ export const sourceLabels = {
   testData: "Dane testowe",
   unavailable: "· niedostępne",
   checkedAt: (time: string) => `· sprawdzono o ${time}`,
+} as const;
+
+/** Q39: every level below 40% is "Niski / szum". */
+export function confidenceBandLabel(level: number): string {
+  if (level >= 80) return "Bardzo wysokie prawdopodobieństwo";
+  if (level >= 60) return "Prawdopodobny";
+  if (level >= 40) return "Średni";
+  return "Niski / szum";
+}
+
+// Known codes of the scoring version `provisional-1`.
+const scoringRules = {
+  MENTIONED_WITH_IDENTIFIER: {
+    label: "Adres przy identyfikatorze osoby",
+    justification:
+      "Adres pojawił się w źródle razem z identyfikatorem tej osoby.",
+  },
+  INDEPENDENT_SOURCES: {
+    label: "Potwierdzenie w niezależnych źródłach",
+    justification:
+      "Adres pojawił się także w innych, niezależnych źródłach o różnej treści.",
+  },
+};
+
+/** Punktacja label and Justification sentence; `null` for an unknown code. */
+export function scoringRule(
+  code: string
+): { label: string; justification: string } | null {
+  return isKnownCode(scoringRules, code) ? scoringRules[code] : null;
+}
+
+export const attributionLabels = {
+  inputAddress: "Adres podany przy uruchomieniu analizy",
+  classificationUnavailable:
+    "Nie sprawdzono, czy adres należy do serwisu (np. giełdy).",
+  notExcluded:
+    "Adres nie należy do znanego serwisu (giełdy, smart kontraktu, miksera, zbiórki).",
+  validFormat: "Poprawny format adresu",
+  noFormatCheck: "Brak danych o sprawdzeniu formatu adresu.",
+  network: (network: string) => `Sieć: ${network}`,
+  confidenceTotal: "Stopień pewności",
+} as const;
+
+const mentionPlural = new Intl.PluralRules("pl-PL");
+const mentionNouns: Partial<Record<Intl.LDMLPluralRule, string>> = {
+  one: "wzmianka",
+  few: "wzmianki",
+  many: "wzmianek",
+};
+
+/** "1 wzmianka", "2 wzmianki", "5 wzmianek". */
+export function mentionCountText(count: number): string {
+  const noun = mentionNouns[mentionPlural.select(count)] ?? "wzmianki";
+  return `${String(count)} ${noun}`;
+}
+
+const excludedReasonLabels: Record<ExcludedAddressResponseReason, string> = {
+  EXCHANGE: "Adres giełdy kryptowalut",
+  SMART_CONTRACT: "Adres programu w sieci (smart kontrakt)",
+  MIXER: "Adres miksera",
+  FUNDRAISER: "Adres zbiórki publicznej",
+};
+
+export function excludedReasonLabel(code: string): string {
+  return isKnownCode(excludedReasonLabels, code)
+    ? excludedReasonLabels[code]
+    : code;
+}
+
+const rejectedReasonLabels: Record<
+  NonNullable<DetectedAddressResponseValidationFailure>,
+  string
+> = {
+  MALFORMED: "Błędny format",
+  CHECKSUM_MISMATCH: "Błędna suma kontrolna",
+  UNSUPPORTED_NETWORK: "Nieobsługiwana sieć",
+  NETWORK_MISMATCH: "Niezgodna sieć",
+};
+
+export function rejectedReasonLabel(code: string): string {
+  return isKnownCode(rejectedReasonLabels, code)
+    ? rejectedReasonLabels[code]
+    : code;
+}
+
+const activityEventLabels: Record<AddressActivityEventResponseType, string> = {
+  RECEIVED: "Otrzymano",
+  SENT: "Wysłano",
+  SWAP: "Zamiana",
+  CASH_OUT_SIGNAL: "Sygnał wyjścia",
+};
+
+export function activityEventLabel(code: string): string {
+  return isKnownCode(activityEventLabels, code)
+    ? activityEventLabels[code]
+    : code;
+}
+
+export const activityLabels = {
+  noData:
+    "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności.",
+  cashOut: "Możliwe wyjście do walut tradycyjnych.",
+  unknownVolume: "Nieznany",
 } as const;
 
 // Q44: `Intl` pl-PL. The zone is fixed to Europe/Warsaw so the report reads
@@ -85,4 +193,25 @@ export function formatDateTime(isoInstant: string): string {
 /** "14:32" from an ISO instant. */
 export function formatTime(isoInstant: string): string {
   return timeFormat.format(new Date(isoInstant));
+}
+
+const monthFormat = new Intl.DateTimeFormat("pl-PL", {
+  month: "2-digit",
+  year: "numeric",
+  timeZone: "Europe/Warsaw",
+});
+
+/** "03.2025" from an ISO instant. */
+export function formatMonth(isoInstant: string): string {
+  return monthFormat.format(new Date(isoInstant));
+}
+
+const amountFormat = new Intl.NumberFormat("pl-PL", {
+  maximumFractionDigits: 8,
+});
+
+/** "2,41 BTC": decimal comma, up to 8 decimals, no trailing zeros. */
+export function formatAmount(amount: number, unit: string | null): string {
+  const text = amountFormat.format(amount);
+  return unit === null ? text : `${text} ${unit}`;
 }

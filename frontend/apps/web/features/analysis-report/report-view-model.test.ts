@@ -5,6 +5,11 @@ import {
   AnalysisResponseStatus,
   AnalysisResponseTrigger,
   type AttributionResponse,
+  type DetectedAddressResponse,
+  DetectedAddressResponseValidationFailure,
+  type ExcludedAddressResponse,
+  ExcludedAddressResponseReason,
+  type MentionResponse,
   type PersonIdentifiersResponse,
   type ReportResponse,
   ReportResponseLimitationsItem,
@@ -230,5 +235,430 @@ describe("toReportView state", () => {
 
   it("is noAttributions when a completed report has none", () => {
     expect(view({ attributions: [] }).state).toBe("noAttributions");
+  });
+});
+
+const BTC_ADDRESS = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa";
+const ETH_ADDRESS = "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed";
+const ETH_ADDRESS_EIP55 = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+
+function detected(values: Partial<DetectedAddressResponse> = {}) {
+  return {
+    address: BTC_ADDRESS,
+    network: "BTC",
+    valid: true,
+    validationFailure: null,
+    ...values,
+  } satisfies DetectedAddressResponse;
+}
+
+function mention(values: Partial<MentionResponse> = {}) {
+  return {
+    id: "mention-1",
+    sourceName: "forum.example",
+    url: "https://forum.example/t/1",
+    collectedAt: "2026-11-21T13:33:00Z",
+    context: "mój adres to 1A1z…",
+    detectedAddresses: [detected()],
+    ...values,
+  } satisfies MentionResponse;
+}
+
+function excluded(values: Partial<ExcludedAddressResponse> = {}) {
+  return {
+    address: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    network: "ETH",
+    reason: "SMART_CONTRACT",
+    classificationSource: "Etherscan",
+    justification: [mention({ id: "m-x", sourceName: "x.example" })],
+    ...values,
+  } satisfies ExcludedAddressResponse;
+}
+
+function attributionsOf(
+  attributions: AttributionResponse[],
+  identifiers: PersonIdentifiersResponse = caseIdentifiers
+) {
+  return toReportView(report({ attributions }), [], identifiers).attributions;
+}
+
+function onlyAttribution(
+  values: Partial<AttributionResponse>,
+  identifiers?: PersonIdentifiersResponse
+) {
+  const [first] = attributionsOf([attribution(values)], identifiers);
+  if (first === undefined) throw new Error("expected one Attribution");
+  return first;
+}
+
+const knownRules = [
+  { rule: "MENTIONED_WITH_IDENTIFIER", contribution: 40 },
+  { rule: "INDEPENDENT_SOURCES", contribution: 15 },
+];
+
+describe("toReportView Attributions", () => {
+  it.each([
+    [100, "Bardzo wysokie prawdopodobieństwo"],
+    [80, "Bardzo wysokie prawdopodobieństwo"],
+    [79, "Prawdopodobny"],
+    [60, "Prawdopodobny"],
+    [59, "Średni"],
+    [40, "Średni"],
+    [39, "Niski / szum"],
+    [10, "Niski / szum"],
+    [0, "Niski / szum"],
+  ])("labels the Confidence Level %i as %s", (confidenceLevel, bandLabel) => {
+    expect(onlyAttribution({ confidenceLevel }).confidence).toEqual({
+      percent: confidenceLevel,
+      text: `${String(confidenceLevel)}%`,
+      bandLabel,
+    });
+  });
+
+  it("sorts by Confidence Level descending, then by address", () => {
+    const sorted = attributionsOf([
+      attribution({ address: "bc1qzzz", confidenceLevel: 40 }),
+      attribution({ address: "bc1qbbb", confidenceLevel: 55 }),
+      attribution({ address: "bc1qaaa", confidenceLevel: 55 }),
+    ]);
+
+    expect(sorted.map((a) => a.address)).toEqual([
+      "bc1qaaa",
+      "bc1qbbb",
+      "bc1qzzz",
+    ]);
+  });
+
+  it("writes one Punktacja line per rule with the Mentions' source names and the total", () => {
+    const result = onlyAttribution({
+      confidenceLevel: 55,
+      scoringRules: knownRules,
+      justification: [
+        mention({ id: "1", sourceName: "forum.example" }),
+        mention({ id: "2", sourceName: "x.example" }),
+        mention({ id: "3", sourceName: "forum.example" }),
+      ],
+    });
+
+    expect(result.scoringLines).toEqual([
+      {
+        label: "Adres przy identyfikatorze osoby (forum.example, x.example)",
+        points: "40",
+      },
+      {
+        label:
+          "Potwierdzenie w niezależnych źródłach (forum.example, x.example)",
+        points: "+15",
+      },
+    ]);
+    expect(result.confidenceTotal).toBe("55%");
+  });
+
+  it("shows an unknown rule code as is with its points", () => {
+    const result = onlyAttribution({
+      scoringRules: [...knownRules, { rule: "NEW_RULE", contribution: 5 }],
+    });
+
+    expect(result.scoringLines[2]).toEqual({ label: "NEW_RULE", points: "+5" });
+  });
+
+  it("writes one Justification sentence per known rule and none for an unknown one", () => {
+    const result = onlyAttribution({
+      scoringRules: [...knownRules, { rule: "NEW_RULE", contribution: 5 }],
+    });
+
+    expect(result.justification).toEqual([
+      "Adres pojawił się w źródle razem z identyfikatorem tej osoby.",
+      "Adres pojawił się także w innych, niezależnych źródłach o różnej treści.",
+    ]);
+    for (const sentence of result.justification) {
+      expect(sentence).not.toMatch(/\d/);
+    }
+  });
+
+  it("warns when the classification is UNAVAILABLE", () => {
+    expect(
+      onlyAttribution({ classificationStatus: "UNAVAILABLE" })
+        .classificationWarning
+    ).toBe("Nie sprawdzono, czy adres należy do serwisu (np. giełdy).");
+  });
+
+  it("does not warn when the address is NOT_EXCLUDED", () => {
+    expect(
+      onlyAttribution({ classificationStatus: "NOT_EXCLUDED" })
+        .classificationWarning
+    ).toBe(null);
+  });
+
+  it("flags the address entered in the Case", () => {
+    expect(
+      onlyAttribution({ address: BTC_ADDRESS }, { walletAddress: BTC_ADDRESS })
+        .inputAddressNote
+    ).toBe("Adres podany przy uruchomieniu analizy");
+  });
+
+  it("flags an ETH address that differs only in letter case", () => {
+    expect(
+      onlyAttribution(
+        { address: ETH_ADDRESS, network: "ETH" },
+        { walletAddress: ETH_ADDRESS_EIP55 }
+      ).inputAddressNote
+    ).toBe("Adres podany przy uruchomieniu analizy");
+  });
+
+  it("keeps a Base58 address case-sensitive and does not flag another address", () => {
+    expect(
+      onlyAttribution(
+        { address: BTC_ADDRESS },
+        { walletAddress: BTC_ADDRESS.toLowerCase() }
+      ).inputAddressNote
+    ).toBe(null);
+    expect(
+      onlyAttribution({ address: BTC_ADDRESS }, { nickname: "krypto_janek" })
+        .inputAddressNote
+    ).toBe(null);
+  });
+
+  it("verifies the address of a NOT_EXCLUDED Attribution", () => {
+    const result = onlyAttribution({
+      address: ETH_ADDRESS,
+      network: "ETH",
+      classificationStatus: "NOT_EXCLUDED",
+      justification: [
+        mention({
+          detectedAddresses: [
+            detected({ address: ETH_ADDRESS_EIP55, network: "ETH" }),
+          ],
+        }),
+      ],
+    });
+
+    expect(result.verification).toEqual([
+      { text: "Poprawny format adresu", ok: true },
+      { text: "Sieć: ETH", ok: true },
+      {
+        text: "Adres nie należy do znanego serwisu (giełdy, smart kontraktu, miksera, zbiórki).",
+        ok: true,
+      },
+    ]);
+  });
+
+  it("verifies the address of an UNAVAILABLE Attribution", () => {
+    const result = onlyAttribution({
+      address: BTC_ADDRESS,
+      classificationStatus: "UNAVAILABLE",
+      justification: [mention()],
+    });
+
+    expect(result.verification).toEqual([
+      { text: "Poprawny format adresu", ok: true },
+      { text: "Sieć: BTC", ok: true },
+      {
+        text: "Nie sprawdzono, czy adres należy do serwisu (np. giełdy).",
+        ok: false,
+      },
+    ]);
+  });
+
+  it("says the format check is missing when no detected address matches", () => {
+    const result = onlyAttribution({
+      address: BTC_ADDRESS,
+      justification: [
+        mention({ detectedAddresses: [detected({ address: "bc1qother" })] }),
+      ],
+    });
+
+    expect(result.verification[0]).toEqual({
+      text: "Brak danych o sprawdzeniu formatu adresu.",
+      ok: false,
+    });
+    expect(result.verification).toHaveLength(3);
+  });
+
+  it("lists the Mentions with source, link, collection time and fragment", () => {
+    const result = onlyAttribution({
+      justification: [mention(), mention({ id: "m-2", context: null })],
+    });
+
+    expect(result.mentionsHeading).toBe("Wzmianki (2)");
+    expect(result.mentionCountText).toBe("2 wzmianki");
+    expect(result.mentions[0]).toEqual({
+      key: "mention-1",
+      sourceName: "forum.example",
+      url: "https://forum.example/t/1",
+      urlText: "https://forum.example/t/1",
+      collectedAt: "21.11.2026, 14:33",
+      context: "mój adres to 1A1z…",
+    });
+    expect(result.mentions[1]?.context).toBe(null);
+  });
+
+  it("never makes a link of a non-http address", () => {
+    const result = onlyAttribution({
+      justification: [mention({ url: "javascript:alert(1)" })],
+    });
+
+    expect(result.mentions[0]?.url).toBe(null);
+  });
+
+  it("names the network in the activity heading and has no activity data for null", () => {
+    const result = onlyAttribution({ network: "ETH", addressActivity: null });
+
+    expect(result.activityHeading).toBe("Aktywność adresu w sieci ETH");
+    expect(result.activity.available).toBe(false);
+  });
+
+  it("gives the Powiązania (0) state without Attributions", () => {
+    const result = view({ attributions: [] });
+
+    expect(result.state).toBe("noAttributions");
+    expect(result.attributionsHeading).toBe("Powiązania (0)");
+    expect(result.attributions).toEqual([]);
+  });
+
+  it("counts the Attributions in the heading", () => {
+    expect(
+      view({
+        attributions: [
+          attribution({ address: "bc1qa" }),
+          attribution({ address: "bc1qb" }),
+        ],
+      }).attributionsHeading
+    ).toBe("Powiązania (2)");
+  });
+});
+
+describe("toReportView Excluded Addresses", () => {
+  it.each([
+    [ExcludedAddressResponseReason.EXCHANGE, "Adres giełdy kryptowalut"],
+    [
+      ExcludedAddressResponseReason.SMART_CONTRACT,
+      "Adres programu w sieci (smart kontrakt)",
+    ],
+    [ExcludedAddressResponseReason.MIXER, "Adres miksera"],
+    [ExcludedAddressResponseReason.FUNDRAISER, "Adres zbiórki publicznej"],
+  ])("labels the reason %s as %s, with its Mentions", (reason, reasonLabel) => {
+    const result = view({ excludedAddresses: [excluded({ reason })] });
+
+    expect(result.excludedHeading).toBe("Adresy wykluczone (1)");
+    expect(result.excludedAddresses).toEqual([
+      {
+        key: "ETH:0xdac17f958d2ee523a2206206994597c13d831ec7",
+        address: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+        network: "ETH",
+        reasonLabel,
+        classificationSource: "Etherscan",
+        mentions: [
+          expect.objectContaining({
+            sourceName: "x.example",
+            url: "https://forum.example/t/1",
+          }),
+        ],
+      },
+    ]);
+  });
+
+  it("has an empty section with a zero count", () => {
+    expect(view({ excludedAddresses: [] }).excludedHeading).toBe(
+      "Adresy wykluczone (0)"
+    );
+  });
+});
+
+describe("toReportView Rejected Addresses", () => {
+  function rejectedOf(mentions: MentionResponse[]) {
+    return toReportView(report(), mentions, caseIdentifiers);
+  }
+
+  it("takes only invalid detected addresses", () => {
+    const result = rejectedOf([
+      mention({
+        detectedAddresses: [
+          detected(),
+          detected({
+            address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfN0",
+            valid: false,
+            validationFailure: "CHECKSUM_MISMATCH",
+          }),
+        ],
+      }),
+    ]);
+
+    expect(result.rejectedHeading).toBe("Adresy odrzucone (1)");
+    expect(result.rejectedAddresses).toEqual([
+      {
+        key: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfN0|CHECKSUM_MISMATCH",
+        address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfN0",
+        reasonLabel: "Błędna suma kontrolna",
+        sourceNames: "forum.example",
+      },
+    ]);
+  });
+
+  it.each([
+    [DetectedAddressResponseValidationFailure.MALFORMED, "Błędny format"],
+    [
+      DetectedAddressResponseValidationFailure.CHECKSUM_MISMATCH,
+      "Błędna suma kontrolna",
+    ],
+    [
+      DetectedAddressResponseValidationFailure.UNSUPPORTED_NETWORK,
+      "Nieobsługiwana sieć",
+    ],
+    [
+      DetectedAddressResponseValidationFailure.NETWORK_MISMATCH,
+      "Niezgodna sieć",
+    ],
+  ])("labels the reason %s as %s", (validationFailure, reasonLabel) => {
+    const [rejected] = rejectedOf([
+      mention({
+        detectedAddresses: [
+          detected({ address: "bad", valid: false, validationFailure }),
+        ],
+      }),
+    ]).rejectedAddresses;
+
+    expect(rejected?.reasonLabel).toBe(reasonLabel);
+  });
+
+  it("de-duplicates by address and reason and lists every source name", () => {
+    const bad = (validationFailure: DetectedAddressResponseValidationFailure) =>
+      detected({ address: "0xBAD", valid: false, validationFailure });
+    const result = rejectedOf([
+      mention({
+        id: "1",
+        sourceName: "forum.example",
+        detectedAddresses: [bad("MALFORMED")],
+      }),
+      mention({
+        id: "2",
+        sourceName: "x.example",
+        detectedAddresses: [bad("MALFORMED")],
+      }),
+      mention({
+        id: "3",
+        sourceName: "forum.example",
+        detectedAddresses: [bad("MALFORMED")],
+      }),
+      mention({
+        id: "4",
+        sourceName: "p2p.example",
+        detectedAddresses: [bad("NETWORK_MISMATCH")],
+      }),
+    ]);
+
+    expect(
+      result.rejectedAddresses.map((r) => [r.reasonLabel, r.sourceNames])
+    ).toEqual([
+      ["Błędny format", "forum.example, x.example"],
+      ["Niezgodna sieć", "p2p.example"],
+    ]);
+  });
+
+  it("has an empty section with a zero count", () => {
+    const result = rejectedOf([mention()]);
+
+    expect(result.rejectedHeading).toBe("Adresy odrzucone (0)");
+    expect(result.rejectedAddresses).toEqual([]);
   });
 });
