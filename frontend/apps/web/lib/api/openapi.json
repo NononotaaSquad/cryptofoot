@@ -11,6 +11,74 @@
     }
   ],
   "paths": {
+    "/api/1/cases/{caseId}/schedule": {
+      "get": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "getSchedule",
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "updateSchedule",
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScheduleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/1/test": {
       "get": {
         "tags": [
@@ -58,10 +126,359 @@
           }
         }
       }
+    },
+    "/api/1/cases": {
+      "get": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "listCases",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CaseResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "createCase",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/1/cases/{caseId}/analyses": {
+      "get": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "listAnalyses",
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnalysisResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "startAnalysis",
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/1/cases/{caseId}": {
+      "get": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "getCase",
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/1/cases/{caseId}/comparison": {
+      "get": {
+        "tags": [
+          "case-controller"
+        ],
+        "operationId": "compareAnalyses",
+        "parameters": [
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "earlierAnalysisId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "laterAnalysisId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisComparisonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/1/analyses/{analysisId}": {
+      "get": {
+        "tags": [
+          "analysis-controller"
+        ],
+        "operationId": "getAnalysis",
+        "parameters": [
+          {
+            "name": "analysisId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/1/analyses/{analysisId}/report": {
+      "get": {
+        "tags": [
+          "analysis-controller"
+        ],
+        "operationId": "getReport",
+        "parameters": [
+          {
+            "name": "analysisId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/1/analyses/{analysisId}/mentions": {
+      "get": {
+        "tags": [
+          "analysis-controller"
+        ],
+        "operationId": "listMentions",
+        "parameters": [
+          {
+            "name": "analysisId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MentionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "UpdateScheduleRequest": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ScheduleAttemptResponse": {
+        "type": "object",
+        "properties": {
+          "attemptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "STARTED",
+              "SKIPPED_OVERLAP",
+              "FAILED"
+            ]
+          },
+          "analysisId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ScheduleResponse": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "cadence": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timezone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nextExecutionAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lastAttempt": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleAttemptResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
       "TestRequest": {
         "type": "object",
         "properties": {
@@ -79,6 +496,526 @@
         "properties": {
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "CreateCaseRequest": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "login": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email"
+          },
+          "messengerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profileUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fullName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AnalysisResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "caseId": {
+            "type": "string"
+          },
+          "trigger": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "SCHEDULED"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RUNNING",
+              "COMPLETED",
+              "PARTIAL",
+              "FAILED"
+            ]
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "identifiers": {
+            "$ref": "#/components/schemas/PersonIdentifiersResponse"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceCoverageResponse"
+            }
+          },
+          "algorithmVersion": {
+            "type": "string"
+          },
+          "attributionCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "excludedAddressCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "CaseResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "identifiers": {
+            "$ref": "#/components/schemas/PersonIdentifiersResponse"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestAnalysis": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PersonIdentifiersResponse": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "login": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "messengerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profileUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fullName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "SourceCoverageResponse": {
+        "type": "object",
+        "properties": {
+          "sourceName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CHECKED",
+              "UNAVAILABLE"
+            ]
+          },
+          "synthetic": {
+            "type": "boolean"
+          },
+          "mentionCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "checkedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "AnalysisComparisonResponse": {
+        "type": "object",
+        "properties": {
+          "earlierAnalysis": {
+            "$ref": "#/components/schemas/AnalysisResponse"
+          },
+          "laterAnalysis": {
+            "$ref": "#/components/schemas/AnalysisResponse"
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributionChangeResponse"
+            }
+          },
+          "comparabilityLimitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "IDENTIFIERS_DIFFER",
+                "SOURCE_COVERAGE_DIFFERS",
+                "ALGORITHM_VERSION_DIFFERS",
+                "PARTIAL_ANALYSIS"
+              ]
+            }
+          }
+        }
+      },
+      "AttributionChangeResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "network": {
+            "type": "string"
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "NOT_OBSERVED",
+              "CONFIDENCE_LEVEL_CHANGED",
+              "EXCLUSION_CHANGED"
+            ]
+          },
+          "earlierConfidenceLevel": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "laterConfidenceLevel": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "earlierExclusionReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "EXCHANGE",
+              "SMART_CONTRACT",
+              "MIXER",
+              "FUNDRAISER"
+            ]
+          },
+          "laterExclusionReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "EXCHANGE",
+              "SMART_CONTRACT",
+              "MIXER",
+              "FUNDRAISER"
+            ]
+          }
+        }
+      },
+      "AddressActivityEventResponse": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "RECEIVED",
+              "SENT",
+              "SWAP",
+              "CASH_OUT_SIGNAL"
+            ]
+          },
+          "transactionId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AddressActivityResponse": {
+        "type": "object",
+        "properties": {
+          "totalReceived": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "totalSent": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressActivityEventResponse"
+            }
+          },
+          "coverageLimitation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AttributionResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "network": {
+            "type": "string"
+          },
+          "confidenceLevel": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "classificationStatus": {
+            "type": "string",
+            "enum": [
+              "NOT_EXCLUDED",
+              "UNAVAILABLE"
+            ]
+          },
+          "justification": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MentionResponse"
+            }
+          },
+          "scoringRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScoringRuleContributionResponse"
+            }
+          },
+          "addressActivity": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AddressActivityResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "DetectedAddressResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "network": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "valid": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ExcludedAddressResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "network": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "EXCHANGE",
+              "SMART_CONTRACT",
+              "MIXER",
+              "FUNDRAISER"
+            ]
+          },
+          "classificationSource": {
+            "type": "string"
+          },
+          "justification": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MentionResponse"
+            }
+          }
+        }
+      },
+      "MentionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "collectedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "detectedAddresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetectedAddressResponse"
+            }
+          }
+        }
+      },
+      "ReportResponse": {
+        "type": "object",
+        "properties": {
+          "analysis": {
+            "$ref": "#/components/schemas/AnalysisResponse"
+          },
+          "attributions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttributionResponse"
+            }
+          },
+          "excludedAddresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExcludedAddressResponse"
+            }
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SOURCE_UNAVAILABLE",
+                "BLOCKCHAIN_DATA_UNAVAILABLE",
+                "CLASSIFICATION_UNAVAILABLE",
+                "ANALYSIS_INCOMPLETE"
+              ]
+            }
+          }
+        }
+      },
+      "ScoringRuleContributionResponse": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "contribution": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       }

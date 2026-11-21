@@ -5,5 +5,36 @@
  * OpenAPI spec version: v0
  */
 
+export * from "./addressActivityEventResponse";
+export * from "./addressActivityEventResponseType";
+export * from "./addressActivityResponse";
+export * from "./analysisComparisonResponse";
+export * from "./analysisComparisonResponseComparabilityLimitationsItem";
+export * from "./analysisResponse";
+export * from "./analysisResponseStatus";
+export * from "./analysisResponseTrigger";
+export * from "./attributionChangeResponse";
+export * from "./attributionChangeResponseChange";
+export * from "./attributionChangeResponseEarlierExclusionReason";
+export * from "./attributionChangeResponseLaterExclusionReason";
+export * from "./attributionResponse";
+export * from "./attributionResponseClassificationStatus";
+export * from "./caseResponse";
+export * from "./compareAnalysesParams";
+export * from "./createCaseRequest";
+export * from "./detectedAddressResponse";
+export * from "./excludedAddressResponse";
+export * from "./excludedAddressResponseReason";
+export * from "./mentionResponse";
+export * from "./personIdentifiersResponse";
+export * from "./reportResponse";
+export * from "./reportResponseLimitationsItem";
+export * from "./scheduleAttemptResponse";
+export * from "./scheduleAttemptResponseOutcome";
+export * from "./scheduleResponse";
+export * from "./scoringRuleContributionResponse";
+export * from "./sourceCoverageResponse";
+export * from "./sourceCoverageResponseStatus";
 export * from "./testRequest";
 export * from "./testResponse";
+export * from "./updateScheduleRequest";
