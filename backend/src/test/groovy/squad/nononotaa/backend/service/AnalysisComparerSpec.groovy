@@ -27,7 +27,7 @@ class AnalysisComparerSpec extends Specification {
     static final ADDR = '0xaaa'
 
     static attribution(String network, String address, int level, List<String> mentionIds = ['m1']) {
-        new ScoredAttribution(new Candidate(network, address, mentionIds), level, [], ClassificationStatus.NOT_EXCLUDED)
+        new ScoredAttribution(new Candidate(network, address, mentionIds), level, [], '', ClassificationStatus.NOT_EXCLUDED)
     }
 
     static excluded(String network, String address, ExclusionReason reason, List<String> mentionIds = ['m1']) {

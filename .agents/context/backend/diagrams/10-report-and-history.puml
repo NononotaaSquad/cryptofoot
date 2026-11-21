@@ -56,7 +56,7 @@ else finished (COMPLETED, PARTIAL or FAILED)
     VAL --> REP : network + valid, or validationFailure
   end
   REP --> FE : mentions: MentionResponse(source, url, collectedAt,\ncontext, detectedAddresses)*
-  REP --> FE : report: ReportResponse(\n analysis,\n attributions sorted by Confidence Level desc,\n   each with justification = its Mentions,\n   scoringRules, classificationStatus, addressActivity = null (E4 on hold),\n excludedAddresses with reason, classificationSource, Mentions,\n limitations)
+  REP --> FE : report: ReportResponse(\n analysis,\n attributions sorted by Confidence Level desc,\n   each with justification (template text) and mentions,\n   scoringRules, classificationStatus, addressActivity = null (E4 on hold),\n excludedAddresses with reason, classificationSource, Mentions,\n limitations)
 end
 
 note over REP, ADB
