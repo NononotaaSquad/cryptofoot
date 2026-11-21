@@ -1,0 +1,47 @@
+#!/bin/sh
+# Pre-commit hook: formats staged backend (Spotless) and frontend (Prettier) files and
+# re-stages them. Enabled by husky (npm install in frontend/) or: git config core.hooksPath .githooks
+
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+STAGED="$(git diff --cached --name-only --diff-filter=ACMR)"
+[ -z "$STAGED" ] && exit 0
+
+# Files with unstaged changes too (git add -p): re-adding them would commit the unstaged
+# hunks, so they are formatted in the working tree only and left for you to stage.
+PARTIAL="$(git diff --name-only)"
+
+restage() {
+    echo "$1" | while IFS= read -r f; do
+        [ -f "$f" ] || continue
+        if echo "$PARTIAL" | grep -qxF -- "$f"; then
+            echo "pre-commit: '$f' is partially staged; review its formatting changes and stage them yourself" >&2
+        else
+            git add -- "$f"
+        fi
+    done
+}
+
+BACKEND="$(echo "$STAGED" | grep '^backend/' || true)"
+if [ -n "$BACKEND" ]; then
+    echo "pre-commit: formatting backend (spotless)..."
+    (cd backend && ./gradlew spotlessApply --quiet)
+    restage "$BACKEND"
+fi
+
+FRONTEND="$(echo "$STAGED" | grep -E '^frontend/.*\.(ts|tsx|css|json|md|mjs|js)$' || true)"
+if [ -n "$FRONTEND" ]; then
+    if [ ! -x frontend/node_modules/.bin/prettier ]; then
+        echo "pre-commit: frontend/node_modules missing, run 'npm install' in frontend/" >&2
+        exit 1
+    fi
+    echo "pre-commit: formatting frontend (prettier)..."
+    echo "$FRONTEND" | sed 's|^frontend/||' | tr '\n' '\0' \
+        | (cd frontend && xargs -0 node_modules/.bin/prettier --write --ignore-unknown --log-level warn)
+    restage "$FRONTEND"
+fi
+
+exit 0

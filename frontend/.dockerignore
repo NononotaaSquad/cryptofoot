@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+.git
+**/.env*
+!**/.env.example
+Dockerfile
+.dockerignore

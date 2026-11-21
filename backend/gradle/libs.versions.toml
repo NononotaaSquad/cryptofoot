@@ -1,0 +1,31 @@
+[versions]
+kotlin = "2.3.21"
+springBoot = "4.1.2"
+springDependencyManagement = "1.1.7"
+springdoc = "3.2.0"
+spotless = "8.11.0"
+ktlint = "1.8.0"
+spock = "2.5-groovy-5.0"
+
+[libraries]
+spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
+spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
+spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
+spock-spring = { module = "org.spockframework:spock-spring", version.ref = "spock" }
+groovy = { module = "org.apache.groovy:groovy" }
+groovy-json = { module = "org.apache.groovy:groovy-json" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+testcontainers-mongodb = { module = "org.testcontainers:testcontainers-mongodb" }
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

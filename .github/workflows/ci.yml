@@ -1,0 +1,302 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Superseded PR runs are cancelled; pushes to the default branch queue up instead,
+  # so a deploy is never interrupted halfway.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  changes:
+    name: Detect File Changes
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend == 'true' || steps.context.outputs.full == 'true' }}
+      frontend: ${{ steps.filter.outputs.frontend == 'true' || steps.context.outputs.full == 'true' }}
+      deploy: ${{ steps.context.outputs.deploy }}
+      app: ${{ steps.context.outputs.app }}
+      backend_url: ${{ steps.context.outputs.backend_url }}
+      frontend_url: ${{ steps.context.outputs.frontend_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # On pushes, detect changes since the last fully successful run on this branch instead of
+      # since the previous commit, so a failed or cancelled deploy is retried by the next push.
+      - name: Find last successful commit
+        id: base
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch "$GITHUB_REF_NAME" \
+            --event push --status success --limit 1 --json headSha --jq '.[0].headSha // empty')
+          if [ -n "$sha" ] && git merge-base --is-ancestor "$sha" HEAD 2>/dev/null; then
+            echo "Detecting changes since last successful run: $sha"
+            echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          else
+            echo "No usable successful run found; detecting changes since the previous push"
+          fi
+
+      - name: Check for path changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          base: ${{ steps.base.outputs.sha || github.ref_name }}
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'frontend/apps/web/lib/api/openapi.json'
+              - '.github/workflows/ci.yml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/ci.yml'
+
+      - name: Resolve deployment context
+        id: context
+        env:
+          FULL: ${{ github.event_name == 'workflow_dispatch' || github.event.created }}
+          DEPLOY: ${{ github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch && !github.event.repository.is_template && vars.GCP_PROJECT_ID != '' }}
+          PROJECT_NUMBER: ${{ vars.GCP_PROJECT_NUMBER }}
+          REGION: ${{ vars.GCP_REGION }}
+        run: |
+          app=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//' | cut -c1-30 | sed -E 's/-+$//')
+          [[ "$app" =~ ^[a-z] ]] || app="app-$app"
+          {
+            echo "full=$FULL"
+            echo "deploy=$DEPLOY"
+            echo "app=$app"
+            echo "backend_url=https://$app-backend-$PROJECT_NUMBER.$REGION.run.app"
+            echo "frontend_url=https://$app-frontend-$PROJECT_NUMBER.$REGION.run.app"
+          } >> "$GITHUB_OUTPUT"
+
+  backend:
+    name: Backend (Spotless, Test, Build)
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    # Forwarded so deploy-backend only needs this job (one line per side in the run graph).
+    outputs:
+      deploy: ${{ needs.changes.outputs.deploy }}
+      app: ${{ needs.changes.outputs.app }}
+      backend_url: ${{ needs.changes.outputs.backend_url }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Spotless Format Check
+        run: ./gradlew spotlessCheck
+
+      - name: Run Unit Tests
+        run: ./gradlew test
+
+      - name: Run Integration Tests (incl. OpenAPI contract check)
+        run: ./gradlew integrationTest
+
+      - name: Build Backend Application
+        run: ./gradlew bootJar
+
+      # The deploy jobs build the image on the default branch; catch a broken Dockerfile in the PR.
+      - name: Build Docker image
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker build -t backend:ci .
+
+  frontend:
+    name: Frontend (Check, Build)
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    # Forwarded so deploy-frontend only needs this job (one line per side in the run graph).
+    outputs:
+      deploy: ${{ needs.changes.outputs.deploy }}
+      app: ${{ needs.changes.outputs.app }}
+      backend_url: ${{ needs.changes.outputs.backend_url }}
+      frontend_url: ${{ needs.changes.outputs.frontend_url }}
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install npm from packageManager
+        run: npm install -g "$(node -p "require('./package.json').packageManager")"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check generated API client matches openapi.json
+        run: |
+          npm run api:gen
+          if [ -n "$(git status --porcelain -- apps/web/lib/api)" ]; then
+            git status --porcelain -- apps/web/lib/api
+            echo "::error::apps/web/lib/api/generated is out of date: run ./scripts/api-sync.sh (or npm run api:gen) and commit the result"
+            exit 1
+          fi
+
+      - name: Typecheck, Lint, Format Check, Unit Tests
+        run: npm run check
+
+      - name: Build Frontend Application
+        run: npm run build
+
+      # The deploy jobs build the image on the default branch; catch a broken Dockerfile in the PR.
+      - name: Build Docker image
+        if: ${{ github.event_name == 'pull_request' }}
+        run: docker build --build-arg "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL" -t frontend:ci .
+
+  deploy-backend:
+    name: Deploy Backend to Cloud Run
+    needs: backend
+    if: ${{ needs.backend.outputs.deploy == 'true' && needs.backend.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ needs.backend.outputs.backend_url }}/swagger-ui.html
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      APP: ${{ needs.backend.outputs.app }}
+      SERVICE: ${{ needs.backend.outputs.app }}-backend
+      REGION: ${{ vars.GCP_REGION }}
+      IMAGE: ${{ vars.GCP_ARTIFACT_REGISTRY }}/${{ needs.backend.outputs.app }}-backend:${{ github.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build and push image
+        run: |
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -t "$IMAGE" backend
+          docker push "$IMAGE"
+
+      - name: Sync MongoDB URI to Secret Manager
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: |
+          if [ -z "$MONGODB_URI" ]; then
+            echo "::error::MONGODB_URI secret is not set (org or repository level)"
+            exit 1
+          fi
+          secret="$APP-mongodb-uri"
+          gcloud secrets describe "$secret" >/dev/null 2>&1 || gcloud secrets create "$secret" --replication-policy=automatic
+          if [ "$(gcloud secrets versions access latest --secret="$secret" 2>/dev/null)" != "$MONGODB_URI" ]; then
+            printf '%s' "$MONGODB_URI" | gcloud secrets versions add "$secret" --data-file=-
+          fi
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --service-account "${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}" \
+            --allow-unauthenticated \
+            --memory 1Gi \
+            --cpu 1 \
+            --max-instances 3 \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP" \
+            --set-secrets "MONGODB_URI=$APP-mongodb-uri:latest" \
+            --quiet
+
+  deploy-frontend:
+    name: Deploy Frontend to Cloud Run
+    # Needs only the frontend job (which forwards the deploy context): the master ruleset already
+    # guarantees every merged PR passed the backend checks.
+    needs: frontend
+    if: ${{ needs.frontend.outputs.deploy == 'true' && needs.frontend.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ needs.frontend.outputs.frontend_url }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SERVICE: ${{ needs.frontend.outputs.app }}-frontend
+      REGION: ${{ vars.GCP_REGION }}
+      IMAGE: ${{ vars.GCP_ARTIFACT_REGISTRY }}/${{ needs.frontend.outputs.app }}-frontend:${{ github.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build and push image
+        run: |
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build --build-arg "NEXT_PUBLIC_API_URL=${{ needs.frontend.outputs.backend_url }}" -t "$IMAGE" frontend
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --service-account "${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}" \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --cpu 1 \
+            --max-instances 3 \
+            --quiet

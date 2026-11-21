@@ -1,0 +1,3 @@
+spring:
+  mongodb:
+    database: ${MONGODB_DATABASE}

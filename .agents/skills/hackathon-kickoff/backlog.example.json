@@ -1,0 +1,206 @@
+{
+  "project": {
+    "title": "Hackathon: Clinic Queue"
+  },
+  "domains": [
+    {
+      "name": "Visit",
+      "slug": "visit",
+      "description": "A patient's registered intent to be seen today, from check-in until the doctor closes it."
+    },
+    {
+      "name": "Queue",
+      "slug": "queue",
+      "description": "The ordered list of waiting Visits per doctor and the rules that decide who is called next."
+    },
+    {
+      "name": "Delivery",
+      "slug": "delivery",
+      "description": "Everything the jury sees besides features: seed data, deployment, demo script, README."
+    }
+  ],
+  "hamburgers": [
+    {
+      "story": "Patient is seen in a fair order",
+      "domain": "Queue",
+      "steps": [
+        {
+          "step": "Check in",
+          "options": [
+            {
+              "option": "Form with name and reason",
+              "phase": 1,
+              "task": "P1-01"
+            },
+            {
+              "option": "Scan national ID card at a kiosk",
+              "discarded": "needs hardware we do not have"
+            }
+          ]
+        },
+        {
+          "step": "Wait",
+          "options": [
+            {
+              "option": "Patient sees their Visit number",
+              "phase": 1,
+              "task": "P1-01"
+            },
+            {
+              "option": "Estimated waiting time",
+              "phase": 3,
+              "task": "P3-01"
+            },
+            {
+              "option": "SMS when the turn is near",
+              "discarded": "external SMS service not approved"
+            }
+          ]
+        },
+        {
+          "step": "Order the Queue",
+          "options": [
+            {
+              "option": "First come, first served",
+              "phase": 1,
+              "task": "P1-02"
+            },
+            {
+              "option": "Urgent Visits jump ahead",
+              "phase": 2,
+              "task": "P2-01"
+            }
+          ]
+        },
+        {
+          "step": "Call the patient",
+          "options": [
+            {
+              "option": "Doctor clicks 'Call next'",
+              "phase": 1,
+              "task": "P1-02"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "P1-01",
+      "phase": 1,
+      "domain": "Visit",
+      "title": "Visit: patient checks in with name and reason",
+      "area": "fullstack",
+      "size": "M",
+      "goal": "As a patient, I can check in with my name and reason so that I get a Visit number and a place in the Queue.",
+      "demoStep": "Step 1: Check-in screen -> patient submits name and reason -> sees Visit number A-001.",
+      "acceptance": [
+        "Given the check-in page, when the patient submits name \"Jan Kowalski\" and reason \"Ból gardła\", then a Visit with status WAITING and number A-001 is stored and the page shows \"A-001\"",
+        "Given one Visit checked in today, when another patient checks in, then the new Visit gets number A-002",
+        "Given an empty name, when the patient submits, then the response is 400 with \"Popraw błędy w formularzu.\" and no Visit is stored"
+      ],
+      "scope": {
+        "backend": [
+          "`Visit` @Document (id, number, patientName, reason, status, checkedInAt) + `VisitRepository`",
+          "`POST /api/v1/visits` with `CreateVisitRequest` -> `VisitResponse`; name 1-80 chars, reason 1-200 chars"
+        ],
+        "frontend": [
+          "Page `/check-in` with the form using the generated `useCreateVisit` hook",
+          "Confirmation view showing the Visit number"
+        ]
+      },
+      "outOfScope": [
+        "Editing or cancelling a Visit"
+      ]
+    },
+    {
+      "key": "P1-02",
+      "phase": 1,
+      "domain": "Queue",
+      "title": "Queue: doctor calls the next waiting visit",
+      "area": "fullstack",
+      "size": "M",
+      "goal": "As a doctor, I can call the next Visit so that patients are seen in check-in order.",
+      "demoStep": "Step 2: Doctor screen -> click \"Wezwij następnego\" -> the oldest WAITING Visit becomes CALLED.",
+      "acceptance": [
+        "Given Visits A-001 and A-002 in status WAITING, when the doctor calls next, then A-001 becomes CALLED and A-002 stays WAITING",
+        "Given no WAITING Visits, when the doctor calls next, then the response is 404 with \"Brak pacjentów w kolejce.\" and the page shows that message"
+      ],
+      "scope": {
+        "backend": [
+          "`POST /api/v1/queue/call-next` -> `VisitResponse` of the called Visit, ordered by `checkedInAt`"
+        ],
+        "frontend": [
+          "Page `/doctor` with the \"Wezwij następnego\" button and the called Visit number"
+        ]
+      },
+      "dependsOn": [
+        "P1-01"
+      ]
+    },
+    {
+      "key": "P2-01",
+      "phase": 2,
+      "domain": "Queue",
+      "title": "Queue: urgent visits are called before regular ones",
+      "area": "fullstack",
+      "size": "S",
+      "goal": "As a nurse, I can mark a Visit urgent so that it is called before regular Visits.",
+      "demoStep": "Step 3: Nurse screen -> mark A-003 urgent -> doctor calls next -> A-003 is called.",
+      "acceptance": [
+        "Given regular A-001 and later urgent A-003, when the doctor calls next, then A-003 becomes CALLED",
+        "Given urgent A-003 and later urgent A-004, when the doctor calls next twice, then A-003 is called first and A-004 second",
+        "Given a CALLED Visit, when the nurse marks it urgent, then the response is 409 with \"Nie można oznaczyć wezwanej wizyty jako pilnej.\""
+      ],
+      "scope": {
+        "backend": [
+          "`urgent: Boolean` on `Visit` and `VisitResponse`",
+          "`POST /api/v1/visits/{id}/urgent`; call-next orders by `urgent` desc, then `checkedInAt`"
+        ],
+        "frontend": [
+          "Page `/nurse` listing WAITING Visits with a \"Pilne\" button per row"
+        ]
+      },
+      "dependsOn": [
+        "P1-02"
+      ]
+    },
+    {
+      "key": "P2-02",
+      "phase": 2,
+      "domain": "Delivery",
+      "title": "Delivery: seed the demo Visits on the deployed app",
+      "area": "infra",
+      "size": "S",
+      "goal": "As the presenter, I can reset the app to the demo state so that the demo runs the same every time.",
+      "demoStep": "All steps: the demo starts from the seeded Visits A-001 to A-003.",
+      "acceptance": [
+        "Given the deployed app, when `./scripts/seed-demo.sh` runs, then the Queue contains exactly Visits A-001, A-002, A-003 in status WAITING"
+      ]
+    },
+    {
+      "key": "P3-01",
+      "phase": 3,
+      "domain": "Queue",
+      "title": "Queue: patient sees the estimated waiting time",
+      "area": "fullstack",
+      "size": "M",
+      "goal": "As a patient, I can see my estimated waiting time so that I know whether I can step out (judging: user value).",
+      "acceptance": [
+        "Given 3 WAITING Visits ahead and an average visit of 10 minutes today, when the patient opens their Visit, then it shows \"ok. 30 min\""
+      ],
+      "scope": {
+        "backend": [
+          "`estimatedWaitMinutes` in `VisitResponse`, computed from today's CALLED -> DONE durations"
+        ],
+        "frontend": [
+          "Waiting time on the check-in confirmation view, refreshed every 30 s"
+        ]
+      },
+      "dependsOn": [
+        "P2-01"
+      ]
+    }
+  ]
+}
