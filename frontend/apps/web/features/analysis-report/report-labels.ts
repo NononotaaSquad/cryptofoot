@@ -73,11 +73,13 @@ export function confidenceBandLabel(level: number): string {
   return "Niski / szum";
 }
 
-// Known codes of the scoring version `confidence-1` (ScoringRule in the
-// backend). `withSources` marks the rules that are evidence from Mentions:
-// their line names the sources in brackets. The others (analyst input,
-// missing link, rejected Mentions, no classification) name none.
+// Known codes of `confidence-1` and saved `provisional-1` Analyses.
+// `withSources` marks rules whose line names the Mention sources in brackets.
 const scoringRules = {
+  MENTIONED_WITH_IDENTIFIER: {
+    label: "Adres przy identyfikatorze osoby",
+    withSources: true,
+  },
   ENTERED_BY_ANALYST: {
     label: "Adres wpisany przez analityka",
     withSources: false,
@@ -120,6 +122,7 @@ export function scoringRule(
 
 export const attributionLabels = {
   inputAddress: "Adres podany przy uruchomieniu analizy",
+  missingJustification: "Brak zapisanego uzasadnienia dla tej analizy",
   classificationUnavailable:
     "Nie sprawdzono, czy adres należy do serwisu (np. giełdy).",
   notExcluded:

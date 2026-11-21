@@ -3,6 +3,29 @@ import {
   startAnalysis,
 } from "@/lib/api/generated/case-controller/case-controller";
 import type { CreateCaseRequest } from "@/lib/api/generated/model";
+import { narrowingIdentifierKinds } from "@/lib/identifiers/identifier-kinds";
+
+export interface NewCaseRunInput {
+  kind: "newCase";
+  identifiers: CreateCaseRequest;
+  caseId?: string;
+}
+
+export function toNewCaseRunInput(
+  identifiers: CreateCaseRequest,
+  previous?: NewCaseRunInput
+): NewCaseRunInput {
+  if (
+    previous?.caseId !== undefined &&
+    [...narrowingIdentifierKinds, "fullName" as const].every(
+      (kind) =>
+        (identifiers[kind] ?? null) === (previous.identifiers[kind] ?? null)
+    )
+  ) {
+    return { kind: "newCase", identifiers, caseId: previous.caseId };
+  }
+  return { kind: "newCase", identifiers };
+}
 
 export interface StartedAnalysis {
   caseId: string;
