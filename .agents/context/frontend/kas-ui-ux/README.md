@@ -85,7 +85,7 @@ Each portal has its own variant of this language:
 - The PUESC and EUREKA red themes, which are separate identities.
 
 **Confirm with the organizers (open question):**
-- Whether we may use the KAS sign or the godło. The KAS sign is protected (art. 4 of the KAS act; Dz.U. 2017 poz. 305). Until it is confirmed, we use the gov.pl look without the emblem.
+- Whether we may use the KAS sign or the godło. The KAS sign is protected (art. 4 of the KAS act; Dz.U. 2017 poz. 305). The lead decided on 2026-11-21 to show the KAS sign in the header of the demo (see `../views.md`, Header); the godło is not used. The permission is still to be confirmed with the organizers.
 
 **Accessibility:**
 - The ustawa o dostępności cyfrowej (Dz.U. 2019 poz. 848) points to WCAG 2.1. Level AA is stated only by secondary sources, so it is unverified in the statute text.
