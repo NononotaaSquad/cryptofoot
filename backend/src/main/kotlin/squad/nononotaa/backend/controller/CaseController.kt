@@ -17,6 +17,7 @@ import squad.nononotaa.backend.dto.ScheduleResponse
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
 import squad.nononotaa.backend.service.AnalysisComparisonService
 import squad.nononotaa.backend.service.AnalysisHistoryService
+import squad.nononotaa.backend.service.CaseService
 import squad.nononotaa.backend.service.ScheduleService
 import squad.nononotaa.backend.util.ApiController
 import squad.nononotaa.backend.util.logger
@@ -26,12 +27,16 @@ class CaseController(
     private val analysisHistory: AnalysisHistoryService,
     private val analysisComparison: AnalysisComparisonService,
     private val schedules: ScheduleService,
+    private val cases: CaseService,
 ) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun createCase(
         @Valid @RequestBody request: CreateCaseRequest,
-    ): CaseResponse = TODO("E1.1-E1.3: reject without a narrowing identifier (400 listing the fields), persist the Case")
+    ): CaseResponse {
+        logger.debug("POST /cases")
+        return cases.create(request)
+    }
 
     @GetMapping
     fun listCases(): List<CaseResponse> = TODO("E6.1: all Cases, newest first, with their latest Analysis")

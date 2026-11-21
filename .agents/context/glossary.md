@@ -8,6 +8,10 @@ Status: empty. Add domain terms as soon as they are agreed (the `hackathon-kicko
 
 Full definitions of the remaining terms are in `domain/BUSINESS-CONTEXT.md`.
 
+**Case** (PL: Sprawa):
+The object created for one investigated person from their identifiers. It needs at least one narrowing identifier (nickname, login, e-mail, messenger ID, profile address); a full name alone is not enough.
+_Avoid_: investigation, project
+
 **Analysis** (PL: Analiza):
 One run of search and scoring for a Case, saved in its history. Has a trigger (manual or scheduled) and a status.
 _Avoid_: run, scan, pass
