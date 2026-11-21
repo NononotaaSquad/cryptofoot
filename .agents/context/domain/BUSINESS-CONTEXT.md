@@ -14,9 +14,21 @@ _Avoid_: user, operator, admin
 The object created for one investigated person from their identifiers (full name, nickname, login, e-mail, messenger ID, profile address). It needs at least one narrowing identifier; a full name alone is not enough. Later Analyses return to the Case.
 _Avoid_: investigation, project
 
+**Case Number** (PL: Numer sprawy):
+The short number that the Analyst uses to name and find a Case: the year and a sequence number, e.g. 2026/0006.
+_Avoid_: ID, identifier (an identifier is a datum of the investigated person)
+
 **Analysis** (PL: Analiza):
 One run of search and scoring for a Case, saved in its history. Started manually (priority) or on a schedule.
 _Avoid_: run, scan, pass
+
+**New Results** (PL: Nowe wyniki):
+The state of a Case whose newest Analysis has ended and which the Analyst has not yet marked as Reviewed.
+_Avoid_: unread, pending, waiting for review
+
+**Reviewed** (PL: Przejrzana):
+The state of a Case after the Analyst marked it so in Case details. Opening the report alone does not make a Case Reviewed.
+_Avoid_: read, closed, done
 
 **Mention** (PL: Wzmianka):
 A place in a public source where the data of the investigated person or a cryptocurrency address appeared.

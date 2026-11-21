@@ -1,6 +1,6 @@
 # Views and user paths
 
-State after the frontend grilling session and the first Pencil design round of 2026-11-21. Terms follow the glossary in `../domain/BUSINESS-CONTEXT.md`; Polish UI labels are given in parentheses and are used as written (sentence case). This file describes what the Analyst sees and what happens on each action. Visual design (colors, components, typography) lives in [kas-ui-ux/](kas-ui-ux/README.md); this file only refers to it.
+State after the frontend grilling sessions and the Pencil design rounds of 2026-11-21 (New case and Case list are drawn; Case details is not). Terms follow the glossary in `../domain/BUSINESS-CONTEXT.md`; Polish UI labels are given in parentheses and are used as written (sentence case). This file describes what the Analyst sees and what happens on each action. Visual design (colors, components, typography) lives in [kas-ui-ux/](kas-ui-ux/README.md); this file only refers to it. The Pencil frames named in this file are in `2026-11-21_kas-olcys-views_v01.pen`, next to this file.
 
 ## Problem Statement
 
@@ -11,7 +11,7 @@ The Analyst (PL: Analityk), a KAS official without IT knowledge, needs to enter 
 The application has three views:
 
 1. **New case** (PL: Nowa sprawa): the start page. A clean form for the person's identifiers and one button, "Rozpocznij analizę".
-2. **Case list** (PL: Lista spraw): a separate view for browsing many Cases at once and finding one of them.
+2. **Case list** (PL: Lista spraw): a separate view for finding a Case. Cases with New Results (PL: Nowe wyniki) are on top; Reviewed Cases (PL: Przejrzane sprawy) are in a collapsed section below.
 3. **Case details** (PL: Szczegóły sprawy): the Case scope on top (identifiers, history of Analyses, "Rozpocznij nową analizę") and, below it, the report of the selected Analysis.
 
 ### Model behind the views
@@ -25,7 +25,9 @@ The application has three views:
 | identifiers of the person | status of the Analysis |
 | history of Analyses | checked sources and collection times |
 | "Rozpocznij nową analizę" button | Attributions (PL: Powiązania) with Confidence Level (PL: Stopień pewności) and Mentions (PL: Wzmianki) |
-| schedule (P3) | Excluded Addresses (PL: Adresy wykluczone) |
+| Case Number (PL: Numer sprawy) | Excluded Addresses (PL: Adresy wykluczone) |
+| New Results / Reviewed state and its button | |
+| schedule (P3) | |
 
 ### Main user path
 
@@ -69,10 +71,14 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 
 14. As an Analyst, I want the Case list as a separate view that shows many Cases at once, so that the start page stays clean and I can still browse all my Cases.
 15. As an Analyst, I want to open the Case list from every view, so that I can switch to another Case at any time.
-15a. As an Analyst, I want to search the Case list by the data that identify a person (details to be decided, see V3), so that I find a Case without noise.
-16. As an Analyst, I want each Case on the list labelled with the full name or, without one, the first narrowing identifier, so that I can recognise the person.
-17. As an Analyst, I want to see the date and status of the last Analysis under each Case, so that I know which Cases have new results.
-18. As an Analyst, I want the newest Case at the top, so that I find my current work first.
+15a. As an Analyst, I want one search field that filters the list as I type by Case Number, full name and every identifier, so that I find a Case without noise.
+16. As an Analyst, I want each Case on the list labelled with the full name or, without one, the first narrowing identifier, with the Case Number and a short summary of identifiers next to it, so that I can recognise the person.
+17. As an Analyst, I want to see the status and date of the last Analysis in each row, so that I know what state the Case is in.
+17a. As an Analyst, I want to see the highest Confidence Level and the number of Attributions of the last Analysis in each row, so that I know how strong the lead is without opening the Case.
+18. As an Analyst, I want Cases with New Results in a section on top, ordered from the highest Confidence Level, so that I see the strongest new leads first.
+18a. As an Analyst, I want Cases with a highest Confidence Level of 80% or more to stand out, so that I do not miss a very likely Attribution.
+18b. As an Analyst, I want Reviewed Cases in a section that is collapsed by default, so that they do not make noise.
+18c. As an Analyst, I want a clear message when I have no Cases yet or when the search finds nothing, so that I know what to do next.
 
 ### Case details
 
@@ -86,13 +92,31 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 26. As an Analyst, I want the report to show the status of the Analysis, the checked sources and the collection times, so that I know what was covered.
 27. As an Analyst, I want the report to show Attributions as an expandable list sorted by Confidence Level, so that I see the strongest leads first (details in E5).
 28. As an Analyst, I want Excluded Addresses in a separate section, so that they do not mix with the leads (details in E5.3).
+29. As an Analyst, I want a button "Oznacz jako przejrzaną" on Case details, so that the Case leaves New Results only when I decide I am done with it.
+30. As an Analyst, I want to undo that mark, so that I can bring a Case back to New Results when I marked it too early.
 
 ## Implementation Decisions
 
-- **Routes:** three addresses. New case is the start page. The Case list has its own address (path to be fixed with the view, see V3). Case details has the Case identifier in the path and the selected Analysis identifier in the query, in the form `/cases/{caseId}?analysis={analysisId}`. Without the query the newest Analysis is shown.
-- **Case list view:** a separate view, not a side panel. It shows many Cases at once. When a Case has a full name, the row also shows more detailed data that the Analyst can search by, without noise. Which data and how the search works is to be decided (V3).
-- **Header:** a white bar with a thin divider. On the left: the KAS sign (the sign alone, without the caption "Krajowa Administracja Skarbowa") and next to it the text "Projekt OŁCyŚ" (20 px, bold, navy). No godło. On the right: the link "Lista spraw". Permission to use the KAS sign is still an open question in `kas-ui-ux/`.
-- **Case counter:** a small red circle with a number at the top-right corner of the "Lista spraw" link. It shows how many Cases still wait for the Analyst's review. Which Cases count is to be decided with the Case list (V3).
+- **Routes:** three addresses. New case is the start page, `/`. The Case list is `/cases`. Case details has the Case identifier in the path and the selected Analysis identifier in the query, in the form `/cases/{caseId}?analysis={analysisId}`. Without the query the newest Analysis is shown.
+- **Page width:** views are drawn at 1920 px. The content stays in a centred column of 1200 px; the header and the footer use the same column.
+- **Header:** a white bar with a thin divider. On the left: the KAS sign (the sign alone, without the caption "Krajowa Administracja Skarbowa") and next to it the text "Projekt OŁCyŚ" (20 px, bold, navy). No godło. On the right: one link. On New case it is "Lista spraw →" with the Case counter; on the Case list it is "← Nowa sprawa" without the counter. Permission to use the KAS sign is still an open question in `kas-ui-ux/`.
+- **Case counter:** a small red circle with a number next to the "Lista spraw →" link. It shows the number of Cases with New Results.
+- **New Results and Reviewed:** a Case has New Results when its newest Analysis has ended and the Analyst has not marked the Case as Reviewed. This holds for manual and scheduled Analyses and also for a failed Analysis, so that the Analyst learns the check did not happen. The Analyst marks a Case with the button "Oznacz jako przejrzaną" on Case details and can undo the mark. Opening the report alone changes nothing. A Reviewed Case gets New Results again when its next Analysis ends.
+- **Case Number:** every Case has a Case Number shown to the Analyst, in the form year and sequence number, e.g. `2026/0006`. The word "identyfikator" is used only for data of the investigated person.
+- **Case list view** (Pencil frame "[MAIN] Lista spraw"): a separate view, not a side panel. From the top: the title "Lista spraw" with one sentence, the search field, the short statistics "Liczba spraw: N" and "Nowe wyniki: N", then two sections.
+  - **Section "Nowe wyniki (N)":** always expanded. Ordered by the highest Confidence Level of the last Analysis, highest first; equal values are ordered by the date of the last Analysis, newest first. The section is not shown when no Case has New Results.
+  - **Section "Przejrzane sprawy (N)":** collapsed by default to one bar with the text action "Rozwiń" (expanded: "Zwiń"; frame "[STAN] Lista spraw – przejrzane rozwinięte"). Ordered by the date of the last Analysis, newest first.
+  - **Row:** two lines on the left and three aligned columns on the right; the whole row opens Case details with the newest Analysis. Line 1: the label (full name or, without one, the first narrowing identifier; 20 px; bold in New Results) and the Case Number in grey. Line 2: up to two identifiers with the name of their kind in grey ("Nick: krypto_janek · E-mail: …") and "+N więcej". Columns: "Status", "Najwyższy stopień pewności", "Ostatnia analiza". A chevron ends the row.
+  - **Column headers:** one small grey row ("Sprawa" and the three column names) above the rows of each section.
+  - **Column "Najwyższy stopień pewności":** the highest Confidence Level of the last Analysis in bold (e.g. "91%") and the number of Attributions in grey ("3 powiązania"). Without Attributions: "Brak powiązań". For a failed Analysis or one in progress: "–".
+  - **Highlight:** a row whose highest Confidence Level is 80% or more gets a 4 px blue bar on the left and a light blue background. The threshold is the "bardzo wysokie prawdopodobieństwo" band of the challenge cheat sheet (step 2). The percent is always shown as text, so the information is not carried by color alone.
+  - **Status badge:** an icon and a word on a light background. The words "Zakończona", "Częściowa", "Nieudana" and "W toku" are working labels until V2 is answered.
+  - **Analysis in progress:** the row shows "W toku", "–" in the Confidence Level column and the start time as the date. The row opens the last finished Analysis. The Case does not move to New Results until the Analysis ends.
+- **Search on the Case list:** one field "Szukaj sprawy" with the hint "Wpisz numer sprawy, imię i nazwisko, nick, e-mail lub inny identyfikator." It filters as the Analyst types, in the browser, without a "Szukaj" button, by Case Number, full name and all identifiers. Results stay in the two sections with counts of matches only; a section without matches is not shown; the Reviewed section expands by itself when it has a match.
+- **Empty states of the Case list:** a grey block in place of the list.
+  - No Cases (frame "[STAN] Lista spraw – brak spraw"): "Nie masz jeszcze żadnej sprawy." with the link "← Rozpocznij od nowej sprawy"; the search field is not shown.
+  - No matches (frame "[STAN] Lista spraw – brak wyników wyszukiwania"): "Nie znaleziono sprawy dla „…”." and "Sprawdź pisownię lub wpisz inny identyfikator." with the text action "Wyczyść".
+- **Design tokens:** the Pencil file holds the gov.pl palette as variables, plus light tints added for the list: `primary-tint`, `success-tint`, `success-text`, `warning-tint`, `warning-text`, `error-tint`. Their contrast was chosen by eye and is not measured yet.
 - **Footer:** one line, "Wszelkie prawa zastrzeżone. Krajowa Administracja Skarbowa, projekt OŁCyŚ." No links.
 - **Font:** Open Sans, as in the gov.pl styleguide.
 - **Identifier fields:** the public cryptocurrency address is an input identifier, as in the challenge text (section 2). It counts as a narrowing identifier.
@@ -129,6 +153,7 @@ Deferred. Test seams are decided after the views are laid out in Pencil. The tes
 - Visual design details (colors, typography, components): see `kas-ui-ux/`.
 - Comparison of two Analyses (E6.3) and the schedule controls (E6.4): later phases, placed in the Case scope of Case details.
 - Print, PDF export and passing the report outside the application (E5-D2).
+- On the Case list: pagination, a sort control, filters by status and server-side search. The demo has a handful of Cases.
 
 ## Further Notes
 
@@ -142,9 +167,13 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 |---|---|---|
 | V1 | Does a manual Analysis still finish and get saved on the server when the Analyst closes the tab? The frontend assumes yes. Asked in issue #24. | Bohdan (Analysis) |
 | V2 | Exact status names of an Analysis and how "completed, no Mentions" is told apart from a failure. | Bohdan (Analysis) |
-| V3 | Case list view: its address, what a row shows (in particular the more detailed data for a Case with a full name) and what the Analyst can search by. Also: which Cases the counter in the header counts as waiting for review. | Design work |
+| V3 | Closed on 2026-11-21: the Case list is described in Implementation Decisions (Routes, Case counter, New Results and Reviewed, Case list view, Search, Empty states). | Design work |
 | V4 | Look of the blocking loader; the gov.pl styleguide lists a Loader component without a screenshot. | Design work |
-| V5 | Look of status badges, the Confidence Level indicator, the history of Analyses and the Excluded Addresses section; not covered by `kas-ui-ux/`. | Design work |
+| V5 | Look of the Confidence Level indicator, the history of Analyses and the Excluded Addresses section; not covered by `kas-ui-ux/`. Status badges are drawn on the Case list. | Design work |
 | V6 | Normalisation for the duplicate rule (e.g. case of e-mail, spaces at the ends). | Case owner (Maksym) |
 | V7 | Closed on 2026-11-21: the layout of the New case form is described in Implementation Decisions (Form layout). | Design work |
 | V8 | The Case contract must accept the public cryptocurrency address and several values per identifier kind; the glossary entry for Case in `BUSINESS-CONTEXT.md` does not list them yet. | Case owner (Maksym) |
+| V9 | The backend must assign a Case Number in the form year and sequence number (e.g. `2026/0006`) and return it with the Case. | Case owner (Maksym) |
+| V10 | The Case list response must carry, per Case: the status and date of the last Analysis, the number of its Attributions and its highest Confidence Level. Without the last two the column "Najwyższy stopień pewności", the highlight and the order of New Results cannot work. | Case owner (Maksym), Bohdan (Analysis) |
+| V11 | The Reviewed state must be saved on the server (the application has no login, so the browser cannot hold it), with an action to set it and to undo it, and it must reset when the next Analysis of the Case ends. Who owns it: Case or Analysis? | Maksym, Bohdan |
+| V12 | Measure the contrast of the tint variables added in Pencil against WCAG 2.1 AA (4.5:1 for text). | Design work |
