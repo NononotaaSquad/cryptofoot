@@ -18,6 +18,12 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - Inside: trigger, status, start and end time, identifiers actually used, networks and sources covered, algorithm version, Mentions (with source, URL, collection time, context), rejected candidates, Attributions and Excluded Addresses (referencing Mentions by id), failures and limitations.
 - Invariants: a later Analysis never overwrites an earlier one; a finished Analysis (completed, partial, failed) is never changed; opening it never reruns it; a failure is stored as failed, never as zero findings.
 
+### Analysis comparison (proposed, see decisions `D26-001` to `D26-003`; E6-D2 not confirmed)
+
+- Two finished Analyses of one Case are compared by network and canonical address. Categories: new Attribution, Attribution not observed later, changed Confidence Level, changed exclusion classification.
+- `Not observed` is not `no longer belongs to the person`: it is flagged unverifiable unless the later Analysis was completed and rechecked the supporting sources and the network.
+- Differences in identifiers, source coverage, networks, algorithm version or completeness are listed as comparability limitations.
+
 ## Lifecycles
 
 States and allowed transitions for each aggregate that has a lifecycle, with who or what triggers each transition.

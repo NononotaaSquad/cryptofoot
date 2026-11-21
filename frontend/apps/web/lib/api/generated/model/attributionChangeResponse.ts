@@ -21,4 +21,8 @@ export interface AttributionChangeResponse {
   earlierExclusionReason?: AttributionChangeResponseEarlierExclusionReason;
   /** @nullable */
   laterExclusionReason?: AttributionChangeResponseLaterExclusionReason;
+  earlierMentionIds?: string[];
+  laterMentionIds?: string[];
+  /** @nullable */
+  absenceVerifiable?: boolean | null;
 }

@@ -96,6 +96,10 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 
 `AnalysisRecorderService` implements the `AnalysisRecorder` port of the orchestration: `begin` inserts a `RUNNING` `AnalysisRecord` (collection `analyses`, one document per Analysis), `finish` stores the result once; a finished record is never written again. `AnalysisHistoryService` reads it: `GET /api/1/cases/{caseId}/analyses` (newest first) and `GET /api/1/analyses/{analysisId}`; reads never rerun an Analysis. The `mentions` and `report` endpoints stay stubs (E2/E5). Decisions: `.agents/context/backend/decisions/task-25/`.
 
+### Analysis comparison and manual rerun (task #26, proposed)
+
+`AnalysisComparisonService` serves `GET /api/1/cases/{caseId}/comparison` from two saved Analyses; `AnalysisComparer` holds the rules (categories, comparability limitations, `absenceVerifiable`) and reads only stored data. `AnalysisRerunService` creates a new `MANUAL` Analysis with the Case's current identifiers (via the proposed `CaseIdentifierSource` port) and refuses while one is running; it is a plain class, not wired, and `startAnalysis` stays a stub until Cases (E1) and module adapters exist. Decisions: `.agents/context/backend/decisions/task-26/`.
+
 ## Project Structure
 
 ```

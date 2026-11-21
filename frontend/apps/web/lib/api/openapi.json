@@ -729,6 +729,7 @@
                             "enum": [
                                 "IDENTIFIERS_DIFFER",
                                 "SOURCE_COVERAGE_DIFFERS",
+                                "NETWORKS_DIFFER",
                                 "ALGORITHM_VERSION_DIFFERS",
                                 "PARTIAL_ANALYSIS"
                             ]
@@ -794,6 +795,24 @@
                             "SMART_CONTRACT",
                             "MIXER",
                             "FUNDRAISER"
+                        ]
+                    },
+                    "earlierMentionIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "laterMentionIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "absenceVerifiable": {
+                        "type": [
+                            "boolean",
+                            "null"
                         ]
                     }
                 }
