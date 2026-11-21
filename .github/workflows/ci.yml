@@ -252,7 +252,7 @@ jobs:
             --memory 1Gi \
             --cpu 1 \
             --max-instances 3 \
-            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP" \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=false" \
             --set-secrets "MONGODB_URI=$APP-mongodb-uri:latest" \
             --quiet
 
