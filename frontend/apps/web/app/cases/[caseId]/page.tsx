@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
 
 import { PageShell } from "@/components/page-shell";
+import { CaseDetailsView } from "@/features/case-details/case-details-view";
 
 export const metadata: Metadata = {
   title: "Szczegóły sprawy",
 };
 
-// Stub until the Case details view is built. The `caseId` param and the
-// `analysis` search param are not read yet.
-export default function Page() {
+export default async function Page({
+  params,
+  searchParams,
+}: PageProps<"/cases/[caseId]">) {
+  const { caseId } = await params;
+  const { analysis } = await searchParams;
+
   return (
     <PageShell headerLink={{ label: "← Lista spraw", href: "/cases" }}>
-      <h1 className="text-[2.5rem] leading-tight font-bold">
-        Szczegóły sprawy
-      </h1>
+      <CaseDetailsView
+        caseId={caseId}
+        // A repeated `?analysis=` gives an array; the first one wins.
+        analysisId={Array.isArray(analysis) ? analysis[0] : analysis}
+      />
     </PageShell>
   );
 }

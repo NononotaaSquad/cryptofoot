@@ -69,3 +69,5 @@ As an Analyst, I want to reopen the report for a saved Analysis in the applicati
 ## Documentation reconciliation
 
 The proposal to display scoring rules and contributions conflicts with the current narrow definition of Justification in BUSINESS-CONTEXT.md and BUSINESS-SPEC.md. The team must reconcile those definitions and E3 before implementation. Displaying structured rules does not require AI-generated prose.
+
+*Reconciled on 2026-11-21:* the Justification is a template text built by the backend (D9-006). The report also shows the applied rules and their points as the Scoring breakdown (Punktacja). The algorithm version stays in the API and is not shown.

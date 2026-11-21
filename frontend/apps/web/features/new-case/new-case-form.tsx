@@ -1,21 +1,16 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { Button } from "@workspace/ui/components/button";
-import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { AnalysisLoader } from "@/lib/analysis-run/analysis-loader";
+import { PollingErrorDialog } from "@/lib/analysis-run/polling-error-dialog";
+import { StartAnalysisErrorDialog } from "@/lib/analysis-run/start-analysis-error-dialog";
+import { useAnalysisRun } from "@/lib/analysis-run/use-analysis-run";
 import { isApiError } from "@/lib/api/client";
 
-import {
-  type CreatedCase,
-  type StartedAnalysis,
-  StartAnalysisError,
-  runAnalysis,
-} from "./analysis-flow";
-import { AnalysisLoader } from "./analysis-loader";
 import { IdentifierField } from "./identifier-field";
 import {
   type IdentifierFieldDefinition,
@@ -25,13 +20,8 @@ import {
   fullNameField,
   narrowingIdentifierFields,
 } from "./identifier-fields";
-import {
-  type ValidationProblem,
-  PollingErrorDialog,
-  StartAnalysisErrorDialog,
-  ValidationDialog,
-} from "./new-case-dialogs";
-import { type NewCaseIdentifiers, decideMinimumData } from "./new-case-rules";
+import { type ValidationProblem, ValidationDialog } from "./new-case-dialogs";
+import { decideMinimumData } from "./new-case-rules";
 
 const formFieldDefinitions: readonly IdentifierFieldDefinition[] = [
   ...narrowingIdentifierFields,
@@ -42,26 +32,6 @@ const formFieldDefinitions: readonly IdentifierFieldDefinition[] = [
 function toFormFieldName(field: string): NewCaseFieldName | undefined {
   return formFieldDefinitions.find((definition) => definition.name === field)
     ?.name;
-}
-
-interface FailedStart {
-  error: unknown;
-  identifiers: NewCaseIdentifiers;
-  // Reused by the next start with the same identifiers: no second Case.
-  createdCase: CreatedCase | null;
-}
-
-interface FailedPolling {
-  error: unknown;
-  analysis: StartedAnalysis;
-}
-
-// Typed routes check the template literal type, not a plain string.
-function caseDetailsPath({
-  caseId,
-  analysisId,
-}: StartedAnalysis): `/cases/${string}?analysis=${string}` {
-  return `/cases/${caseId}?analysis=${analysisId}`;
 }
 
 interface FieldGroupProps {
@@ -92,49 +62,16 @@ function FieldGroup({ id, heading, description, children }: FieldGroupProps) {
 }
 
 export function NewCaseForm() {
-  const router = useRouter();
   const { register, handleSubmit, reset, setError, clearErrors, formState } =
     useForm<NewCaseFormValues>({ defaultValues: emptyNewCaseFormValues });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [problem, setProblem] = useState<ValidationProblem>("empty");
   const [formErrors, setFormErrors] = useState<string[]>([]);
-  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-  // Kept after the pop-up closes, so its text does not change while the
-  // closing animation runs and "Spróbuj ponownie" has the identifiers.
-  const [failedStart, setFailedStart] = useState<FailedStart | null>(null);
-  const [failedPolling, setFailedPolling] = useState<FailedPolling | null>(
-    null
-  );
-  // Stops polling when the form unmounts (e.g. the browser Back button), so
-  // a late result does not navigate away from the page the user went to.
-  const pollingAbort = useRef<AbortController | null>(null);
-  useEffect(
-    () => () => {
-      pollingAbort.current?.abort();
-    },
-    []
-  );
 
-  const analysis = useMutation({
-    mutationFn: (identifiers: NewCaseIdentifiers) => {
-      pollingAbort.current = new AbortController();
-      return runAnalysis(
-        identifiers,
-        failedStart?.createdCase ?? null,
-        pollingAbort.current.signal
-      );
-    },
-    onSuccess: (flow) => {
-      if (flow.result === "ended") {
-        router.push(caseDetailsPath(flow.analysis));
-      } else {
-        setFailedPolling({ error: flow.error, analysis: flow.analysis });
-      }
-    },
-    onError: (failure, identifiers) => {
-      // Anything else is the abort on unmount: nothing left to show.
-      if (!(failure instanceof StartAnalysisError)) return;
-      const error = failure.cause;
+  // A failed start keeps the typed values; a 400 puts its field errors next
+  // to their fields and the rest above the form.
+  const run = useAnalysisRun({
+    onStartError: (error) => {
       const unmatched: string[] = [];
       if (isApiError(error)) {
         for (const fieldError of error.fieldErrors) {
@@ -150,28 +87,12 @@ export function NewCaseForm() {
         }
       }
       setFormErrors(unmatched);
-      setFailedStart({
-        error,
-        identifiers,
-        createdCase: failure.createdCase,
-      });
-      setErrorDialogOpen(true);
     },
   });
 
-  // After the Analysis ends the loader stays until the navigation unmounts
-  // this form, so the form does not flash back; the tab-close warning stops
-  // at once. A failed poll closes the loader for its dialog instead.
-  const analysisRunning =
-    analysis.isPending ||
-    (analysis.isSuccess && analysis.data.result === "ended");
-
-  const start = (identifiers: NewCaseIdentifiers) => {
-    // No second Analysis while one runs or while navigating to its Case.
-    if (analysis.isPending || analysis.isSuccess) return;
+  const clearServerErrors = () => {
     clearErrors();
     setFormErrors([]);
-    analysis.mutate(identifiers);
   };
 
   const onSubmit = (values: NewCaseFormValues) => {
@@ -181,7 +102,8 @@ export function NewCaseForm() {
       setDialogOpen(true);
       return;
     }
-    start(decision.identifiers);
+    clearServerErrors();
+    run.startNewCase(decision.identifiers);
   };
 
   const renderField = (definition: IdentifierFieldDefinition) => (
@@ -262,30 +184,23 @@ export function NewCaseForm() {
       />
 
       <StartAnalysisErrorDialog
-        open={errorDialogOpen}
-        error={failedStart?.error}
-        onClose={() => {
-          setErrorDialogOpen(false);
-        }}
+        open={run.startErrorOpen}
+        error={run.startError}
+        onClose={run.closeStartError}
         onRetry={() => {
-          setErrorDialogOpen(false);
-          if (failedStart !== null) start(failedStart.identifiers);
+          clearServerErrors();
+          run.retryStart();
         }}
       />
 
       <PollingErrorDialog
-        open={failedPolling !== null}
-        error={failedPolling?.error}
-        onConfirm={() => {
-          if (failedPolling !== null) {
-            router.push(caseDetailsPath(failedPolling.analysis));
-          }
-        }}
+        open={run.pollingFailed}
+        onConfirm={run.confirmPollingFailure}
       />
 
       <AnalysisLoader
-        open={analysisRunning}
-        warnBeforeUnload={analysis.isPending}
+        open={run.isRunning}
+        warnBeforeUnload={run.warnBeforeUnload}
       />
     </>
   );
