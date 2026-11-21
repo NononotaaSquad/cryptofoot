@@ -43,8 +43,8 @@ A number from 0 to 100% that says how likely it is that the address belongs to t
 _Avoid_: Confidence Score, scoring, result
 
 **Justification** (PL: Uzasadnienie):
-References to the Mentions that the Confidence Level is based on. It points to sources; it is not a text description.
-_Avoid_: premises, explanation, written description
+A short plain-language text that tells the Analyst why the address is connected with the investigated person. It is built from a template of the scoring rules that applied, so the same Mentions always give the same text. It shows no numbers and is not written by an AI model. The Mentions it is based on are shown next to it.
+_Avoid_: premises, explanation, AI narrative
 
 **Excluded Address** (PL: Adres wykluczony):
 An address that must not be connected with a person (exchange, smart contract, mixer, fundraiser). It has a Confidence Level of 0% and a stated reason.

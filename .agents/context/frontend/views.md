@@ -1,6 +1,6 @@
 # Views and user paths
 
-State after the frontend grilling sessions and the Pencil design rounds of 2026-11-21 (New case and Case list are drawn; Case details is not). Terms follow the glossary in `../domain/BUSINESS-CONTEXT.md`; Polish UI labels are given in parentheses and are used as written (sentence case). This file describes what the Analyst sees and what happens on each action. Visual design (colors, components, typography) lives in [kas-ui-ux/](kas-ui-ux/README.md); this file only refers to it. The Pencil frames named in this file are in `2026-11-21_kas-olcys-views_v01.pen`, next to this file.
+State after the frontend grilling sessions and the Pencil design rounds of 2026-11-21 (New case, Case list and Case details are drawn). Terms follow the glossary in `../domain/BUSINESS-CONTEXT.md`; Polish UI labels are given in parentheses and are used as written (sentence case). This file describes what the Analyst sees and what happens on each action. Visual design (colors, components, typography) lives in [kas-ui-ux/](kas-ui-ux/README.md); this file only refers to it. The Pencil frames named in this file are in `2026-11-21_kas-olcys-views_v01.pen`, next to this file.
 
 ## Problem Statement
 
@@ -108,7 +108,7 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
   - **Section "Przejrzane sprawy (N)":** collapsed by default to one bar with the text action "Rozwiń" (expanded: "Zwiń"; frame "[STAN] Lista spraw – przejrzane rozwinięte"). Ordered by the date of the last Analysis, newest first.
   - **Row:** two lines on the left and three aligned columns on the right; the whole row opens Case details with the newest Analysis. Line 1: the label (full name or, without one, the first narrowing identifier; 20 px; bold in New Results) and the Case Number in grey. Line 2: up to two identifiers with the name of their kind in grey ("Nick: krypto_janek · E-mail: …") and "+N więcej". Columns: "Status", "Najwyższy stopień pewności", "Ostatnia analiza". A chevron ends the row.
   - **Column headers:** one small grey row ("Sprawa" and the three column names) above the rows of each section.
-  - **Column "Najwyższy stopień pewności":** the highest Confidence Level of the last Analysis in bold (e.g. "91%") and the number of Attributions in grey ("3 powiązania"). Without Attributions: "Brak powiązań". For a failed Analysis or one in progress: "–".
+  - **Column "Najwyższy stopień pewności":** the highest Confidence Level of the last Analysis in bold (e.g. "95%") and the number of Attributions in grey ("3 powiązania"). Without Attributions: "Brak powiązań". For a failed Analysis or one in progress: "–".
   - **Highlight:** a row whose highest Confidence Level is 80% or more gets a 4 px blue bar on the left and a light blue background. The threshold is the "bardzo wysokie prawdopodobieństwo" band of the challenge cheat sheet (step 2). The percent is always shown as text, so the information is not carried by color alone.
   - **Status badge:** an icon and a word on a light background. The words "Zakończona", "Częściowa", "Nieudana" and "W toku" are working labels until V2 is answered.
   - **Analysis in progress:** the row shows "W toku", "–" in the Confidence Level column and the start time as the date. The row opens the last finished Analysis. The Case does not move to New Results until the Analysis ends.
@@ -116,6 +116,21 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 - **Empty states of the Case list:** a grey block in place of the list.
   - No Cases (frame "[STAN] Lista spraw – brak spraw"): "Nie masz jeszcze żadnej sprawy." with the link "← Rozpocznij od nowej sprawy"; the search field is not shown.
   - No matches (frame "[STAN] Lista spraw – brak wyników wyszukiwania"): "Nie znaleziono sprawy dla „…”." and "Sprawdź pisownię lub wpisz inny identyfikator." with the text action "Wyczyść".
+- **Case details view** (Pencil frame "[MAIN] Szczegóły sprawy"): one column, from the top: the Case header, the select of the displayed Analysis, the report of that Analysis (summary, Attributions, Excluded Addresses).
+  - **Header link:** "← Lista spraw" with the Case counter.
+  - **Case header:** the label (full name or first narrowing identifier) with the Case Number in grey; below it the first two identifiers and "+N więcej", which expands the rest. On the right: the outline button "Oznacz jako przejrzaną" and, at the right edge, the primary button "Rozpocznij nową analizę". There is no "Nowe wyniki" badge on this view.
+  - **Reviewed Case** (frame "[STAN] Szczegóły sprawy – sprawa przejrzana"): the outline button is replaced by a check icon with the plain text "Sprawa przejrzana" and the text action "Cofnij oznaczenie". No badge.
+  - **History of Analyses:** a select "Wyświetlana analiza" with one option per Analysis ("21.11.2026, 14:32 · Ręczna · Zakończona") and the hint "Wybierz wcześniejszą analizę, aby zobaczyć jej raport. Liczba analiz: N." There is no separate history list or table and no bar that warns about an earlier Analysis being displayed; the report heading carries the date.
+  - **Report summary:** the heading "Raport analizy z {date}", the status badge with start and end times, "Sprawdzone źródła (N z M)" with the check time of each source, and "Sieci". Always visible.
+  - **Note:** "Powiązania są tropami do dalszej weryfikacji, a nie dowodami." above the Attributions; not shown when there are none.
+  - **Attributions "Powiązania (N)":** a list sorted by Confidence Level, all rows collapsed on entry. A collapsed row is one line: address with the network below it, the Confidence Level, the number of Mentions, a chevron.
+  - **Confidence Level indicator:** the percent in bold, the band label and a single-colour bar. Bands follow the challenge text: 80–100% "Bardzo wysokie prawdopodobieństwo", 60–79% "Prawdopodobny", 40–59% "Średni", 10–39% "Niski / szum".
+  - **Expanded Attribution** (frame "[STAN] Szczegóły sprawy – powiązanie rozwinięte"): three blocks stacked in one column, never side by side: "Uzasadnienie" (the Justification text), "Wzmianki (N)" (source name, link, collection time, quoted fragment) and "Aktywność adresu w sieci {network}" (volume, number of transactions, period, dated events). A cash-out signal is a plain line under its event: "Możliwe wyjście do walut tradycyjnych." The row has no badges, no small category labels, no scoring breakdown and no algorithm version.
+  - **Justification:** shown only after the row is expanded. A short text from a template of the applied scoring rules, without numbers (see the glossary). The template wording is open (V13).
+  - **No Address Activity data:** "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności."
+  - **No Attributions** (frame "[STAN] Szczegóły sprawy – brak powiązań"): the heading "Powiązania (0)" and a grey block with "Nie znaleziono powiązań w sprawdzonych źródłach." and "Brak powiązań nie oznacza, że osoba nie ma adresów kryptowalut."
+  - **Excluded Addresses "Adresy wykluczone (N)":** below the Attributions, collapsed by default with "Rozwiń". Expanded (frame "[STAN] Szczegóły sprawy – adresy wykluczone rozwinięte"): the sentence "Te adresy pojawiły się w źródłach, ale należą do serwisów, z których korzysta wiele osób. Nie są powiązaniami." and a table with the columns "Adres i sieć", "Powód wykluczenia", "Źródło klasyfikacji". No percent; rows do not expand.
+  - **Not drawn:** the failed and the partial Analysis.
 - **Design tokens:** the Pencil file holds the gov.pl palette as variables, plus light tints added for the list: `primary-tint`, `success-tint`, `success-text`, `warning-tint`, `warning-text`, `error-tint`. Their contrast was chosen by eye and is not measured yet.
 - **Footer:** one line, "Wszelkie prawa zastrzeżone. Krajowa Administracja Skarbowa, projekt OŁCyŚ." No links.
 - **Font:** Open Sans, as in the gov.pl styleguide.
@@ -153,6 +168,7 @@ Deferred. Test seams are decided after the views are laid out in Pencil. The tes
 - Visual design details (colors, typography, components): see `kas-ui-ux/`.
 - Comparison of two Analyses (E6.3) and the schedule controls (E6.4): later phases, placed in the Case scope of Case details.
 - Print, PDF export and passing the report outside the application (E5-D2).
+- On Case details: the scoring breakdown (rule values, contributions) and the algorithm version. The team treats this as an MVP for the hackathon; the challenge text asks for "reguły punktacji", which the Justification text covers in words only.
 - On the Case list: pagination, a sort control, filters by status and server-side search. The demo has a handful of Cases.
 
 ## Further Notes
@@ -169,7 +185,7 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 | V2 | Exact status names of an Analysis and how "completed, no Mentions" is told apart from a failure. | Bohdan (Analysis) |
 | V3 | Closed on 2026-11-21: the Case list is described in Implementation Decisions (Routes, Case counter, New Results and Reviewed, Case list view, Search, Empty states). | Design work |
 | V4 | Look of the blocking loader; the gov.pl styleguide lists a Loader component without a screenshot. | Design work |
-| V5 | Look of the Confidence Level indicator, the history of Analyses and the Excluded Addresses section; not covered by `kas-ui-ux/`. Status badges are drawn on the Case list. | Design work |
+| V5 | Closed on 2026-11-21: the Confidence Level indicator, the history of Analyses and the Excluded Addresses section are described in Implementation Decisions (Case details view). | Design work |
 | V6 | Normalisation for the duplicate rule (e.g. case of e-mail, spaces at the ends). | Case owner (Maksym) |
 | V7 | Closed on 2026-11-21: the layout of the New case form is described in Implementation Decisions (Form layout). | Design work |
 | V8 | The Case contract must accept the public cryptocurrency address and several values per identifier kind; the glossary entry for Case in `BUSINESS-CONTEXT.md` does not list them yet. | Case owner (Maksym) |
@@ -177,3 +193,7 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 | V10 | The Case list response must carry, per Case: the status and date of the last Analysis, the number of its Attributions and its highest Confidence Level. Without the last two the column "Najwyższy stopień pewności", the highlight and the order of New Results cannot work. | Case owner (Maksym), Bohdan (Analysis) |
 | V11 | The Reviewed state must be saved on the server (the application has no login, so the browser cannot hold it), with an action to set it and to undo it, and it must reset when the next Analysis of the Case ends. Who owns it: Case or Analysis? | Maksym, Bohdan |
 | V12 | Measure the contrast of the tint variables added in Pencil against WCAG 2.1 AA (4.5:1 for text). | Design work |
+| V13 | Wording of the Justification template: one sentence per scoring rule, without numbers. The backend returns the ready text with each Attribution. Issue #9. | E3 (Marcin) |
+| V14 | The Analysis response must carry, per Attribution: address, network, Confidence Level, the Justification text and its Mentions (source name, link, collection time, quoted fragment); per Excluded Address: address, network, reason, classification source. | Bohdan (Analysis), Maksym (E3) |
+| V15 | Address Activity depends on E4 (issue #23, blocked). The block is drawn on sample data; its fields (volume, number of transactions, period, events, cash-out signal) are not agreed. | Maksym (E4) |
+| V16 | Look of Case details for a failed and for a partial Analysis; not drawn. Depends on V2. | Design work |
