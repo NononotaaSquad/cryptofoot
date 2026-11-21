@@ -1,6 +1,6 @@
 # D5-005: API contract and errors of Case creation
 
-- **Status:** proposed
+- **Status:** proposed; superseded in part by [D50-005](../task-50/005-validation-and-canonical-form.md) (only the text of the missing-identifier message, which now names the wallet address)
 - **Date:** 2026-11-21
 - **Type:** own proposal within the accepted contract
 - **Source:** `backend/decisions/0001-epic-api-contract.md` (`POST /api/1/cases` returns 201 `CaseResponse`); `rules.md` (Polish messages, DTOs, error format); E1 story 3

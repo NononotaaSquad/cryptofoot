@@ -10,7 +10,7 @@ import java.time.Instant
 
 enum class AnalysisStage { SEARCH, CANDIDATE_PREPARATION, EXCLUSION, SCORING }
 
-enum class IdentifierType { NICKNAME, LOGIN, EMAIL, MESSENGER_ID, PROFILE_URL, FULL_NAME }
+enum class IdentifierType { NICKNAME, LOGIN, EMAIL, MESSENGER_ID, PROFILE_URL, WALLET_ADDRESS, FULL_NAME }
 
 data class CaseIdentifier(
     val type: IdentifierType,

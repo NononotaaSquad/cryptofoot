@@ -6,6 +6,7 @@ import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.dto.CaseResponse
 import squad.nononotaa.backend.dto.CreateCaseRequest
 import squad.nononotaa.backend.dto.PersonIdentifiersResponse
+import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.CaseRecord
 import squad.nononotaa.backend.model.PersonIdentifiers
 import squad.nononotaa.backend.repository.CaseRepository
@@ -15,6 +16,7 @@ import java.time.Clock
 @Service
 class CaseService(
     private val repository: CaseRepository,
+    private val addressValidator: AddressValidator,
     private val clock: Clock,
 ) : CaseIdentifierSource {
     fun create(request: CreateCaseRequest): CaseResponse {
@@ -26,6 +28,7 @@ class CaseService(
                 messengerId = request.messengerId,
                 profileUrl = request.profileUrl,
                 fullName = request.fullName,
+                walletAddress = request.walletAddress?.let(::canonical),
             )
         val saved = repository.insert(CaseRecord(identifiers = identifiers, createdAt = clock.instant()))
         val id = requireNotNull(saved.id) { "Inserted case has no id" }
@@ -35,7 +38,12 @@ class CaseService(
 
     override fun currentIdentifiers(caseId: String): List<CaseIdentifier>? = repository.findById(caseId).map { it.identifiers.toIdentifiers() }.orElse(null)
 
-    private fun PersonIdentifiers.toResponse() = PersonIdentifiersResponse(nickname, login, email, messengerId, profileUrl, fullName)
+    private fun canonical(rawAddress: String): String = when (val result = addressValidator.validate(rawAddress)) {
+        is AddressValidation.Valid -> result.canonicalAddress.address
+        is AddressValidation.Invalid -> error("Wallet address passed request validation but is invalid")
+    }
+
+    private fun PersonIdentifiers.toResponse() = PersonIdentifiersResponse(nickname, login, email, messengerId, profileUrl, fullName, walletAddress)
 
     private fun PersonIdentifiers.toIdentifiers() = listOfNotNull(
         nickname?.let { CaseIdentifier(IdentifierType.NICKNAME, it) },
@@ -43,6 +51,7 @@ class CaseService(
         email?.let { CaseIdentifier(IdentifierType.EMAIL, it) },
         messengerId?.let { CaseIdentifier(IdentifierType.MESSENGER_ID, it) },
         profileUrl?.let { CaseIdentifier(IdentifierType.PROFILE_URL, it) },
+        walletAddress?.let { CaseIdentifier(IdentifierType.WALLET_ADDRESS, it) },
         fullName?.let { CaseIdentifier(IdentifierType.FULL_NAME, it) },
     )
 

@@ -12,11 +12,11 @@ One bullet per domain (bounded context): name and the one responsibility it owns
 
 Per aggregate: its root, the entities and value objects inside it, and the invariants from `product.md` it protects.
 
-### Case (see decisions `D5-001` to `D5-005`)
+### Case (see decisions `D5-001` to `D5-005` and `D50-001` to `D50-007`)
 
 - Root: one Case for one investigated person, with a stable identifier that Analyses and the schedule refer to (`caseId`).
-- Inside: the identifiers entered (nickname, login, e-mail, messenger ID, profile address, full name) and the creation time.
-- Invariants: at least one narrowing identifier (nickname, login, e-mail, messenger ID or profile address) is required; a full name is additional data and never suffices; blank values count as missing; a cryptocurrency address is not input data. Cases are never merged or deduplicated.
+- Inside: the identifiers entered (nickname, login, e-mail, messenger ID, profile address, wallet address, full name) and the creation time.
+- Invariants: at least one narrowing identifier (nickname, login, e-mail, messenger ID, profile address or one cryptocurrency wallet address) is required; a full name is additional data and never suffices; blank values count as missing; a wallet address (Bitcoin or Ethereum, stored in canonical form) is the Analyst's input, never a Mention, independent confirmation or evidence of ownership. Cases are never merged or deduplicated.
 
 ### Analysis (proposed, see decisions `D25-001`, `D25-002`; not yet approved by the team)
 

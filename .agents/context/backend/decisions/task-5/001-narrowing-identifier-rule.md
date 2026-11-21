@@ -1,6 +1,6 @@
 # D5-001: A Case needs at least one narrowing identifier; a full name never suffices
 
-- **Status:** accepted (requirement of the accepted E1 epic and BUSINESS-SPEC; implementation details are in D5-004)
+- **Status:** superseded in part by [D50-001](../task-50/001-wallet-as-narrowing-identifier.md): the list of narrowing identifiers now also contains the wallet address. Still valid: a full name never suffices, blank values count as missing. The text below is kept as decided.
 - **Date:** 2026-11-21
 - **Type:** requirement from the brief of the team (not an own invention)
 - **Source:** `epics/E1-creating-a-case.md` stories 1-3 (business rules), `BUSINESS-SPEC.md` M1 ("Narrowing identifiers (at least one is required)", "Full name ... alone cannot start an Analysis"); issue #5 acceptance criteria

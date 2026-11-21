@@ -11,8 +11,12 @@ A KAS official without IT knowledge, the only user of the application. Works wit
 _Avoid_: user, operator, admin
 
 **Case** (PL: Sprawa):
-The object created for one investigated person from their identifiers (full name, nickname, login, e-mail, messenger ID). It needs at least one narrowing identifier; a full name alone is not enough. Later Analyses return to the Case.
+The object created for one investigated person from their identifiers (full name, nickname, login, e-mail, messenger ID, profile address, cryptocurrency wallet address). It needs at least one narrowing identifier; a full name alone is not enough. Later Analyses return to the Case.
 _Avoid_: investigation, project
+
+**Wallet address** (PL: Adres portfela):
+A cryptocurrency address entered by the Analyst as an identifier of the Case (one address, Bitcoin or Ethereum). It is the Analyst's own input, not a finding from a source: it is never a Mention, never an independent confirmation and does not by itself make an Attribution.
+_Avoid_: address candidate, found address
 
 **Analysis** (PL: Analiza):
 One run of search and scoring for a Case, saved in its history. Started manually (priority) or on a schedule.

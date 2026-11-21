@@ -65,6 +65,7 @@ class AnalysisHistoryService(
         messengerId = valueOf(IdentifierType.MESSENGER_ID),
         profileUrl = valueOf(IdentifierType.PROFILE_URL),
         fullName = valueOf(IdentifierType.FULL_NAME),
+        walletAddress = valueOf(IdentifierType.WALLET_ADDRESS),
     )
 
     private fun List<CaseIdentifier>.valueOf(type: IdentifierType) = firstOrNull { it.type == type }?.value

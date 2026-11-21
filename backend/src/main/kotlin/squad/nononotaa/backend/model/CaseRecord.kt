@@ -11,6 +11,7 @@ data class PersonIdentifiers(
     val messengerId: String? = null,
     val profileUrl: String? = null,
     val fullName: String? = null,
+    val walletAddress: String? = null,
 )
 
 @Document("cases")

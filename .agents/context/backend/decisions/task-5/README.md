@@ -4,8 +4,8 @@ Lives under the existing backend decision directory (`../0001-epic-api-contract.
 
 | ID | Topic | Status | Approval source | Supersedes / superseded by |
 |---|---|---|---|---|
-| [D5-001](001-narrowing-identifier-rule.md) | At least one narrowing identifier; full name never suffices | accepted | Accepted E1 epic and BUSINESS-SPEC (team) | none |
+| [D5-001](001-narrowing-identifier-rule.md) | At least one narrowing identifier; full name never suffices | superseded in part | Accepted E1 epic and BUSINESS-SPEC (team) | superseded in part by D50-001 (list of identifiers) |
 | [D5-002](002-input-normalization.md) | Trim, blank means missing, nothing else | proposed | none | none |
-| [D5-003](003-crypto-address-input.md) | Meaning of "cryptocurrency address is not input data" | accepted | User choice 2026-11-21 | none |
+| [D5-003](003-crypto-address-input.md) | Meaning of "cryptocurrency address is not input data" | superseded in part | User choice 2026-11-21 | superseded in part by D50-001 (field now exists) |
 | [D5-004](004-case-model-and-id.md) | Case model and stable identifier | proposed | none | none |
-| [D5-005](005-api-contract-and-errors.md) | API contract and errors | proposed | none | none |
+| [D5-005](005-api-contract-and-errors.md) | API contract and errors | proposed | none | message text superseded in part by D50-005 |
