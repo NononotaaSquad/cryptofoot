@@ -11,7 +11,7 @@ The Analyst (PL: Analityk), a KAS official without IT knowledge, needs to enter 
 The application has three views:
 
 1. **New case** (PL: Nowa sprawa): the start page. A clean form for the person's identifiers and one button, "Rozpocznij analizę".
-2. **Case list** (PL: Lista spraw): a collapsible side panel, collapsed by default, for browsing existing Cases.
+2. **Case list** (PL: Lista spraw): a separate view for browsing many Cases at once and finding one of them.
 3. **Case details** (PL: Szczegóły sprawy): the Case scope on top (identifiers, history of Analyses, "Rozpocznij nową analizę") and, below it, the report of the selected Analysis.
 
 ### Model behind the views
@@ -34,10 +34,10 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
    ▲                                                        │
    │                                       "Rozpocznij nową analizę" ──► blocking loader ──► Case details (new Analysis)
    │                                                        │
-   └──────────── Case list (collapsible side panel, available from every view) ◄──┘
+   └──────────── Case list (separate view, reachable from the header of every view) ◄──┘
 ```
 
-1. The Analyst opens the application and sees **New case**, with the Case list collapsed.
+1. The Analyst opens the application and sees **New case**; the header has a link to the Case list.
 2. They fill in at least one narrowing identifier and click "Rozpocznij analizę".
 3. The Case is created automatically and its first Analysis starts. A blocking loader is shown until the Analysis ends.
 4. The Analyst lands on **Case details** with the report of that Analysis, without an extra click.
@@ -48,7 +48,8 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 ### New case
 
 1. As an Analyst, I want to see a clean form when I open the application, so that I can start work at once.
-2. As an Analyst, I want to enter from one field up to the full set of identifiers (nickname, login, e-mail, messenger ID, profile address, full name), so that the Analysis is as accurate as possible.
+2. As an Analyst, I want to enter from one field up to the full set of identifiers (nickname, login, e-mail, messenger ID, profile address, public cryptocurrency address, full name), so that the Analysis is as accurate as possible.
+2a. As an Analyst, I want to enter several values of one kind in one field, separated by commas (e.g. two nicknames), so that I can pass everything I know about the person.
 3. As an Analyst, I want the form to show which fields are narrowing identifiers and which are additional data (full name), so that I know what I must enter.
 4. As an Analyst, I want one button, "Rozpocznij analizę", that creates the Case and starts the Analysis, so that I do not have to create the Case as a separate step.
 5. As an Analyst, I want the button to always be active, so that clicking it tells me what is missing instead of silently doing nothing.
@@ -66,8 +67,9 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 
 ### Case list
 
-14. As an Analyst, I want the Case list as a side panel that is collapsed by default, so that it does not add noise when I start.
-15. As an Analyst, I want to expand the Case list from every view, so that I can switch to another Case at any time.
+14. As an Analyst, I want the Case list as a separate view that shows many Cases at once, so that the start page stays clean and I can still browse all my Cases.
+15. As an Analyst, I want to open the Case list from every view, so that I can switch to another Case at any time.
+15a. As an Analyst, I want to search the Case list by the data that identify a person (details to be decided, see V3), so that I find a Case without noise.
 16. As an Analyst, I want each Case on the list labelled with the full name or, without one, the first narrowing identifier, so that I can recognise the person.
 17. As an Analyst, I want to see the date and status of the last Analysis under each Case, so that I know which Cases have new results.
 18. As an Analyst, I want the newest Case at the top, so that I find my current work first.
@@ -87,16 +89,23 @@ New case ──"Rozpocznij analizę"──► blocking loader ──► Case det
 
 ## Implementation Decisions
 
-- **Routes:** two addresses. New case is the start page. Case details has the Case identifier in the path and the selected Analysis identifier in the query, in the form `/cases/{caseId}?analysis={analysisId}`. Without the query the newest Analysis is shown. The Case list is part of the layout, not a route.
-- **Case list panel:** collapsible, collapsed by default. Its look is decided after the KAS / Ministry of Finance design work.
+- **Routes:** three addresses. New case is the start page. The Case list has its own address (path to be fixed with the view, see V3). Case details has the Case identifier in the path and the selected Analysis identifier in the query, in the form `/cases/{caseId}?analysis={analysisId}`. Without the query the newest Analysis is shown.
+- **Case list view:** a separate view, not a side panel. It shows many Cases at once. When a Case has a full name, the row also shows more detailed data that the Analyst can search by, without noise. Which data and how the search works is to be decided (V3).
+- **Header:** a white bar with a thin divider and the text wordmark "OŁCyŚ", without the godło or the KAS sign (see `kas-ui-ux/`). It holds the link to the Case list.
+- **Font:** Open Sans, as in the gov.pl styleguide.
+- **Identifier fields:** the public cryptocurrency address is an input identifier, as in the challenge text (section 2). It counts as a narrowing identifier.
+- **Several values in one field:** every identifier kind that a person can have more than one of (e.g. nickname, e-mail, cryptocurrency address) accepts several values separated by commas.
+- **No asterisk:** no single field is required, so fields are not marked with `*`. The rule "at least one" is stated once for the whole group of narrowing identifiers.
+- **Form layout:** how the fields are grouped and arranged (narrowing identifiers vs additional data) is decided on the first drafts of the view in Pencil (V7). The biała lista pattern of a radio group that shows one field does not apply, because the Analyst fills in many fields at once.
 - **One action creates the Case and starts the Analysis:** "Rozpocznij analizę" on New case. On Case details the button is "Rozpocznij nową analizę" and creates another Analysis of the same Case.
-- **Minimum data rule:** at least one narrowing identifier (nickname, login, e-mail, messenger ID, profile address) is required.
+- **Minimum data rule:** at least one narrowing identifier (nickname, login, e-mail, messenger ID, profile address, public cryptocurrency address) is required.
   - A full name alone is too little data. When only the full name is filled in, the pop-up asks the Analyst to add at least one narrowing identifier.
   - When any narrowing identifier is filled in, nothing more is required; the full name stays optional.
   - When the form is empty, the pop-up lists the narrowing identifiers to choose from.
 - **Cases are immutable:** no editing of identifiers. A Case with different data is a new Case, subject to the duplicate rule below.
 - **Duplicate rule:** a new Case is a duplicate when it shares **at least one narrowing identifier** with an existing Case. Duplicates are not accepted; the Analyst gets the pop-up "Taka sprawa już istnieje" with a way to open the existing Case.
 - **Validation messages:** shown in a pop-up (dialog), not only inline. The pattern follows the gov.pl dialog in `kas-ui-ux/`: a title, one sentence, one confirming button ("Rozumiem").
+- **Duplicate pop-up:** the exception to the one-button pattern. It has two actions: the primary button "Otwórz sprawę" and the text button "Zamknij".
 - **Manual Analysis blocks the view:** a full-screen loader ("Trwa analiza. Nie zamykaj tej strony.") without navigation until the Analysis ends, plus a browser warning on tab close. After it ends, Case details opens with this Analysis selected.
 - **Scheduled Analysis does not block:** it runs on the server and shows up in the history with its status.
 - **Analysis status names** (running, completed, partial, failed) come from the Analysis owner and are not fixed here.
@@ -129,7 +138,9 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 |---|---|---|
 | V1 | Does a manual Analysis still finish and get saved on the server when the Analyst closes the tab? The frontend assumes yes. Asked in issue #24. | Bohdan (Analysis) |
 | V2 | Exact status names of an Analysis and how "completed, no Mentions" is told apart from a failure. | Bohdan (Analysis) |
-| V3 | Look of the collapsible Case list panel; gov.pl has only a fixed blue side menu. | Design work |
+| V3 | Case list view: its address, what a row shows (in particular the more detailed data for a Case with a full name) and what the Analyst can search by. | Design work |
 | V4 | Look of the blocking loader; the gov.pl styleguide lists a Loader component without a screenshot. | Design work |
 | V5 | Look of status badges, the Confidence Level indicator, the history of Analyses and the Excluded Addresses section; not covered by `kas-ui-ux/`. | Design work |
 | V6 | Normalisation for the duplicate rule (e.g. case of e-mail, spaces at the ends). | Case owner (Maksym) |
+| V7 | Layout of the New case form: grouping and order of the narrowing identifiers and the additional data. Decided on the first drafts in Pencil. | Design work |
+| V8 | The Case contract must accept the public cryptocurrency address and several values per identifier kind; the glossary entry for Case in `BUSINESS-CONTEXT.md` does not list them yet. | Case owner (Maksym) |
