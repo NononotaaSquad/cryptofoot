@@ -4,16 +4,28 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { AddressActivityEventResponse } from "./addressActivityEventResponse";
+import type { AddressActivityResponseCoverageLimitationsItem } from "./addressActivityResponseCoverageLimitationsItem";
+import type { CashOutSignalResponse } from "./cashOutSignalResponse";
 
 export interface AddressActivityResponse {
+  sourceName?: string;
+  synthetic?: boolean;
+  checkedAt?: string;
+  /** @nullable */
+  rulesVersion?: string | null;
+  /** @nullable */
+  stablecoinSwapThreshold?: number | null;
+  unit?: string;
   /** @nullable */
   totalReceived?: number | null;
   /** @nullable */
   totalSent?: number | null;
   /** @nullable */
-  unit?: string | null;
-  events?: AddressActivityEventResponse[];
+  transactionCount?: number | null;
   /** @nullable */
-  coverageLimitation?: string | null;
+  firstActivityAt?: string | null;
+  /** @nullable */
+  lastActivityAt?: string | null;
+  cashOutSignals?: CashOutSignalResponse[];
+  coverageLimitations?: AddressActivityResponseCoverageLimitationsItem[];
 }

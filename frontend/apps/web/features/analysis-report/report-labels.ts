@@ -1,7 +1,8 @@
 import type {
-  AddressActivityEventResponseType,
+  AddressActivityResponseCoverageLimitationsItem,
   AnalysisResponseStatus,
   AnalysisResponseTrigger,
+  CashOutSignalResponseKind,
   DetectedAddressResponseValidationFailure,
   ExcludedAddressResponseReason,
   ReportResponseLimitationsItem,
@@ -175,24 +176,48 @@ export function rejectedReasonLabel(code: string): string {
     : code;
 }
 
-const activityEventLabels: Record<AddressActivityEventResponseType, string> = {
-  RECEIVED: "Otrzymano",
-  SENT: "Wysłano",
-  SWAP: "Zamiana",
-  CASH_OUT_SIGNAL: "Sygnał wyjścia",
+const cashOutSignalLabels: Record<CashOutSignalResponseKind, string> = {
+  EXCHANGE: "Przelew na giełdę kryptowalut",
+  P2P: "Przelew na platformę P2P",
+  PAYMENT_GATEWAY: "Przelew do bramki płatniczej",
+  CRYPTO_CARD: "Przelew do usługi karty kryptowalutowej",
+  STABLECOIN_SWAP: "Zamiana na stablecoin",
 };
 
-export function activityEventLabel(code: string): string {
-  return isKnownCode(activityEventLabels, code)
-    ? activityEventLabels[code]
+export function cashOutSignalLabel(code: string): string {
+  return isKnownCode(cashOutSignalLabels, code)
+    ? cashOutSignalLabels[code]
     : code;
+}
+
+const activityLimitationSentences: Record<
+  AddressActivityResponseCoverageLimitationsItem,
+  string
+> = {
+  RECENT_TRANSACTIONS_ONLY:
+    "Odczytano tylko najnowsze transakcje, więc starsze sygnały mogą nie być widoczne.",
+  LABELLED_COUNTERPARTIES_ONLY:
+    "Sygnały są wykrywane tylko dla serwisów ze znanych list. Brak sygnału nie oznacza, że środków nie wymieniono na waluty tradycyjne.",
+  INTERNAL_TRANSFERS_NOT_COUNTED:
+    "Sumy nie obejmują przelewów wewnętrznych z kontraktów.",
+};
+
+/** One sentence per coverage limitation; an unknown code is still shown. */
+export function activityLimitationSentence(code: string): string {
+  return isKnownCode(activityLimitationSentences, code)
+    ? activityLimitationSentences[code]
+    : `Dane o aktywności mogą być niepełne (kod: ${code}).`;
 }
 
 export const activityLabels = {
   noData:
     "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności.",
+  notChecked:
+    "Aktywności tego adresu nie sprawdzano w tej analizie, ponieważ nic nie łączy go z badaną osobą.",
   cashOut: "Możliwe wyjście do walut tradycyjnych.",
   unknownVolume: "Nieznany",
+  unknownCount: "Nieznana",
+  synthetic: " (dane testowe)",
 } as const;
 
 // Q44: `Intl` pl-PL. The zone is fixed to Europe/Warsaw so the report reads

@@ -8,9 +8,10 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
- * Local stand-in for the keyless on-chain services (Ethereum JSON-RPC at /rpc, Blockchair dashboards at /ethereum/...),
- * so integration specs exercise the real wiring without the internet. Records every request as "rpc 0x..." or
- * "blockchair 0x...". An address without a prepared answer gets HTTP 503.
+ * Local stand-in for the keyless on-chain services (Ethereum JSON-RPC at /rpc, Blockchair dashboards at /ethereum/...,
+ * mempool.space and Blockscout explorer APIs at /api/...), so integration specs exercise the real wiring without the
+ * internet. Records every request as "rpc 0x...", "blockchair 0x..." or "explorer /api/...?query". A request without
+ * a prepared answer gets HTTP 503.
  */
 class StubChainServer {
 
@@ -23,6 +24,7 @@ class StubChainServer {
     final List<String> requests = new CopyOnWriteArrayList<>()
     private final Map<String, Answer> rpcAnswers = [:].asSynchronized()
     private final Map<String, Answer> blockchairAnswers = [:].asSynchronized()
+    private final Map<String, Answer> explorerAnswers = [:].asSynchronized()
     private final HttpServer server
     private final ExecutorService executor = Executors.newCachedThreadPool()
 
@@ -41,6 +43,12 @@ class StubChainServer {
             requests << "blockchair $address".toString()
             respond(exchange, blockchairAnswers[address])
         }
+        server.createContext('/api/') { HttpExchange exchange ->
+            def query = exchange.requestURI.rawQuery
+            def target = exchange.requestURI.path + (query ? "?$query" : '')
+            requests << "explorer $target".toString()
+            respond(exchange, explorerAnswers[target])
+        }
         server.start()
     }
 
@@ -52,6 +60,7 @@ class StubChainServer {
         requests.clear()
         rpcAnswers.clear()
         blockchairAnswers.clear()
+        explorerAnswers.clear()
     }
 
     void stop() {
@@ -70,6 +79,24 @@ class StubChainServer {
     void blockchairType(String address, String type) {
         blockchairAnswers[address] = new Answer(status: 200,
         body: """{"data":{"$address":{"address":{"type":"$type"}}},"context":{"code":200}}""")
+    }
+
+    void explorer(String pathAndQuery, String body) {
+        explorerAnswers[pathAndQuery] = new Answer(status: 200, body: body)
+    }
+
+    // an address with a complete, empty history: Address Activity is AVAILABLE with zero activity
+    void mempoolQuiet(String address) {
+        explorer("/api/address/$address", """{"address":"$address","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,
+            "spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}""")
+        explorer("/api/address/$address/txs", '[]')
+    }
+
+    void blockscoutQuiet(String address) {
+        def base = "/api/v2/addresses/$address"
+        explorer("$base/counters", '{"transactions_count":"0"}')
+        explorer("$base/transactions", '{"items":[],"next_page_params":null}')
+        explorer("$base/token-transfers?type=ERC-20", '{"items":[],"next_page_params":null}')
     }
 
     private static void respond(HttpExchange exchange, Answer answer) {

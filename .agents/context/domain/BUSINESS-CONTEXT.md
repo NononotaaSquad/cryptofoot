@@ -79,8 +79,12 @@ A stated reason why the report of an Analysis may be incomplete (a source was un
 _Avoid_: error, warning
 
 **Address Activity** (PL: Aktywność adresu):
-What an address from an Attribution did on the blockchain: volume, swaps, signals of exit to traditional currencies (Cash-Out).
+What an address from an Attribution did on the blockchain: volume, swaps, signals of exit to traditional currencies (Cash-Out). Shown only for Attributions with a Confidence Level above 0; missing data is never shown as zero activity.
 _Avoid_: indicators, metrics
+
+**Cash-out signal** (PL: Sygnał wyjścia do walut tradycyjnych):
+An event in the Address Activity that may mean the money left cryptocurrencies: a transfer to an exchange, a P2P platform, a payment gateway or a crypto card service, or a swap of a significant value (from 1000) into a stablecoin. It is a lead for verification, not proof of a withdrawal or of a tax violation.
+_Avoid_: withdrawal, fiat exit
 
 ## Relationships
 
@@ -89,3 +93,4 @@ _Avoid_: indicators, metrics
 - An **Analysis** collects many **Mentions** and produces zero or more **Attributions**.
 - An **Attribution** is based on one or more **Mentions** and has one **Justification**.
 - An **Excluded Address** does not create an **Attribution**.
+- An **Attribution** with a Confidence Level above 0 has one **Address Activity** with zero or more **Cash-out signals**.

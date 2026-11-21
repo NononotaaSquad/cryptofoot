@@ -10,6 +10,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.CanonicalAddress
+import squad.nononotaa.backend.model.CashOutSignalKind
 import squad.nononotaa.backend.model.ExclusionLabel
 import tools.jackson.core.type.TypeReference
 import tools.jackson.module.kotlin.ExtensionsKt
@@ -152,7 +153,59 @@ class ExclusionLabelDirectorySpec extends Specification {
         directory.find(new CanonicalAddress(ETH, '0x165cd37b4c644c2921454429e7f9358d18a45e14')) ==
                 new ExclusionLabel(EXCHANGE, 'Corrected', 'Own label list (https://ref.test)')
         directory.find(new CanonicalAddress(ETH, '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0')) ==
-                new ExclusionLabel(EXCHANGE, 'Kraken 4 [kraken]', ExclusionLabelDirectory.ETHERSCAN_SOURCE)
+                new ExclusionLabel(EXCHANGE, 'Kraken 4 [kraken]', ExclusionLabelDirectory.ETHERSCAN_SOURCE, ['kraken'])
+    }
+
+    def "an exchange tag names the off-ramp kind of a cash-out signal: #tags gives #kind"() {
+        expect:
+        EtherscanTagMapping.INSTANCE.offRampKindFor(tags) == kind
+
+        where:
+        tags                                    | kind
+        ['kraken']                              | CashOutSignalKind.EXCHANGE
+        []                                      | CashOutSignalKind.EXCHANGE
+        ['remitano']                            | CashOutSignalKind.P2P
+        ['wirex']                               | CashOutSignalKind.CRYPTO_CARD
+        ['fiat-gateway']                        | CashOutSignalKind.PAYMENT_GATEWAY
+        [
+            'bitfinex',
+            'fiat-gateway',
+            'otc'
+        ]     | CashOutSignalKind.PAYMENT_GATEWAY
+        [
+            'fiat-gateway',
+            'remitano',
+            'wirex'
+        ]   | CashOutSignalKind.P2P
+        ['fiat-gateway', 'wirex']               | CashOutSignalKind.CRYPTO_CARD
+    }
+
+    def "the off-ramp tags are exchange tags, so such an address is still never attributed to a person"() {
+        given:
+        def mapping = EtherscanTagMapping.INSTANCE
+
+        expect:
+        (mapping.p2pTags + mapping.cryptoCardTags + mapping.paymentGatewayTags).every {
+            it in mapping.exchangeTags
+        }
+    }
+
+    def "bundled #name keeps its tags and is a #kind off-ramp"() {
+        when:
+        def label = bundled.find(new CanonicalAddress(ETH, address))
+
+        then:
+        label.reason == EXCHANGE
+        label.name == name
+        label.tags == tags
+        EtherscanTagMapping.INSTANCE.offRampKindFor(label.tags) == kind
+
+        where:
+        address                                      | name                          | tags             | kind
+        '0x2819c144d5946404c0516b6f817a960db37d4929' | 'Remitano 2 [remitano]'       | ['remitano']     | CashOutSignalKind.P2P
+        '0x20483d8e79dc03c021bd3371843078a5e8f4e8b3' | 'Wirex: Deployer [wirex]'     | ['wirex']        | CashOutSignalKind.CRYPTO_CARD
+        '0xfb9f7f41319157ac5c5dccae308a63a4337ad5d9' | 'Bity.com [fiat-gateway]'     | ['fiat-gateway'] | CashOutSignalKind.PAYMENT_GATEWAY
+        '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0' | 'Kraken 4 [kraken]'           | ['kraken']       | CashOutSignalKind.EXCHANGE
     }
 
     def "a dataset entry without a name is still labelled, and its tags are listed sorted"() {

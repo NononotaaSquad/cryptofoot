@@ -335,7 +335,10 @@ function attributionView(
         : { text: attributionLabels.classificationUnavailable, ok: false },
     ],
     activityHeading: `Aktywność adresu w sieci ${network}`,
-    activity: toAddressActivityFigures(attribution.addressActivity),
+    activity: toAddressActivityFigures(
+      attribution.addressActivityStatus,
+      attribution.addressActivity
+    ),
   };
 }
 

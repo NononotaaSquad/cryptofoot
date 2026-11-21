@@ -3,6 +3,7 @@ package squad.nononotaa.backend.config
 import jakarta.annotation.PreDestroy
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.CandidatePreparation
@@ -27,16 +28,18 @@ class AnalysisConfig {
         preparation: CandidatePreparation,
         exclusions: ExclusionClassifier,
         scoring: ConfidenceScoring,
+        activity: AddressActivityCollector,
         recorder: AnalysisRecorder,
     ): AnalysisOrchestrator {
         logger.info(
-            "Analysis flow wired: search={}, preparation={}, exclusions={}, scoring={}",
+            "Analysis flow wired: search={}, preparation={}, exclusions={}, scoring={}, activity={}",
             search.javaClass.simpleName,
             preparation.javaClass.simpleName,
             exclusions.javaClass.simpleName,
             scoring.javaClass.simpleName,
+            activity.javaClass.simpleName,
         )
-        return AnalysisOrchestrator(search, preparation, exclusions, scoring, recorder)
+        return AnalysisOrchestrator(search, preparation, exclusions, scoring, activity, recorder)
     }
 
     @Bean

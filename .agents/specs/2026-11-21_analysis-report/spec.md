@@ -140,11 +140,10 @@ The New case feature loses its mock and calls the Analysis run hook. The route f
 
 ### Address Activity figures (seam S2, Q17, Q25)
 
-- A type `AddressActivityFigures` (volume, transaction count, period, events) and one function `toAddressActivityFigures(activity)`.
-- Today it computes: volume = `totalReceived + totalSent` in `unit`; transaction count = `events.length`; period = earliest and latest `occurredAt`; events sorted by `occurredAt` ascending.
-- A `null` activity gives "no data"; a `null` total counts as unknown, not as zero.
-- When the backend supplies these figures, only the body of this function changes (the seam the lead asked for).
-- `CASH_OUT_SIGNAL` is its own event with the line "Możliwe wyjście do walut tradycyjnych."; `SWAP`, `RECEIVED`, `SENT` get plain labels. `coverageLimitation` is a warning under the block.
+- A type `AddressActivityFigures` (volume, transaction count, period, source, events, coverage limitations) and one function `toAddressActivityFigures(status, activity)`.
+- Adapted to the backend contract of #23 (D23-008) when it was merged: volume = `totalReceived + totalSent` in `unit`; transaction count from the backend (`transactionCount`, "Nieznana" when null); period from `firstActivityAt` and `lastActivityAt` ("do MM.RRRR" when only the last is known); source = source name, "(dane testowe)" for synthetic data and the time it was read.
+- A `null` activity gives "no data" (`UNAVAILABLE`) or "not checked" (`NOT_CHECKED`, an Attribution at 0%); a `null` total or count is unknown, not zero.
+- Events are the cash-out signals, ascending by time, each with a plain label per kind (exchange, P2P, payment gateway, crypto card, stablecoin swap), the amount, the counterparty, the transaction reference (a link only for http(s)) and the line "Możliwe wyjście do walut tradycyjnych.". Each coverage limitation code is one warning sentence under the block.
 
 ### Reviewed store (Q4)
 
@@ -225,7 +224,7 @@ Master brought the backend algorithm `confidence-1` (#58, D9-006). The lead deci
 ## Further Notes
 
 - **Scoring bands (Q13):** *Superseded by #58: `confidence-1` uses bases 80, 60, 40, 10 and +15 (D9-002), so every band can appear; demo-v1 scores are in D9-008.* `provisional-1` gives only 40% or 55%, so the bands 60–79% and 80–100% never appear with today's backend. The frontend shows what the backend returns; the problem is described for the team in #9. The demo will look different from the Pencil frames (95%) until #9 changes.
-- **Address Activity (G7):** `addressActivity` is always `null` today; the "no data" message is what the demo shows until E4 (#23).
+- **Address Activity (G7):** closed by #23: the demo addresses carry synthetic activity; see D23-009 for the demo ETH address that the bytecode check excludes.
 - **Input address (G3):** the frontend flag is a stopgap; a backend flag is a note for #9. The glossary says a Wallet address never makes an Attribution by itself, and the backend does not enforce it yet.
 - **Rejected Address demo (G1):** the demo-v1 fixture produces no Rejected Address; the section will be empty until the fixture changes.
 - **Parallel work:** tasks 01 and 02 can run in parallel; task 03 builds on the report view and view model of task 02.

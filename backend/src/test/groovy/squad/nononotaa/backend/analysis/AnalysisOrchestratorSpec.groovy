@@ -2,6 +2,8 @@ package squad.nononotaa.backend.analysis
 
 import java.time.Instant
 import spock.lang.Specification
+import squad.nononotaa.backend.model.AddressActivityCoverageLimitation
+import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
 import squad.nononotaa.backend.model.ClassificationStatus
@@ -15,8 +17,9 @@ class AnalysisOrchestratorSpec extends Specification {
     CandidatePreparation preparation = Mock()
     ExclusionClassifier exclusions = Mock()
     ConfidenceScoring scoring = Mock()
+    AddressActivityCollector activity = Mock()
     AnalysisRecorder recorder = Mock()
-    AnalysisOrchestrator orchestrator = new AnalysisOrchestrator(search, preparation, exclusions, scoring, recorder)
+    AnalysisOrchestrator orchestrator = new AnalysisOrchestrator(search, preparation, exclusions, scoring, activity, recorder)
 
     def request = new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, [
         new CaseIdentifier(IdentifierType.NICKNAME, 'nick')
@@ -35,6 +38,7 @@ class AnalysisOrchestratorSpec extends Specification {
     def setup() {
         recorder.begin(request) >> 'a-1'
         recorder.finish('a-1', _) >> { id, result -> finished = result }
+        activity.collect(_) >> [:]
     }
 
     def "completes an analysis and hands every stage output to the recorder"() {
@@ -145,6 +149,100 @@ class AnalysisOrchestratorSpec extends Specification {
             ClassificationStatus.NOT_EXCLUDED,
             ClassificationStatus.UNAVAILABLE
         ]
+    }
+
+    def "Address Activity is collected for the scored Attributions and stored with each of them"() {
+        given:
+        def unlinked = new ScoredAttribution(excludedCandidate, 0, [], '', ClassificationStatus.NOT_EXCLUDED)
+        def activityData = new AddressActivity('synthetic', true, Instant.parse('2026-11-21T12:00:00Z'), 'activity-1', new BigDecimal('1000'), 'ETH', 1.5, 0.5, 2,
+                null, null, [], [
+                    AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY
+                ])
+        def available = new AddressActivityOutcome(AddressActivityStatus.AVAILABLE, activityData)
+        search.search(_) >> new SearchResult([mention], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([candidate, excludedCandidate], [])
+        exclusions.classify(_) >> new ExclusionResult([candidate, excludedCandidate], [], [])
+        scoring.score(_) >> new ScoringResult([attribution, unlinked], 'v1')
+
+        when:
+        def run = orchestrator.run(request)
+
+        then:
+        1 * activity.collect([attribution, unlinked]) >> [(candidate): available]
+        run.status == AnalysisStatus.COMPLETED
+        finished.attributions*.addressActivity == [available, null]
+        finished.attributions*.confidenceLevel == [70, 0]
+        finished.limitations.isEmpty()
+    }
+
+    def "unavailable Address Activity makes the Analysis partial with its limitation, never failed"() {
+        given:
+        search.search(_) >> new SearchResult([mention], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([candidate], [])
+        exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
+        scoring.score(_) >> new ScoringResult([attribution], 'v1')
+
+        when:
+        def run = orchestrator.run(request)
+
+        then:
+        1 * activity.collect(_) >> [(candidate): new AddressActivityOutcome(AddressActivityStatus.UNAVAILABLE, null)]
+        run.status == AnalysisStatus.PARTIAL
+        finished.failures == [
+            new StageFailure(AnalysisStage.ADDRESS_ACTIVITY, 'ADDRESS_ACTIVITY_UNAVAILABLE:0xabc')
+        ]
+        finished.limitations == [
+            ReportLimitation.BLOCKCHAIN_DATA_UNAVAILABLE,
+            ReportLimitation.ANALYSIS_INCOMPLETE
+        ]
+        finished.attributions*.addressActivity*.status == [
+            AddressActivityStatus.UNAVAILABLE
+        ]
+        finished.attributions*.confidenceLevel == [70]
+    }
+
+    def "a failing Address Activity module keeps the Attributions, marks their activity unavailable and leaves the Analysis partial"() {
+        given:
+        search.search(_) >> new SearchResult([mention], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([candidate], [])
+        exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
+        scoring.score(_) >> new ScoringResult([attribution], 'v1')
+
+        when:
+        def run = orchestrator.run(request)
+
+        then:
+        1 * activity.collect(_) >> { throw new IllegalStateException('boom') }
+        run.status == AnalysisStatus.PARTIAL
+        finished.failures == [
+            new StageFailure(AnalysisStage.ADDRESS_ACTIVITY, 'MODULE_ERROR')
+        ]
+        finished.limitations.contains(ReportLimitation.BLOCKCHAIN_DATA_UNAVAILABLE)
+        finished.attributions*.candidate == [candidate]
+        finished.attributions*.addressActivity*.status == [
+            AddressActivityStatus.UNAVAILABLE
+        ]
+    }
+
+    def "Address Activity is not collected without Attributions or after a failed scoring"() {
+        given:
+        search.search(_) >> new SearchResult([mention], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([candidate], [])
+        exclusions.classify(_) >> new ExclusionResult(noneAccepted ? [] : [candidate], [], [])
+        scoring.score(_) >> {
+            if (scoringFails) throw new IllegalStateException(); new ScoringResult([], 'v1')
+        }
+
+        when:
+        orchestrator.run(request)
+
+        then:
+        0 * activity.collect(_)
+
+        where:
+        noneAccepted | scoringFails
+        true         | false
+        false        | true
     }
 
     def "start records the analysis before any module is called and execute finishes it"() {

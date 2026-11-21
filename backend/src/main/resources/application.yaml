@@ -26,6 +26,9 @@ app:
   exclusion:
     # Keyless ETH bytecode check (public JSON-RPC, Blockchair fallback); false keeps every address inside the app (D22-005)
     onchain-check-enabled: ${EXCLUSION_ONCHAIN_CHECK_ENABLED:true}
+  address-activity:
+    # Keyless live explorers (mempool.space, Blockscout); false keeps every Attribution address inside the app (D23-003)
+    live-enabled: ${ADDRESS_ACTIVITY_LIVE_ENABLED:false}
 sources:
   # Real Web2 sources (task #61): on by default, switch off with SOURCES_<NAME>_ENABLED=false
   github:

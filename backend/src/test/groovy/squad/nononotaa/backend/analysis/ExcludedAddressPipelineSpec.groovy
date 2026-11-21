@@ -40,7 +40,7 @@ class ExcludedAddressPipelineSpec extends Specification {
     def labels = new ExclusionLabelDirectory([
         (new CanonicalAddress(Network.ETH, EXCHANGE)): new ExclusionLabel(ExclusionReason.EXCHANGE, 'Kraken 4 [kraken]', 'Etherscan labels')
     ])
-    def orchestrator = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [rpc]), scoring, recorder)
+    def orchestrator = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [rpc]), scoring, Stub(AddressActivityCollector), recorder)
 
     def exchange = new Candidate('ETH', EXCHANGE, ['m1'])
     def contract = new Candidate('ETH', CONTRACT_ADDRESS, ['m1'])
@@ -118,7 +118,7 @@ class ExcludedAddressPipelineSpec extends Specification {
 
     def "with the on-chain check switched off only listed addresses are excluded and every other ETH Attribution is flagged"() {
         given:
-        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), scoring, recorder)
+        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), scoring, Stub(AddressActivityCollector), recorder)
         candidates = [exchange, person]
 
         when:
@@ -146,7 +146,7 @@ class ExcludedAddressPipelineSpec extends Specification {
             getSourceName() >> 'broken'
             check(_) >> { throw new IllegalStateException('bug') }
         }
-        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), scoring, recorder)
+        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), scoring, Stub(AddressActivityCollector), recorder)
         candidates = [exchange, person]
 
         when:

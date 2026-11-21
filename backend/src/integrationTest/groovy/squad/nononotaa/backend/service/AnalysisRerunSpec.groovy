@@ -4,6 +4,7 @@ import java.time.Instant
 import java.util.concurrent.Executor
 import org.springframework.beans.factory.annotation.Autowired
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
@@ -46,7 +47,7 @@ class AnalysisRerunSpec extends BaseSpec {
     } as CaseIdentifierSource
 
     private AnalysisRerunService rerunService() {
-        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(ConfidenceScoring), recorder)
+        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(ConfidenceScoring), Stub(AddressActivityCollector), recorder)
         new AnalysisRerunService(orchestrator, repository, identifiers, history, deferring)
     }
 

@@ -1,11 +1,13 @@
 import type {
-  AddressActivityEventResponse,
   AddressActivityResponse,
+  AttributionResponseAddressActivityStatus,
+  CashOutSignalResponse,
 } from "@/lib/api/generated/model";
 
 import {
-  activityEventLabel,
   activityLabels,
+  activityLimitationSentence,
+  cashOutSignalLabel,
   formatAmount,
   formatDateTime,
   formatMonth,
@@ -13,14 +15,20 @@ import {
 
 export interface AddressActivityEventView {
   key: string;
-  /** "Otrzymano", "Wysłano", "Zamiana", "Sygnał wyjścia". */
+  /** "Przelew na giełdę kryptowalut", "Zamiana na stablecoin", … */
   typeLabel: string;
   /** "21.11.2026, 14:32", or "" when the event has no time. */
   occurredAt: string;
   /** "2,41 BTC", or `null` when the amount is unknown. */
   amount: string | null;
-  /** "Możliwe wyjście do walut tradycyjnych." for a cash-out signal. */
-  cashOutNote: string | null;
+  /** The transaction id: the reference the Analyst can check. */
+  transaction: string;
+  /** `null` when the link is not http(s) (synthetic data has none). */
+  transactionUrl: string | null;
+  /** The labelled counterparty, else its address, else `null`. */
+  counterparty: string | null;
+  /** Every listed event is a cash-out signal (D23-004). */
+  cashOutNote: string;
 }
 
 /**
@@ -33,34 +41,37 @@ export type AddressActivityFigures =
       available: true;
       /** "2,41 BTC", or "Nieznany" when a total is unknown. */
       volume: string;
-      transactionCount: number;
-      /** "03.2025 – 11.2026", one month alone, or `null` without events. */
+      /** "5", or "Nieznana" when the source does not know it. */
+      transactionCount: string;
+      /** "03.2025 – 11.2026", one month alone, "do 11.2026", or `null`. */
       period: string | null;
-      /** Ascending by time. */
+      /** "synthetic (dane testowe), pobrano 21.11.2026, 14:32". */
+      source: string;
+      /** Cash-out signals, ascending by time. */
       events: AddressActivityEventView[];
-      coverageLimitation: string | null;
+      /** One sentence per coverage limitation. */
+      coverageLimitations: string[];
     };
 
-/**
- * Computes the figures from the raw activity. When the backend supplies them,
- * only the body of this function changes.
- */
+/** Maps the figures supplied by the backend (task #23) to the block. */
 export function toAddressActivityFigures(
+  status: AttributionResponseAddressActivityStatus | undefined,
   activity: AddressActivityResponse | null | undefined
 ): AddressActivityFigures {
   if (activity == null) {
-    return { available: false, message: activityLabels.noData };
+    return {
+      available: false,
+      message:
+        status === "NOT_CHECKED"
+          ? activityLabels.notChecked
+          : activityLabels.noData,
+    };
   }
 
   const unit = activity.unit ?? null;
-  const events = [...(activity.events ?? [])].sort(
+  const events = [...(activity.cashOutSignals ?? [])].sort(
     (a, b) => eventTime(a) - eventTime(b)
   );
-  const times = events
-    .map((event) => event.occurredAt)
-    .filter((time): time is string => time !== undefined);
-  const first = times[0];
-  const last = times[times.length - 1];
 
   return {
     available: true,
@@ -69,42 +80,66 @@ export function toAddressActivityFigures(
       activity.totalReceived == null || activity.totalSent == null
         ? activityLabels.unknownVolume
         : formatAmount(activity.totalReceived + activity.totalSent, unit),
-    transactionCount: events.length,
-    period:
-      first === undefined || last === undefined
-        ? null
-        : monthRange(formatMonth(first), formatMonth(last)),
+    transactionCount:
+      activity.transactionCount == null
+        ? activityLabels.unknownCount
+        : String(activity.transactionCount),
+    period: period(activity.firstActivityAt, activity.lastActivityAt),
+    source: sourceText(activity),
     events: events.map((event, index) => eventView(event, index, unit)),
-    coverageLimitation: activity.coverageLimitation ?? null,
+    coverageLimitations: (activity.coverageLimitations ?? []).map(
+      activityLimitationSentence
+    ),
   };
 }
 
 // Events without a time go last; the contract marks the field optional only.
-function eventTime(event: AddressActivityEventResponse): number {
+function eventTime(event: CashOutSignalResponse): number {
   return event.occurredAt === undefined
     ? Number.POSITIVE_INFINITY
     : Date.parse(event.occurredAt);
 }
 
-function monthRange(first: string, last: string): string {
-  return first === last ? first : `${first} – ${last}`;
+// Only the last activity is known when the source read its most recent page.
+function period(
+  first: string | null | undefined,
+  last: string | null | undefined
+): string | null {
+  if (last == null) return null;
+  const lastMonth = formatMonth(last);
+  if (first == null) return `do ${lastMonth}`;
+  const firstMonth = formatMonth(first);
+  return firstMonth === lastMonth ? firstMonth : `${firstMonth} – ${lastMonth}`;
+}
+
+function sourceText(activity: AddressActivityResponse): string {
+  const name = activity.sourceName ?? "";
+  const synthetic = activity.synthetic === true ? activityLabels.synthetic : "";
+  const checkedAt =
+    activity.checkedAt === undefined
+      ? ""
+      : `, pobrano ${formatDateTime(activity.checkedAt)}`;
+  return `${name}${synthetic}${checkedAt}`;
 }
 
 function eventView(
-  event: AddressActivityEventResponse,
+  event: CashOutSignalResponse,
   index: number,
   activityUnit: string | null
 ): AddressActivityEventView {
+  const url = event.transactionUrl ?? "";
   return {
-    key: event.transactionId ?? String(index),
-    typeLabel: event.type === undefined ? "" : activityEventLabel(event.type),
+    key: `${event.transactionId ?? ""}-${String(index)}`,
+    typeLabel: event.kind === undefined ? "" : cashOutSignalLabel(event.kind),
     occurredAt:
       event.occurredAt === undefined ? "" : formatDateTime(event.occurredAt),
     amount:
       event.amount == null
         ? null
         : formatAmount(event.amount, event.unit ?? activityUnit),
-    cashOutNote:
-      event.type === "CASH_OUT_SIGNAL" ? activityLabels.cashOut : null,
+    transaction: event.transactionId ?? "",
+    transactionUrl: /^https?:\/\//i.test(url) ? url : null,
+    counterparty: event.counterpartyLabel ?? event.counterpartyAddress ?? null,
+    cashOutNote: activityLabels.cashOut,
   };
 }

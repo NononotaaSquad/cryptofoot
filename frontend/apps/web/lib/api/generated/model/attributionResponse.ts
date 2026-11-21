@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { AddressActivityResponse } from "./addressActivityResponse";
+import type { AttributionResponseAddressActivityStatus } from "./attributionResponseAddressActivityStatus";
 import type { AttributionResponseClassificationStatus } from "./attributionResponseClassificationStatus";
 import type { AttributionResponseNetwork } from "./attributionResponseNetwork";
 import type { MentionResponse } from "./mentionResponse";
@@ -18,5 +19,6 @@ export interface AttributionResponse {
   justification?: string;
   mentions?: MentionResponse[];
   scoringRules?: ScoringRuleContributionResponse[];
+  addressActivityStatus?: AttributionResponseAddressActivityStatus;
   addressActivity?: AddressActivityResponse | null;
 }

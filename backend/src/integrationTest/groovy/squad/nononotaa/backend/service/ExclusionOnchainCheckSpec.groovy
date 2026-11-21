@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
@@ -202,7 +203,7 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
             begin(_) >> 'a-1'
             finish('a-1', _) >> { id, result -> finished = result }
         }
-        def orchestrator = new AnalysisOrchestrator(search, preparation, classifier, scoring, recorder)
+        def orchestrator = new AnalysisOrchestrator(search, preparation, classifier, scoring, Stub(AddressActivityCollector), recorder)
 
         when:
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))

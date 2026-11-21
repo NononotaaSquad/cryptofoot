@@ -27,6 +27,11 @@ class Web2PipelineSpec extends BaseSpec {
         registry.add('app.exclusion.eth-rpc-url') { CHAIN.url('/rpc') }
         registry.add('app.exclusion.blockchair-url') { CHAIN.url('') }
         registry.add('app.exclusion.timeout') { 'PT1S' }
+        // without synthetic data Address Activity needs the explorers, or every Analysis would be PARTIAL (D23-005)
+        registry.add('app.address-activity.live-enabled') { 'true' }
+        registry.add('app.address-activity.mempool-url') { CHAIN.url('') }
+        registry.add('app.address-activity.blockscout-url') { CHAIN.url('') }
+        registry.add('app.address-activity.timeout') { 'PT1S' }
         registry.add('sources.timeout') { '5s' }
         registry.add('sources.github.enabled') { 'true' }
         registry.add('sources.github.api-url') { SERVER.url() }
@@ -43,6 +48,9 @@ class Web2PipelineSpec extends BaseSpec {
         SERVER.reset()
         CHAIN.reset()
         CHAIN.rpcCode(ETH.toLowerCase(), '0x')
+        CHAIN.mempoolQuiet(BTC)
+        CHAIN.mempoolQuiet(BECH32)
+        CHAIN.blockscoutQuiet(ETH.toLowerCase())
     }
 
     def cleanupSpec() {
@@ -111,6 +119,9 @@ class Web2PipelineSpec extends BaseSpec {
             [(it.address): it]
         }
         byAddress.keySet() == [BTC, ETH.toLowerCase()] as Set
+        report.attributions.every {
+            it.addressActivityStatus == 'AVAILABLE' && !it.addressActivity.synthetic && it.addressActivity.transactionCount == 0
+        }
         byAddress[ETH.toLowerCase()].mentions*.url as Set == [
             'https://github.com/Octo-Dev',
             'https://github.com/Octo-Dev/Octo-Dev'

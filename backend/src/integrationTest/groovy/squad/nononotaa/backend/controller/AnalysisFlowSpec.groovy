@@ -10,6 +10,7 @@ import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
 import squad.nononotaa.backend.analysis.CaseIdentifier
 import squad.nononotaa.backend.analysis.IdentifierType
+import squad.nononotaa.backend.config.AddressActivityProperties
 import squad.nononotaa.backend.model.AnalysisTrigger
 import squad.nononotaa.testsupport.StubChainServer
 
@@ -34,6 +35,9 @@ class AnalysisFlowSpec extends BaseSpec {
 
     @Autowired
     AnalysisRecorder recorder
+
+    @Autowired
+    AddressActivityProperties addressActivityProperties
 
     def polling = new PollingConditions(timeout: 15, delay: 0.1)
 
@@ -168,6 +172,68 @@ class AnalysisFlowSpec extends BaseSpec {
             "rpc ${ETH}".toString(),
             "rpc ${CONTRACT}".toString()
         ] as Set
+    }
+
+    def "the demo Attributions carry the synthetic Address Activity, with cash-out signals in time order"() {
+        given:
+        def analysisId = finished(start(createCase([nickname: 'zenek_fx'])).id as String).id
+
+        when:
+        def report = json("/api/1/analyses/${analysisId}/report")
+        def byAddress = report.attributions.collectEntries {
+            [(it.address): it]
+        }
+
+        then:
+        !addressActivityProperties.liveEnabled
+        report.attributions*.addressActivityStatus == [
+            'AVAILABLE',
+            'AVAILABLE',
+            'AVAILABLE'
+        ]
+        report.attributions.every {
+            it.addressActivity.synthetic && it.addressActivity.sourceName == 'synthetic' && it.addressActivity.checkedAt &&
+                    it.addressActivity.rulesVersion == 'activity-1' && it.addressActivity.stablecoinSwapThreshold == 1000
+        }
+        with(byAddress[ETH].addressActivity) {
+            unit == 'ETH'
+            totalReceived == 10.2
+            totalSent == 8.1
+            transactionCount == 5
+            firstActivityAt == '2026-03-02T10:12:00Z'
+            lastActivityAt == '2026-09-30T19:22:00Z'
+            cashOutSignals*.kind == ['STABLECOIN_SWAP', 'EXCHANGE']
+            cashOutSignals*.occurredAt == [
+                '2026-08-11T09:05:00Z',
+                '2026-08-12T11:30:00Z'
+            ]
+            cashOutSignals*.amount == [21480, 20000]
+            cashOutSignals*.unit == ['USDC', 'USDC']
+            cashOutSignals*.transactionUrl == [null, null]
+            cashOutSignals.every {
+                it.transactionId ==~ /0x[0-9a-f]{64}/
+            }
+            cashOutSignals[1].counterpartyAddress == '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'
+            cashOutSignals[1].counterpartyLabel.endsWith(': Kraken 4 [kraken]')
+            coverageLimitations == [
+                'LABELLED_COUNTERPARTIES_ONLY'
+            ]
+        }
+        with(byAddress[BTC].addressActivity) {
+            totalReceived == 0.75
+            totalSent == 0.25
+            transactionCount == 4
+            cashOutSignals.isEmpty()
+        }
+        with(byAddress[BECH32].addressActivity) {
+            totalReceived == 1.2
+            totalSent == 1.1
+            transactionCount == 3
+            cashOutSignals*.kind == ['P2P']
+            cashOutSignals*.amount == [1.1]
+            cashOutSignals*.occurredAt == ['2026-10-05T09:40:00Z']
+        }
+        !report.limitations.contains('BLOCKCHAIN_DATA_UNAVAILABLE')
     }
 
     def "with the person's profile address the post on that profile counts as the own profile"() {
@@ -307,6 +373,8 @@ class AnalysisFlowSpec extends BaseSpec {
         report.attributions[1].justification ==
                 'Adres został wpisany przez analityka jako dane sprawy; samo wpisanie nie jest dowodem. ' +
                 'Żadna wzmianka nie łączy tego adresu z danymi badanej osoby.'
+        report.attributions*.addressActivityStatus == ['NOT_CHECKED', 'NOT_CHECKED']
+        report.attributions*.addressActivity == [null, null]
     }
 
     def "a full name alone in the identifiers used finds nothing, even though the fixture names the person"() {

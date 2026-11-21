@@ -1,10 +1,12 @@
 package squad.nononotaa.backend.dto
 
-import squad.nononotaa.backend.model.AddressActivityEventType
+import squad.nononotaa.backend.model.AddressActivityCoverageLimitation
+import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AddressValidationFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
 import squad.nononotaa.backend.model.AttributionChangeType
+import squad.nononotaa.backend.model.CashOutSignalKind
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation
 import squad.nononotaa.backend.model.ExclusionReason
@@ -82,20 +84,31 @@ data class ScoringRuleContributionResponse(
     val contribution: Int,
 )
 
-data class AddressActivityEventResponse(
-    val type: AddressActivityEventType,
+data class CashOutSignalResponse(
+    val kind: CashOutSignalKind,
     val transactionId: String,
+    val transactionUrl: String?,
     val occurredAt: Instant,
-    val amount: BigDecimal?,
-    val unit: String?,
+    val amount: BigDecimal,
+    val unit: String,
+    val counterpartyAddress: String?,
+    val counterpartyLabel: String?,
 )
 
 data class AddressActivityResponse(
+    val sourceName: String,
+    val synthetic: Boolean,
+    val checkedAt: Instant,
+    val rulesVersion: String?,
+    val stablecoinSwapThreshold: BigDecimal?,
+    val unit: String,
     val totalReceived: BigDecimal?,
     val totalSent: BigDecimal?,
-    val unit: String?,
-    val events: List<AddressActivityEventResponse>,
-    val coverageLimitation: String?,
+    val transactionCount: Int?,
+    val firstActivityAt: Instant?,
+    val lastActivityAt: Instant?,
+    val cashOutSignals: List<CashOutSignalResponse>,
+    val coverageLimitations: List<AddressActivityCoverageLimitation>,
 )
 
 data class AttributionResponse(
@@ -106,6 +119,7 @@ data class AttributionResponse(
     val justification: String,
     val mentions: List<MentionResponse>,
     val scoringRules: List<ScoringRuleContributionResponse>,
+    val addressActivityStatus: AddressActivityStatus,
     val addressActivity: AddressActivityResponse?,
 )
 

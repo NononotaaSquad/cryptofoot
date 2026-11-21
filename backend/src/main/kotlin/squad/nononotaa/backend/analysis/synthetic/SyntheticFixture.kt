@@ -1,5 +1,37 @@
 package squad.nononotaa.backend.analysis.synthetic
 
+import squad.nononotaa.backend.model.CashOutSignalKind
+import squad.nononotaa.backend.model.Network
+import squad.nononotaa.backend.model.TransferDirection
+
+data class SyntheticActivityFixture(
+    val version: String,
+    val synthetic: Boolean,
+    val addresses: List<FixtureAddressActivity>,
+)
+
+data class FixtureAddressActivity(
+    val network: Network,
+    val address: String,
+    val transfers: List<FixtureTransfer>,
+)
+
+data class FixtureTransfer(
+    val transactionId: String,
+    val occurredAt: String,
+    val direction: TransferDirection,
+    val amount: String,
+    val unit: String,
+    val tokenContract: String? = null,
+    val counterparty: String? = null,
+    val counterpartyLabel: FixtureCounterpartyLabel? = null,
+)
+
+data class FixtureCounterpartyLabel(
+    val kind: CashOutSignalKind,
+    val name: String,
+)
+
 data class SyntheticFixture(
     val version: String,
     val synthetic: Boolean,
