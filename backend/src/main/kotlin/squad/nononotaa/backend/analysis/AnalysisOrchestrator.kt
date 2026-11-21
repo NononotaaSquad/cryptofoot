@@ -57,7 +57,9 @@ class AnalysisOrchestrator(
         if (scorable.isEmpty()) return completedOrPartial(allFailures, found, prepared, classified)
 
         val scored =
-            guarded(AnalysisStage.SCORING) { scoring.score(scorable, found.mentions) }
+            guarded(AnalysisStage.SCORING) {
+                scoring.score(ScoringInput(classified.accepted, classified.unclassified, found.mentions, request.identifiers))
+            }
                 ?: return failed(AnalysisStage.SCORING, "MODULE_ERROR", found, allFailures, prepared, classified)
         return completedOrPartial(allFailures, found, prepared, classified, flagUnclassified(scored, classified.unclassified))
     }

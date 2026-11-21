@@ -47,7 +47,7 @@ class AnalysisComparisonSpec extends BaseSpec {
     }
 
     private ScoredAttribution attribution(int level) {
-        new ScoredAttribution(new Candidate('ETH', '0xaaa', ['m1']), level, [], ClassificationStatus.NOT_EXCLUDED)
+        new ScoredAttribution(new Candidate('ETH', '0xaaa', ['m1']), level, [], '', ClassificationStatus.NOT_EXCLUDED)
     }
 
     private compare(String earlier, String later, String forCase = caseId) {

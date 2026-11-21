@@ -54,7 +54,7 @@ class AnalysisHistorySpec extends BaseSpec {
         [
             new ScoredAttribution(candidate, 70, [
                 new AppliedRule('forum-post', 70)
-            ], ClassificationStatus.NOT_EXCLUDED)
+            ], '', ClassificationStatus.NOT_EXCLUDED)
         ], version)
     }
 

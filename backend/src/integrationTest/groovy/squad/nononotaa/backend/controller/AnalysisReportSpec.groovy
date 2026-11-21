@@ -34,6 +34,9 @@ class AnalysisReportSpec extends BaseSpec {
     static final String ETH_BAD_CHECKSUM = '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAEd'
     static final String BTC = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
     static final String KRAKEN = '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'
+    static final String SALE = 'Adres podano w ogłoszeniu sprzedaży lub w kontekście rozliczenia (p2p.example).'
+    static final String ETH_JUSTIFICATION = SALE + ' Niezależne źródła różnego pochodzenia (forum.example, p2p.example) wskazują na ten sam adres.'
+    static final String BTC_JUSTIFICATION = SALE + ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.'
 
     @Autowired
     AnalysisRecorder recorder
@@ -73,14 +76,15 @@ class AnalysisReportSpec extends BaseSpec {
             new Candidate('BTC', BTC, ['m-market'])
         ],
         [
-            new ScoredAttribution(new Candidate('BTC', BTC, ['m-market']), 40, [
-                new AppliedRule('MENTIONED_WITH_IDENTIFIER', 40)
-            ], ClassificationStatus.UNAVAILABLE),
-            new ScoredAttribution(new Candidate('ETH', ETH, ['m-forum', 'm-market']), 55, [
-                new AppliedRule('MENTIONED_WITH_IDENTIFIER', 40),
+            new ScoredAttribution(new Candidate('BTC', BTC, ['m-market']), 60, [
+                new AppliedRule('SALE_OR_SETTLEMENT', 60),
+                new AppliedRule('CLASSIFICATION_UNAVAILABLE', 0)
+            ], BTC_JUSTIFICATION, ClassificationStatus.UNAVAILABLE),
+            new ScoredAttribution(new Candidate('ETH', ETH, ['m-forum', 'm-market']), 75, [
+                new AppliedRule('SALE_OR_SETTLEMENT', 60),
                 new AppliedRule('INDEPENDENT_SOURCES', 15)
-            ], ClassificationStatus.NOT_EXCLUDED),
-        ], 'provisional-1'))
+            ], ETH_JUSTIFICATION, ClassificationStatus.NOT_EXCLUDED),
+        ], 'confidence-1'))
         id
     }
 
@@ -92,7 +96,7 @@ class AnalysisReportSpec extends BaseSpec {
         new JsonSlurper().parseText(client.get().uri(uri).exchange().expectStatus().isOk().expectBody(String).returnResult().responseBody) as List
     }
 
-    def "the report lists Attributions by Confidence Level, each with its Mentions and scoring rules"() {
+    def "the report lists Attributions by Confidence Level, each with its Justification, Mentions and scoring rules"() {
         given:
         def id = partial()
 
@@ -102,16 +106,20 @@ class AnalysisReportSpec extends BaseSpec {
         then:
         report.analysis.id == id
         report.analysis.status == 'PARTIAL'
-        report.analysis.algorithmVersion == 'provisional-1'
-        report.attributions*.confidenceLevel == [55, 40]
+        report.analysis.algorithmVersion == 'confidence-1'
+        report.attributions*.confidenceLevel == [75, 60]
         report.attributions*.address == [ETH, BTC]
         report.attributions*.network == ['ETH', 'BTC']
-        report.attributions[0].justification*.id == ['m-forum', 'm-market']
-        report.attributions[0].justification[0].url == 'https://forum.example/t/1'
-        report.attributions[0].justification[0].collectedAt == '2026-11-21T10:00:00Z'
-        report.attributions[0].justification[0].context.contains('zenek_fx')
+        report.attributions*.justification == [
+            ETH_JUSTIFICATION,
+            BTC_JUSTIFICATION
+        ]
+        report.attributions[0].mentions*.id == ['m-forum', 'm-market']
+        report.attributions[0].mentions[0].url == 'https://forum.example/t/1'
+        report.attributions[0].mentions[0].collectedAt == '2026-11-21T10:00:00Z'
+        report.attributions[0].mentions[0].context.contains('zenek_fx')
         report.attributions[0].scoringRules == [
-            [rule: 'MENTIONED_WITH_IDENTIFIER', contribution: 40],
+            [rule: 'SALE_OR_SETTLEMENT', contribution: 60],
             [rule: 'INDEPENDENT_SOURCES', contribution: 15]
         ]
         report.attributions*.addressActivity == [null, null]
@@ -145,7 +153,7 @@ class AnalysisReportSpec extends BaseSpec {
         report.excludedAddresses[0].network == 'ETH'
         report.excludedAddresses[0].reason == 'EXCHANGE'
         report.excludedAddresses[0].classificationSource == 'Own label list: Kraken'
-        report.excludedAddresses[0].justification*.url == ['https://p2p.example/ad/2']
+        report.excludedAddresses[0].mentions*.url == ['https://p2p.example/ad/2']
     }
 
     def "the Mentions keep source, URL, collection time and context, and every detected address is validated"() {

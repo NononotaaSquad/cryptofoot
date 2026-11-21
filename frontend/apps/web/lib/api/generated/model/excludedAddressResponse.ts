@@ -13,5 +13,5 @@ export interface ExcludedAddressResponse {
   network?: ExcludedAddressResponseNetwork;
   reason?: ExcludedAddressResponseReason;
   classificationSource?: string;
-  justification?: MentionResponse[];
+  mentions?: MentionResponse[];
 }

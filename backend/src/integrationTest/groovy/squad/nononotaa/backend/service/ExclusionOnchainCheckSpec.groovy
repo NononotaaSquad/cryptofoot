@@ -21,6 +21,7 @@ import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.MentionSearch
 import squad.nononotaa.backend.analysis.PreparedCandidates
 import squad.nononotaa.backend.analysis.ScoredAttribution
+import squad.nononotaa.backend.analysis.ScoringInput
 import squad.nononotaa.backend.analysis.ScoringResult
 import squad.nononotaa.backend.analysis.SearchResult
 import squad.nononotaa.backend.analysis.SourceReport
@@ -207,11 +208,13 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        1 * scoring.score([accepted, unchecked], _) >> { args ->
-            new ScoringResult(args[0].collect {
+        1 * scoring.score({
+            it.accepted == [accepted] && it.unclassified == [unchecked]
+        }) >> { ScoringInput input ->
+            new ScoringResult((input.accepted + input.unclassified).collect {
                 new ScoredAttribution(it, 60, [
                     new AppliedRule('forum-post', 60)
-                ], ClassificationStatus.NOT_EXCLUDED)
+                ], '', ClassificationStatus.NOT_EXCLUDED)
             }, 'v1')
         }
         finished.status == AnalysisStatus.PARTIAL

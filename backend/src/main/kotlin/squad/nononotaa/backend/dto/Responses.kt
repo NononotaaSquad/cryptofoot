@@ -102,7 +102,8 @@ data class AttributionResponse(
     val network: Network,
     val confidenceLevel: Int,
     val classificationStatus: ClassificationStatus,
-    val justification: List<MentionResponse>,
+    val justification: String,
+    val mentions: List<MentionResponse>,
     val scoringRules: List<ScoringRuleContributionResponse>,
     val addressActivity: AddressActivityResponse?,
 )
@@ -112,7 +113,7 @@ data class ExcludedAddressResponse(
     val network: Network,
     val reason: ExclusionReason,
     val classificationSource: String,
-    val justification: List<MentionResponse>,
+    val mentions: List<MentionResponse>,
 )
 
 data class ReportResponse(

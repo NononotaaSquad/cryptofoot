@@ -89,7 +89,7 @@ class AnalysisFlowSpec extends BaseSpec {
         analysis.status == 'PARTIAL'
         analysis.finishedAt != null
         analysis.networks == ['BTC', 'ETH']
-        analysis.algorithmVersion == 'provisional-1'
+        analysis.algorithmVersion == 'confidence-1'
         analysis.attributionCount == 3
         analysis.excludedAddressCount == 1
         analysis.sources.collectEntries {
@@ -123,36 +123,43 @@ class AnalysisFlowSpec extends BaseSpec {
             [
                 'BTC',
                 BTC,
-                55,
+                75,
                 'NOT_EXCLUDED'
             ],
             [
                 'ETH',
                 ETH,
-                55,
+                75,
                 'NOT_EXCLUDED'
             ],
             [
                 'BTC',
                 BECH32,
-                40,
+                60,
                 'NOT_EXCLUDED'
             ],
         ]
-        report.attributions[0].justification*.url as Set == [
+        report.attributions[0].mentions*.url as Set == [
             'https://forum.example/t/porady-p2p-od-zenka/123',
             'https://x.example/zenek_fx/status/555'
         ] as Set
         report.attributions[0].scoringRules*.rule == [
-            'MENTIONED_WITH_IDENTIFIER',
-            'INDEPENDENT_SOURCES'
+            'SALE_OR_SETTLEMENT',
+            'INDEPENDENT_SOURCES',
+            'NICKNAME_ONLY'
         ]
-        report.attributions[2].scoringRules*.rule == ['MENTIONED_WITH_IDENTIFIER']
+        report.attributions[0].justification == 'Adres podano w ogłoszeniu sprzedaży lub w kontekście rozliczenia (forum.example). ' +
+                'Niezależne źródła różnego pochodzenia (forum.example, x.example) wskazują na ten sam adres. ' +
+                'Adres łączy z badaną osobą tylko nick lub login, które mogą należeć do innej osoby.'
+        report.attributions[2].scoringRules*.rule == [
+            'SALE_OR_SETTLEMENT',
+            'NICKNAME_ONLY'
+        ]
         report.excludedAddresses.collect {
             [it.address, it.reason]
         } == [[CONTRACT, 'SMART_CONTRACT']]
         report.excludedAddresses[0].classificationSource == 'Ethereum JSON-RPC eth_getCode (127.0.0.1): executable code present'
-        report.excludedAddresses[0].justification*.url == ['https://p2p.example/ad/987']
+        report.excludedAddresses[0].mentions*.url == ['https://p2p.example/ad/987']
         report.limitations == [
             'SOURCE_UNAVAILABLE',
             'ANALYSIS_INCOMPLETE'
@@ -161,6 +168,50 @@ class AnalysisFlowSpec extends BaseSpec {
             "rpc ${ETH}".toString(),
             "rpc ${CONTRACT}".toString()
         ] as Set
+    }
+
+    def "with the person's profile address the post on that profile counts as the own profile"() {
+        given:
+        def caseId = createCase([nickname: 'zenek_fx', profileUrl: 'https://x.example/zenek_fx'])
+        def analysisId = finished(start(caseId).id as String).id
+
+        when:
+        def report = json("/api/1/analyses/${analysisId}/report")
+
+        then:
+        report.attributions.collect {
+            [
+                it.address,
+                it.confidenceLevel,
+                it.scoringRules*.rule
+            ]
+        } == [
+            [
+                BTC,
+                95,
+                [
+                    'OWN_PROFILE',
+                    'INDEPENDENT_SOURCES'
+                ]
+            ],
+            [
+                ETH,
+                95,
+                [
+                    'OWN_PROFILE',
+                    'INDEPENDENT_SOURCES'
+                ]
+            ],
+            [
+                BECH32,
+                60,
+                [
+                    'SALE_OR_SETTLEMENT',
+                    'NICKNAME_ONLY'
+                ]
+            ],
+        ]
+        report.attributions[0].justification.startsWith('Adres został opublikowany na profilu badanej osoby (x.example).')
     }
 
     def "the Mentions of the demo Analysis carry provenance and validated addresses"() {
@@ -222,6 +273,40 @@ class AnalysisFlowSpec extends BaseSpec {
             'https://forum.example/t/porady-p2p-od-zenka/123',
             'https://x.example/zenek_fx/status/555'
         ] as Set
+    }
+
+    def "the Analyst's wallet is input, not evidence: Mentions found only through it give no Confidence Level"() {
+        given:
+        def caseId = createCase([walletAddress: ETH_EIP55])
+
+        when:
+        def report = json("/api/1/analyses/${finished(start(caseId).id as String).id}/report")
+
+        then:
+        report.attributions.collect {
+            [
+                it.address,
+                it.confidenceLevel,
+                it.scoringRules*.rule
+            ]
+        } == [
+            [
+                BTC,
+                0,
+                ['NO_PERSON_LINK']
+            ],
+            [
+                ETH,
+                0,
+                [
+                    'ENTERED_BY_ANALYST',
+                    'NO_PERSON_LINK'
+                ]
+            ],
+        ]
+        report.attributions[1].justification ==
+                'Adres został wpisany przez analityka jako dane sprawy; samo wpisanie nie jest dowodem. ' +
+                'Żadna wzmianka nie łączy tego adresu z danymi badanej osoby.'
     }
 
     def "a full name alone in the identifiers used finds nothing, even though the fixture names the person"() {
