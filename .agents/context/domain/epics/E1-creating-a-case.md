@@ -8,13 +8,14 @@ The Analyst starts work in a minute, and the input data is precise enough that t
 
 ## User stories
 
-1. As an Analyst, I want to enter only one identifier of a person, so that I can start an Analysis when I know little about them.
-2. As an Analyst, I want to enter all the data I know about a person at once, so that the Analysis is as accurate as possible.
-3. As an Analyst, I want to know which fields are narrowing identifiers (nickname, login, e-mail, messenger ID, profile address), so that I understand what I must enter.
-4. As an Analyst, I do not want to be able to start an Analysis on a full name alone, so that I do not get results about random people.
-5. As an Analyst, I want to see what is missing when I did not enter a narrowing identifier, so that I can fix it at once.
-6. As an Analyst, I want to add a full name as additional data, so that it helps in judging the findings.
-7. As an Analyst, I want to work without login, so that I do not lose time on creating an account.
+1. **Start an Analysis with at least one narrowing identifier**
+   As an Analyst, I want to start an Analysis by entering at least one narrowing identifier of a person (nickname, login, e-mail, messenger ID, profile address), so that I do not get results about random people.
+   Business rules: a full name alone cannot start an Analysis — it is too general and is rejected; entering only a first and last name is not enough. A full name can still be entered as additional data that helps in judging the findings, but it never counts as a narrowing identifier and never suffices to start an Analysis on its own.
+2. **Enter all known person data at once**
+   As an Analyst, I want to enter all the data I know about a person in one form, from a single field up to the full set, so that the Analysis is as accurate as possible.
+   Business rules: the form shows which fields are narrowing identifiers (nickname, login, e-mail, messenger ID, profile address) and which are only additional data (full name), so that it is clear what must be entered; at least one narrowing identifier is required (see 1).
+3. **See what is missing when no narrowing identifier was entered**
+   As an Analyst, I want to see exactly what is missing when I did not enter any narrowing identifier, so that I can fix it at once.
 
 ## Out of scope
 

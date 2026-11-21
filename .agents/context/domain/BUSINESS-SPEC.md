@@ -73,7 +73,7 @@ Analogy: a detective agency. Boundary rule: **the field agent does not judge, th
 
 ## 4. Epics
 
-The full user stories of each epic are in the [epics/](epics/) directory.
+The full user stories of each epic are in the [epics/](epics/) directory. Format: each user story has a name and a description in the form "As an Analyst, I want …, so that …". The description also states the business rules.
 
 | Epic | Status | Module |
 |---|---|---|
