@@ -6,8 +6,10 @@ import squad.nononotaa.backend.dto.ScheduleAttemptResponse
 import squad.nononotaa.backend.dto.ScheduleResponse
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
 import squad.nononotaa.backend.exception.BadRequestException
+import squad.nononotaa.backend.exception.NotFoundException
 import squad.nononotaa.backend.model.SchedulePreset
 import squad.nononotaa.backend.model.ScheduleRecord
+import squad.nononotaa.backend.repository.CaseRepository
 import squad.nononotaa.backend.repository.ScheduleRepository
 import squad.nononotaa.backend.util.logger
 import java.time.Clock
@@ -18,6 +20,7 @@ class ScheduleService(
     private val calculator: ScheduleCalculator,
     private val clock: Clock,
     private val properties: SchedulerProperties,
+    private val cases: CaseRepository,
 ) {
     fun get(caseId: String): ScheduleResponse {
         logger.debug("Schedule read case={}", caseId)
@@ -30,6 +33,10 @@ class ScheduleService(
         caseId: String,
         request: UpdateScheduleRequest,
     ): ScheduleResponse {
+        if (!cases.existsById(caseId)) {
+            logger.warn("Schedule rejected: case not found case={}", caseId)
+            throw NotFoundException("Nie znaleziono sprawy o podanym identyfikatorze.")
+        }
         val existing = repository.findById(caseId).orElse(null)
         val cadence = request.cadence ?: existing?.cadence ?: SchedulePreset.DAILY
         if (request.enabled && cadence.demo && !properties.demoEnabled) {

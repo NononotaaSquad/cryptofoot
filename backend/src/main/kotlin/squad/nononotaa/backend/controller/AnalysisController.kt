@@ -6,12 +6,14 @@ import squad.nononotaa.backend.dto.AnalysisResponse
 import squad.nononotaa.backend.dto.MentionResponse
 import squad.nononotaa.backend.dto.ReportResponse
 import squad.nononotaa.backend.service.AnalysisHistoryService
+import squad.nononotaa.backend.service.AnalysisReportService
 import squad.nononotaa.backend.util.ApiController
 import squad.nononotaa.backend.util.logger
 
 @ApiController("/analyses")
 class AnalysisController(
     private val analysisHistory: AnalysisHistoryService,
+    private val reports: AnalysisReportService,
 ) {
     @GetMapping("/{analysisId}")
     fun getAnalysis(
@@ -24,12 +26,18 @@ class AnalysisController(
     @GetMapping("/{analysisId}/mentions")
     fun listMentions(
         @PathVariable analysisId: String,
-    ): List<MentionResponse> = TODO("E2.2/E2.3: Mentions with source, URL, collection time and detected addresses; empty list when none found")
+    ): List<MentionResponse> {
+        logger.debug("GET /analyses/{}/mentions", analysisId)
+        return reports.mentions(analysisId)
+    }
 
     @GetMapping("/{analysisId}/report")
     fun getReport(
         @PathVariable analysisId: String,
-    ): ReportResponse = TODO("E3.1/E5.1-E5.4: saved Attributions by Confidence Level desc, Excluded Addresses, limitations; never reruns the Analysis")
+    ): ReportResponse {
+        logger.debug("GET /analyses/{}/report", analysisId)
+        return reports.report(analysisId)
+    }
 
     companion object {
         private val logger = logger()

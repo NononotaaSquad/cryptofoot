@@ -1,5 +1,7 @@
 # D24-005: Scope: orchestration logic only, no production wiring and no HTTP endpoint
 
+> **Superseded in part by DS1-001** (backend-sync-1, 2026-11-21): the flow is now wired; see `../sync-1/`.
+
 - **Status:** proposed (deviation from the issue wording)
 - **Date:** 2026-11-21
 - **Type:** own proposal; scope limit; deviation from documentation

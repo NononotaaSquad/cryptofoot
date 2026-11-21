@@ -8,7 +8,11 @@ import squad.nononotaa.backend.BaseSpec
 
 class ScheduleApiSpec extends BaseSpec {
 
-    String caseId = "case-${UUID.randomUUID()}"
+    String caseId
+
+    def setup() {
+        caseId = createCase()
+    }
 
     private put(Map body) {
         client.put().uri("/api/1/cases/${caseId}/schedule").contentType(MediaType.APPLICATION_JSON).body(body).exchange()
@@ -75,6 +79,18 @@ class ScheduleApiSpec extends BaseSpec {
         repeated == daily
         weekly.dayOfWeek.name() == 'MONDAY'
         weekly.hour == 6
+    }
+
+    def "a schedule can only be set for an existing Case and nothing is stored otherwise"() {
+        given:
+        def unknown = "unknown-${UUID.randomUUID()}"
+
+        expect:
+        client.put().uri("/api/1/cases/${unknown}/schedule").contentType(MediaType.APPLICATION_JSON).body([enabled: true]).exchange()
+        .expectStatus().isNotFound()
+        .expectBody().jsonPath('$.message').isEqualTo('Nie znaleziono sprawy o podanym identyfikatorze.')
+        client.get().uri("/api/1/cases/${unknown}/schedule").exchange()
+                .expectStatus().isOk().expectBody().jsonPath('$.enabled').isEqualTo(false)
     }
 
     def "the demo cadence is refused unless demo mode is on, an unknown cadence is a 400"() {

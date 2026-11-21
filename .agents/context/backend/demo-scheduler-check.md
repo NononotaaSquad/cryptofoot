@@ -10,7 +10,7 @@ The demo is the team-confirmed **controlled synthetic demo**; checking real publ
 |---|---|
 | Labelled shortened scheduler interval (`local` profile) | done |
 | Automated check: a due term creates a new saved Analysis with trigger `SCHEDULED`; disabling stops further ones | done (`DemoSchedulerCheckSpec`, controlled clock, stubbed modules) |
-| Live check in the running application | **blocked**, see below |
+| Live check in the running application | possible since backend-sync-1 (flow wired, DS1-001), see below |
 | Reset of the demo Case | **not implemented**, waiting for the owners, see below |
 
 ## Prerequisites
@@ -32,12 +32,12 @@ cd backend
 
 The modules behind the flow (search, candidates, exclusions, scoring) are **stubs** in this spec. It proves the scheduling and recording flow; it is not evidence that a live source or the real scoring ran.
 
-## Live check in the running application (blocked)
+## Live check in the running application
 
-Steps once the flow is wired:
+Run the backend with the `local` profile, then:
 
 ```bash
-CASE=demo-v1   # the demo Case id, to be fixed by the fixture owner
+CASE=$(curl -s -X POST localhost:8080/api/1/cases -H 'Content-Type: application/json' -d '{"nickname":"zenek_fx"}' | jq -r .id)
 curl -X PUT localhost:8080/api/1/cases/$CASE/schedule -H 'Content-Type: application/json' -d '{"enabled":true,"cadence":"DEMO_EVERY_MINUTE"}'
 curl localhost:8080/api/1/cases/$CASE/schedule        # nextExecutionAt, lastAttempt
 curl localhost:8080/api/1/cases/$CASE/analyses        # a new Analysis with trigger SCHEDULED every minute
@@ -45,7 +45,7 @@ curl -X PUT localhost:8080/api/1/cases/$CASE/schedule -H 'Content-Type: applicat
 curl localhost:8080/api/1/cases/$CASE/analyses        # no new Analysis after disabling
 ```
 
-**Exact blocker:** no scheduled Analysis can start in the running application, because the shared flow (`AnalysisRerunService`) is not a Spring bean and the scheduler idles with one warning. It needs: Cases and `CaseIdentifierSource` (E1, #5, Marcin); a `MentionSearch` over the synthetic `demo-v1` fixtures (E2 T4, #37, Maksym Z.); adapters of candidate preparation, exclusions and scoring to the orchestrator ports (E3, Maksym U. and Marcin); and the bean wiring. Until then enabling a schedule only stores it.
+**Former blocker (resolved by backend-sync-1):** the shared flow is now the `AnalysisRerunService` bean of `config/AnalysisConfig`, fed by the real Case store, the synthetic `demo-v1` search, candidate preparation, exclusions and the provisional scoring (`provisional-1`, placeholder for #9). Each scheduled Analysis of the demo person ends `PARTIAL`, because the source `synthetic-broken` is always unavailable by design. Set `EXCLUSION_ONCHAIN_CHECK_ENABLED=false` if no address may leave the application (D22-005); the ETH candidates are then unclassified and flagged.
 
 ## Reset of the demo Case (not implemented)
 

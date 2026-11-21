@@ -1,0 +1,191 @@
+@startuml 01-system-overview
+title Backend overview: layers, the Analysis engine and its ports
+
+!theme plain
+top to bottom direction
+skinparam shadowing false
+skinparam roundCorner 14
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 60
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #546E7A
+skinparam ArrowThickness 1.3
+skinparam ArrowFontColor #37474F
+skinparam ArrowFontSize 11
+skinparam rectangle {
+  BorderColor #90A4AE
+  BackgroundColor #FFFFFF
+}
+skinparam database {
+  BorderColor #8E24AA
+  BackgroundColor #F3E5F5
+}
+skinparam collections {
+  BorderColor #8E24AA
+  BackgroundColor #FFFFFF
+}
+skinparam cloud {
+  BorderColor #78909C
+  BackgroundColor #ECEFF1
+}
+
+!define DB(x) <color:#8E24AA><size:11><b>db</b> x</size></color>
+
+actor "Analyst" as Analyst
+rectangle FE [
+**Frontend**
+Next.js · generated client · HTTP JSON
+]
+
+rectangle "REST API · /api/1" as API #E3F2FD {
+  rectangle CC [
+  **CaseController**
+  ----
+  POST, GET /cases · GET /cases/{id}
+  POST, GET /cases/{id}/analyses
+  GET /comparison · GET, PUT /schedule
+  ]
+  rectangle AC [
+  **AnalysisController**
+  ----
+  GET /analyses/{id}
+  GET /analyses/{id}/mentions
+  GET /analyses/{id}/report
+  ]
+}
+
+rectangle "Application services" as APP #E8F5E9 {
+  rectangle CS [
+  **CaseService**
+  ----
+  create, list, details
+  CaseIdentifierSource
+  DB(cases)
+  ]
+  rectangle RS [
+  **AnalysisRerunService**
+  ----
+  one start for manual and scheduled
+  409 while one is running
+  ]
+  rectangle SR [
+  **ScheduledRunner**
+  ----
+  @Scheduled tick, claims due terms
+  starts them with trigger SCHEDULED
+  DB(schedules)
+  ]
+  rectangle SS [
+  **ScheduleService**
+  ----
+  enable, cadence, next term
+  DB(schedules)
+  ]
+  rectangle READ [
+  **Read services**
+  ----
+  AnalysisHistoryService
+  AnalysisReportService
+  AnalysisComparisonService
+  DB(analyses)
+  ]
+}
+
+rectangle "Analysis engine" as ENG #FFF8E1 {
+  rectangle ORC [
+  **AnalysisOrchestrator**
+  ----
+  runs stages 1 to 5, derives
+  COMPLETED · PARTIAL · FAILED
+  ]
+  rectangle S1 [
+  **1 · MentionSearch**
+  ----
+  SearchService
+  synthetic sources
+  AddressCandidateDetector
+  DB(mentions)
+  ]
+  rectangle S2 [
+  **2 · CandidatePreparation**
+  ----
+  CandidatePreparationService
+  AddressCandidateService
+  AddressValidator
+  ]
+  rectangle S3 [
+  **3 · ExclusionClassifier**
+  ----
+  ExclusionClassifierService
+  offline label lists
+  ETH bytecode check
+  ]
+  rectangle S4 [
+  **4 · ConfidenceScoring**
+  ----
+  ProvisionalConfidenceScoring
+  placeholder for #9
+  ]
+  rectangle S5 [
+  **5 · AnalysisRecorder**
+  ----
+  AnalysisRecorderService
+  RUNNING, then the result once
+  DB(analyses)
+  ]
+}
+
+database "MongoDB" as MONGO {
+  collections "mentions" as C_MEN
+  collections "analyses" as C_AN
+  collections "cases" as C_CASES
+  collections "schedules" as C_SCH
+}
+
+cloud EXT [
+Keyless public ETH services
+eth_getCode · Blockchair
+switchable (D22-005)
+]
+
+Analyst -down-> FE
+FE -down-> API
+
+CC -down-> RS : start Analysis
+CC -down-> CS
+CC -down-> SS
+CC -down-> READ
+AC -down-> READ
+SR -left-> RS
+
+RS -down-> ORC : start + async execute
+
+ORC -down-> S1
+ORC -down-> S2
+ORC -down-> S3
+ORC -down-> S4
+ORC -down-> S5
+
+S1 -[hidden]right- S2
+S2 -[hidden]right- S3
+S3 -[hidden]right- S4
+S4 -[hidden]right- S5
+
+S3 -down-> EXT : unlisted ETH only
+S2 -[hidden]down- C_MEN
+
+C_MEN -[hidden]right- C_AN
+C_AN -[hidden]right- C_CASES
+C_CASES -[hidden]right- C_SCH
+
+legend right
+  <color:#8E24AA><b>db</b> name</color>: MongoDB collection the box reads or writes
+  Stages run in order 1 to 5.
+  Details: 03 start · 04 pipeline
+  05 search · 06 candidates
+  07 exclusions · 08 scoring
+endlegend
+
+@enduml

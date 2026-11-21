@@ -1,14 +1,17 @@
 package squad.nononotaa.backend.service
 
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import squad.nononotaa.backend.analysis.CaseIdentifier
 import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.dto.CaseResponse
 import squad.nononotaa.backend.dto.CreateCaseRequest
 import squad.nononotaa.backend.dto.PersonIdentifiersResponse
+import squad.nononotaa.backend.exception.NotFoundException
 import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.CaseRecord
 import squad.nononotaa.backend.model.PersonIdentifiers
+import squad.nononotaa.backend.repository.AnalysisRepository
 import squad.nononotaa.backend.repository.CaseRepository
 import squad.nononotaa.backend.util.logger
 import java.time.Clock
@@ -18,6 +21,8 @@ class CaseService(
     private val repository: CaseRepository,
     private val addressValidator: AddressValidator,
     private val clock: Clock,
+    private val analyses: AnalysisRepository,
+    private val history: AnalysisHistoryService,
 ) : CaseIdentifierSource {
     fun create(request: CreateCaseRequest): CaseResponse {
         val identifiers =
@@ -36,7 +41,26 @@ class CaseService(
         return CaseResponse(id, saved.identifiers.toResponse(), saved.createdAt, null)
     }
 
+    fun list(): List<CaseResponse> {
+        val records = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt", "_id"))
+        logger.debug("Cases listed count={}", records.size)
+        return records.map(::toResponse)
+    }
+
+    fun get(caseId: String): CaseResponse = toResponse(
+        repository.findById(caseId).orElseThrow {
+            logger.warn("Case not found id={}", caseId)
+            NotFoundException("Nie znaleziono sprawy o podanym identyfikatorze.")
+        },
+    )
+
     override fun currentIdentifiers(caseId: String): List<CaseIdentifier>? = repository.findById(caseId).map { it.identifiers.toIdentifiers() }.orElse(null)
+
+    private fun toResponse(record: CaseRecord): CaseResponse {
+        val id = requireNotNull(record.id) { "Stored case has no id" }
+        val latest = analyses.findFirstByCaseIdOrderByStartedAtDescIdDesc(id)?.let(history::toResponse)
+        return CaseResponse(id, record.identifiers.toResponse(), record.createdAt, latest)
+    }
 
     private fun canonical(rawAddress: String): String = when (val result = addressValidator.validate(rawAddress)) {
         is AddressValidation.Valid -> result.canonicalAddress.address

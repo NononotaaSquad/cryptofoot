@@ -1,5 +1,7 @@
 ﻿# D26-005: Manual rerun (service only, not wired)
 
+> **Superseded in part by DS1-001** (backend-sync-1, 2026-11-21): the flow is now wired; see `../sync-1/`.
+
 - **Status:** proposed (scope limit and missing contract)
 - **Date:** 2026-11-21
 - **Type:** own proposal; missing contract with the E1 owner; deviation from the issue wording

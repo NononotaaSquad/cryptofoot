@@ -1,0 +1,56 @@
+@startuml 11-analysis-comparison
+title E6.3: compare two Analyses (GET /api/1/cases/{caseId}/comparison) (D26-001 to D26-004)
+
+skinparam shadowing false
+
+start
+:load earlierAnalysisId and laterAnalysisId;
+if (either unknown?) then (yes)
+  :404; <<#pink>>
+  stop
+endif
+if (both of caseId?) then (no)
+  :400 "Porównać można tylko analizy tej samej sprawy."; <<#pink>>
+  stop
+endif
+if (either RUNNING?) then (yes)
+  :409 "Nie można porównać analizy, która jeszcze trwa."; <<#pink>>
+  stop
+endif
+if (earlier started after later?) then (yes)
+  :400; <<#pink>>
+  stop
+endif
+:key every Attribution and Excluded Address
+by (network, canonical address);
+partition "per key, AnalysisComparer.changes" {
+  if (Attributed before, absent after) then (yes)
+    :NOT_OBSERVED
+    absenceVerifiable = later COMPLETED
+    and network checked again
+    and every supporting source CHECKED again;
+  elseif (absent before, Attributed after) then (yes)
+    :NEW;
+  elseif (Attributed on both sides, different level) then (yes)
+    :CONFIDENCE_LEVEL_CHANGED;
+  elseif (Excluded on both sides with a different reason,\nor Attributed on one side and Excluded on the other) then (yes)
+    :EXCLUSION_CHANGED;
+  else (unchanged)
+    :no entry;
+  endif
+}
+:comparabilityLimitations:
+IDENTIFIERS_DIFFER, SOURCE_COVERAGE_DIFFERS,
+NETWORKS_DIFFER, ALGORITHM_VERSION_DIFFERS,
+PARTIAL_ANALYSIS (either not COMPLETED);
+:200 AnalysisComparisonResponse
+(both Analyses, changes sorted by network and address,
+Mention ids of both sides); <<#palegreen>>
+note right
+  "Not observed" never means "no longer belongs to the person".
+  An Excluded Address that appears or disappears gives no entry.
+  Only stored data is read; nothing is recomputed.
+end note
+stop
+
+@enduml

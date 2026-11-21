@@ -24,6 +24,7 @@ import squad.nononotaa.backend.model.ScheduleAttemptOutcome
 import squad.nononotaa.backend.model.SchedulePreset
 import squad.nononotaa.backend.model.SourceStatus
 import squad.nononotaa.backend.repository.AnalysisRepository
+import squad.nononotaa.backend.repository.CaseRepository
 import squad.nononotaa.backend.repository.ScheduleRepository
 import squad.nononotaa.testsupport.MutableClock
 
@@ -49,6 +50,9 @@ class DemoSchedulerCheckSpec extends BaseSpec {
             new SourceReport('stub-source', SourceStatus.CHECKED, true, Instant.now())
         ])
     }
+    CaseRepository cases = Stub() {
+        existsById(_) >> true
+    }
     Executor sync = { Runnable task -> task.run() } as Executor
     def identifiers = { String id ->
         id == caseId ? [
@@ -72,7 +76,7 @@ class DemoSchedulerCheckSpec extends BaseSpec {
 
     def "demo cadence: each minute creates a new saved scheduled Analysis and disabling stops further ones"() {
         given:
-        def service = new ScheduleService(schedules, new ScheduleCalculator(), clock, props)
+        def service = new ScheduleService(schedules, new ScheduleCalculator(), clock, props, cases)
         def enabled = service.update(caseId, new UpdateScheduleRequest(true, SchedulePreset.DEMO_EVERY_MINUTE))
 
         expect:

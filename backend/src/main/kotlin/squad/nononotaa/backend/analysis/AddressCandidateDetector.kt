@@ -24,7 +24,8 @@ class AddressCandidateDetector {
             Regex(
                 "(?<![A-Za-z0-9])" +
                     "(?:(?<btcBase58>[13][a-km-zA-HJ-NP-Z1-9]{25,34})" +
-                    "|(?<btcBech32>bc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{11,71})" +
+                    // BIP-173 allows all-uppercase bech32; mixed case is left to the validator (MALFORMED)
+                    "|(?<btcBech32>(?i:bc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{11,71}))" +
                     "|(?<evm>0x[0-9a-fA-F]{40}))" +
                     "(?![A-Za-z0-9])",
             )

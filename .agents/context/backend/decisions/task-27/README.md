@@ -14,4 +14,4 @@ Each decision is one file. "Proposed" means the author's proposal; neither this 
 | [D27-006](006-downtime-policy.md) | No catch-up after downtime (grace window proposed) | accepted | User answer 2026-11-21 (grace window not approved) | none |
 | [D27-007](007-attempt-visibility-and-contract.md) | Visible attempts and schedule API | proposed | none (frontend owner must be told) | none |
 | [D27-008](008-demo-interval.md) | Labelled demo interval | proposed | none | none |
-| [D27-009](009-runtime-and-wiring.md) | Scheduler runtime and wiring | proposed | none | none |
+| [D27-009](009-runtime-and-wiring.md) | Scheduler runtime and wiring | proposed | none | superseded in part by [DS1-001](../sync-1/001-analysis-flow-wiring.md) |

@@ -25,6 +25,7 @@ import squad.nononotaa.backend.model.ScheduleAttemptOutcome as Outcome
 import squad.nononotaa.backend.model.SchedulePreset
 import squad.nononotaa.backend.model.SourceStatus
 import squad.nononotaa.backend.repository.AnalysisRepository
+import squad.nononotaa.backend.repository.CaseRepository
 import squad.nononotaa.backend.repository.ScheduleRepository
 import squad.nononotaa.testsupport.MutableClock
 
@@ -54,6 +55,9 @@ class ScheduledRunnerSpec extends BaseSpec {
             new SourceReport('forum', SourceStatus.CHECKED, true, T0)
         ])
     }
+    CaseRepository cases = Stub() {
+        existsById(_) >> true
+    }
     Executor sync = { Runnable task -> task.run() } as Executor
     def identifiers = { String id ->
         known.contains(id) ? [
@@ -62,7 +66,7 @@ class ScheduledRunnerSpec extends BaseSpec {
     } as CaseIdentifierSource
 
     private ScheduleService service() {
-        new ScheduleService(schedules, new ScheduleCalculator(), clock, new SchedulerProperties(false, Duration.ofMinutes(2)))
+        new ScheduleService(schedules, new ScheduleCalculator(), clock, new SchedulerProperties(false, Duration.ofMinutes(2)), cases)
     }
 
     private ScheduledRunner runner(boolean wired = true) {

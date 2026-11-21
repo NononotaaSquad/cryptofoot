@@ -12,7 +12,7 @@ class ScheduleDemoSpec extends BaseSpec {
 
     def "the shortened demo interval is accepted only in demo mode and is labelled"() {
         given:
-        def caseId = "case-${UUID.randomUUID()}"
+        def caseId = createCase()
 
         when:
         client.put().uri("/api/1/cases/${caseId}/schedule").contentType(MediaType.APPLICATION_JSON)

@@ -1,6 +1,5 @@
 package squad.nononotaa.backend.model
 
-// TODO E2.2: E2 maps every address detected in a Mention into a RawAddressCandidate
 data class RawAddressCandidate(
     val mentionId: String,
     val rawAddress: String,

@@ -1,0 +1,28 @@
+@startuml 09-analysis-lifecycle
+title Analysis lifecycle (D24-001, D25-001, D25-004)
+
+skinparam shadowing false
+hide empty description
+
+[*] --> RUNNING : AnalysisRecorder.begin\n(trigger MANUAL or SCHEDULED,\nidentifiers used, networks)
+
+RUNNING --> COMPLETED : every stage ran,\nnothing unavailable\n(zero Mentions included)
+RUNNING --> PARTIAL : some source or classification\nunavailable, rest of the result kept
+RUNNING --> FAILED : all sources unavailable,\nor a module failed
+
+COMPLETED --> [*]
+PARTIAL --> [*]
+FAILED --> [*]
+
+state RUNNING : blocks a new start of the same Case (409)\nand a scheduled term (SKIPPED_OVERLAP)\nreport and mentions answer 409
+state COMPLETED : terminal, never written again
+state PARTIAL : terminal; limitations explain what is missing
+state FAILED : terminal; kept in history,\nnever shown as zero findings
+
+note bottom
+  A rerun (manual or scheduled) is always a new Analysis with its own id;
+  reading an Analysis, its Mentions or its report never reruns it.
+  A crash between begin and finish leaves RUNNING (not closed automatically, D25-004).
+end note
+
+@enduml

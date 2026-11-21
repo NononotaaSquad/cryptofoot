@@ -207,7 +207,7 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        1 * scoring.score([accepted, unchecked]) >> { args ->
+        1 * scoring.score([accepted, unchecked], _) >> { args ->
             new ScoringResult(args[0].collect {
                 new ScoredAttribution(it, 60, [
                     new AppliedRule('forum-post', 60)

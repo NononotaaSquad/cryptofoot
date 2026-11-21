@@ -1,6 +1,7 @@
 package squad.nononotaa.backend.service
 
 import org.springframework.beans.factory.ObjectProvider
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -17,6 +18,7 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Component
+@ConditionalOnProperty("app.scheduler.enabled", havingValue = "true", matchIfMissing = true)
 class ScheduledRunner(
     private val repository: ScheduleRepository,
     private val rerun: ObjectProvider<AnalysisRerunService>,

@@ -82,6 +82,14 @@ class AddressCandidateDetectorSpec extends Specification {
         detector.detect('m1', 'bc1bw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4') == []
     }
 
+    def "detects an all-uppercase or mixed-case bech32 candidate and leaves its validity to the validator"() {
+        expect:
+        detector.detect('m1', 'pay BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4 or bc1QW508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')*.rawAddress == [
+            'BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4',
+            'bc1QW508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
+        ]
+    }
+
     def "does not detect an EVM near-miss with 39 hex digits"() {
         expect:
         detector.detect('m1', '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAe') == []

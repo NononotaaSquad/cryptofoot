@@ -52,7 +52,7 @@ class AnalysisOrchestratorSpec extends Specification {
         def run = orchestrator.run(request)
 
         then:
-        1 * scoring.score([candidate]) >> new ScoringResult([attribution], 'v1')
+        1 * scoring.score([candidate], [mention]) >> new ScoringResult([attribution], 'v1')
         run == new AnalysisRun('a-1', AnalysisStatus.COMPLETED)
         finished.status == AnalysisStatus.COMPLETED
         finished.failures.isEmpty()
@@ -83,7 +83,7 @@ class AnalysisOrchestratorSpec extends Specification {
         search.search(_) >> new SearchResult([mention], [okSource, downSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
-        scoring.score(_) >> new ScoringResult([attribution], 'v1')
+        scoring.score(_, _) >> new ScoringResult([attribution], 'v1')
 
         when:
         def run = orchestrator.run(request)
@@ -107,7 +107,7 @@ class AnalysisOrchestratorSpec extends Specification {
         def run = orchestrator.run(request)
 
         then:
-        1 * scoring.score([candidate, excludedCandidate]) >> new ScoringResult([
+        1 * scoring.score([candidate, excludedCandidate], _) >> new ScoringResult([
             attribution,
             unclassifiedAttribution
         ], 'v1')
@@ -169,7 +169,7 @@ class AnalysisOrchestratorSpec extends Specification {
         search.search(_) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
-        scoring.score(_) >> { throw new IllegalStateException('boom') }
+        scoring.score(_, _) >> { throw new IllegalStateException('boom') }
 
         when:
         def run = orchestrator.run(request)
