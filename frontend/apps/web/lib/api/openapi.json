@@ -861,6 +861,18 @@
                         "type": "string",
                         "format": "date-time"
                     },
+                    "rulesVersion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "stablecoinSwapThreshold": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    },
                     "unit": {
                         "type": "string"
                     },

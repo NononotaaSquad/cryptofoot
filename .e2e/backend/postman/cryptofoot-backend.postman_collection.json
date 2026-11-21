@@ -1023,6 +1023,7 @@
                   "  const btc = byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');",
                   "  pm.expect(btc.addressActivityStatus).to.equal('AVAILABLE');",
                   "  pm.expect(btc.addressActivity.synthetic).to.equal(true);",
+                  "  pm.expect([btc.addressActivity.rulesVersion, btc.addressActivity.stablecoinSwapThreshold]).to.eql(['activity-1', 1000]);",
                   "  pm.expect([btc.addressActivity.unit, btc.addressActivity.totalReceived, btc.addressActivity.totalSent, btc.addressActivity.transactionCount]).to.eql(['BTC', 0.75, 0.25, 4]);",
                   "  pm.expect(btc.addressActivity.cashOutSignals).to.eql([]);",
                   "  const bech32 = byAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');",

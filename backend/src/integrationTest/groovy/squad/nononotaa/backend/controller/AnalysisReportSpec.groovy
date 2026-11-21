@@ -3,6 +3,10 @@ package squad.nononotaa.backend.controller
 import groovy.json.JsonSlurper
 import java.time.Instant
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import squad.nononotaa.backend.BaseSpec
 import squad.nononotaa.backend.analysis.AddressActivity
 import squad.nononotaa.backend.analysis.AddressActivityOutcome
@@ -49,6 +53,9 @@ class AnalysisReportSpec extends BaseSpec {
 
     @Autowired
     AnalysisRepository repository
+
+    @Autowired
+    MongoTemplate mongoTemplate
 
     String caseId = "case-${UUID.randomUUID()}"
 
@@ -135,7 +142,7 @@ class AnalysisReportSpec extends BaseSpec {
     def "stored Address Activity is reported with its totals, cash-out signals, provenance and limitations; missing data stays unavailable"() {
         given:
         def id = begin()
-        def activity = new AddressActivity('mempool.space Bitcoin explorer API (mempool.space)', false, AT.plusSeconds(5), 'BTC',
+        def activity = new AddressActivity('mempool.space Bitcoin explorer API (mempool.space)', false, AT.plusSeconds(5), 'activity-1', new BigDecimal('2500'), 'BTC',
                 new BigDecimal('1.23456789'), 0.5, 40, null, AT.minusSeconds(86400), [
                     new CashOutSignal(CashOutSignalKind.EXCHANGE, 't-exit', 'https://mempool.space/tx/t-exit', AT.minusSeconds(86400),
                     new BigDecimal('0.00012345'), 'BTC', '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s', 'Own label list: Binance.com')
@@ -172,6 +179,8 @@ class AnalysisReportSpec extends BaseSpec {
             sourceName         : 'mempool.space Bitcoin explorer API (mempool.space)',
             synthetic          : false,
             checkedAt          : '2026-11-21T10:00:05Z',
+            rulesVersion       : 'activity-1',
+            stablecoinSwapThreshold: 2500,
             unit               : 'BTC',
             totalReceived      : 1.23456789,
             totalSent          : 0.5,
@@ -201,6 +210,31 @@ class AnalysisReportSpec extends BaseSpec {
             'BLOCKCHAIN_DATA_UNAVAILABLE',
             'ANALYSIS_INCOMPLETE'
         ]
+    }
+
+    def "an Address Activity stored before the rules were versioned still reads back, with an unknown version"() {
+        given:
+        def id = begin()
+        def activity = new AddressActivity('synthetic', true, AT, 'activity-1', new BigDecimal('1000'), 'BTC', 0.75, 0.25, 4,
+                AT.minusSeconds(86400), AT, [], [])
+        recorder.finish(id, new AnalysisResult(AnalysisStatus.COMPLETED, [], [], [
+            new SourceReport('synthetic', SourceStatus.CHECKED, true, AT)
+        ], [market], [], [], [], [
+            new ScoredAttribution(new Candidate('BTC', BTC, ['m-market']), 60, [], '', ClassificationStatus.NOT_EXCLUDED,
+            new AddressActivityOutcome(AddressActivityStatus.AVAILABLE, activity))
+        ], 'confidence-1'))
+        mongoTemplate.updateFirst(Query.query(Criteria.where('_id').is(id)), new Update()
+                .unset('result.attributions.0.addressActivity.activity.rulesVersion')
+                .unset('result.attributions.0.addressActivity.activity.stablecoinSwapThreshold'), 'analyses')
+
+        when:
+        def reported = json("/api/1/analyses/${id}/report").attributions[0].addressActivity
+
+        then:
+        reported.rulesVersion == null
+        reported.stablecoinSwapThreshold == null
+        reported.totalReceived == 0.75
+        jsonList('/api/1/cases') != null
     }
 
     def "an Attribution whose classification was unavailable is flagged, not shown as confirmed private"() {

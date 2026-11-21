@@ -11,6 +11,10 @@ export interface AddressActivityResponse {
   sourceName?: string;
   synthetic?: boolean;
   checkedAt?: string;
+  /** @nullable */
+  rulesVersion?: string | null;
+  /** @nullable */
+  stablecoinSwapThreshold?: number | null;
   unit?: string;
   /** @nullable */
   totalReceived?: number | null;

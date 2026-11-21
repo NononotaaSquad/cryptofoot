@@ -100,6 +100,8 @@ class AnalysisReportService(
         sourceName = activity.sourceName,
         synthetic = activity.synthetic,
         checkedAt = activity.checkedAt,
+        rulesVersion = activity.rulesVersion,
+        stablecoinSwapThreshold = activity.stablecoinSwapThreshold,
         unit = activity.unit,
         totalReceived = activity.totalReceived,
         totalSent = activity.totalSent,

@@ -192,7 +192,8 @@ class AnalysisFlowSpec extends BaseSpec {
             'AVAILABLE'
         ]
         report.attributions.every {
-            it.addressActivity.synthetic && it.addressActivity.sourceName == 'synthetic' && it.addressActivity.checkedAt
+            it.addressActivity.synthetic && it.addressActivity.sourceName == 'synthetic' && it.addressActivity.checkedAt &&
+                    it.addressActivity.rulesVersion == 'activity-1' && it.addressActivity.stablecoinSwapThreshold == 1000
         }
         with(byAddress[ETH].addressActivity) {
             unit == 'ETH'

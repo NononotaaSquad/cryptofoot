@@ -98,6 +98,8 @@ data class AddressActivityResponse(
     val sourceName: String,
     val synthetic: Boolean,
     val checkedAt: Instant,
+    val rulesVersion: String?,
+    val stablecoinSwapThreshold: BigDecimal?,
     val unit: String,
     val totalReceived: BigDecimal?,
     val totalSent: BigDecimal?,

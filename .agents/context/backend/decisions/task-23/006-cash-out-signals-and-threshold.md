@@ -21,7 +21,7 @@ Option 1 (`AddressActivityEvaluator`). Signal kinds (`CashOutSignalKind`):
 | Kind | Rule |
 |---|---|
 | `EXCHANGE` | outgoing transfer (coin or token) to an address labelled `EXCHANGE` in the offline lists (Etherscan dataset and own list, D22-002), at any amount; the counterparty is the signal |
-| `P2P`, `PAYMENT_GATEWAY`, `CRYPTO_CARD` | outgoing transfer to a counterparty with that label; today only the synthetic fixture names such counterparties (D23-009) |
+| `P2P`, `PAYMENT_GATEWAY`, `CRYPTO_CARD` | outgoing transfer to a counterparty with that label: an exchange label whose dataset tags name the service (`remitano`, `fiat-gateway`, `wirex`, D23-010), or a fixture label |
 | `STABLECOIN_SWAP` | in one transaction the address sends something other than a stablecoin and receives USDT, USDC or DAI of at least `app.address-activity.stablecoin-swap-threshold` (default 1000) units |
 
 - A list label wins over a fixture label. Incoming transfers, transfers to unlisted addresses and transfers to mixers are not cash-out signals.

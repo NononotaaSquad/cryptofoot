@@ -28,6 +28,8 @@ class AddressActivityEvaluator(
             sourceName = source.sourceName,
             synthetic = source.synthetic,
             checkedAt = checkedAt,
+            rulesVersion = RULES_VERSION,
+            stablecoinSwapThreshold = stablecoinSwapThreshold,
             unit = chain.unit,
             // a partial page never gives a total: missing data is not zero activity
             totalReceived = chain.totalReceived ?: coin.total(TransferDirection.IN).takeIf { chain.complete },
@@ -67,7 +69,7 @@ class AddressActivityEvaluator(
     ) = labels
         .find(ExclusionLabelDirectory.canonical(network, counterparty))
         ?.takeIf { it.reason == ExclusionReason.EXCHANGE }
-        ?.let { OffRampLabel(CashOutSignalKind.EXCHANGE, it.name, it.source) }
+        ?.let { OffRampLabel(EtherscanTagMapping.offRampKindFor(it.tags), it.name, it.source) }
 
     // stablecoins are matched by contract, never by symbol, so a token named "USDC" proves nothing
     private fun stablecoinSwaps(
@@ -109,6 +111,9 @@ class AddressActivityEvaluator(
     )
 
     companion object {
+        // any change to a rule, a label mapping or the stablecoin list is a new version (D23-011)
+        const val RULES_VERSION = "activity-1"
+
         val usdStablecoins =
             mapOf(
                 Network.ETH to

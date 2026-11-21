@@ -65,6 +65,8 @@ class AddressActivityEvaluatorSpec extends Specification {
         activity.sourceName == 'test explorer'
         !activity.synthetic
         activity.checkedAt == CHECKED_AT
+        activity.rulesVersion == 'activity-1'
+        activity.stablecoinSwapThreshold == 1000
         activity.unit == 'ETH'
         activity.totalReceived == 10.2G
         activity.totalSent == 8.1G
@@ -151,6 +153,38 @@ class AddressActivityEvaluatorSpec extends Specification {
             transfer(id: 'c', direction: OUT, counterparty: TORNADO),
             transfer(id: 'd', direction: OUT, counterparty: null),
         ])).cashOutSignals.isEmpty()
+    }
+
+    def "the dataset tags of a listed exchange name the off-ramp kind: #tags gives #kind"() {
+        given:
+        def counterparty = '0x1111111111111111111111111111111111111111'
+        def tagged = new AddressActivityEvaluator(new ExclusionLabelDirectory(ExclusionLabelDirectory.fromEtherscan([
+            (counterparty): new ExclusionLabelDirectory.EtherscanEntry('Service', tags)
+        ])), 1000 as BigDecimal)
+
+        when:
+        def signals = tagged.evaluate(owner, source, chain([
+            transfer(direction: OUT, counterparty: counterparty)
+        ]), CHECKED_AT).cashOutSignals
+
+        then:
+        signals*.kind == [kind]
+
+        where:
+        tags                       | kind
+        ['remitano']               | CashOutSignalKind.P2P
+        ['wirex']                  | CashOutSignalKind.CRYPTO_CARD
+        ['fiat-gateway']           | CashOutSignalKind.PAYMENT_GATEWAY
+        ['coinbase', 'hot-wallet'] | CashOutSignalKind.EXCHANGE
+    }
+
+    def "the rules version and the threshold in use are stored with the activity"() {
+        when:
+        def activity = new AddressActivityEvaluator(labels, 2500 as BigDecimal).evaluate(owner, source, chain([]), CHECKED_AT)
+
+        then:
+        activity.rulesVersion == AddressActivityEvaluator.RULES_VERSION
+        activity.stablecoinSwapThreshold == 2500
     }
 
     def "a fixture label names other off-ramps, but a list label wins"() {

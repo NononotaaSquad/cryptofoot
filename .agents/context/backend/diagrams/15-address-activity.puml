@@ -30,12 +30,14 @@ endif
 totals: stated by the source, else summed when the history is complete, else unknown
 first activity only when complete, last activity from the newest transfer;
 :cash-out signals (D23-006)
-* OUT to a counterparty labelled EXCHANGE in the offline lists, or labelled by the fixture: any amount
+* OUT to a counterparty labelled EXCHANGE in the offline lists (kind from its tags: remitano P2P,
+  wirex CRYPTO_CARD, fiat-gateway PAYMENT_GATEWAY, else EXCHANGE, D23-010), or labelled by the fixture: any amount
 * swap into USDT / USDC / DAI (by contract) of at least 1000 units
 sorted by time;
 :coverage limitations
 RECENT_TRANSACTIONS_ONLY, LABELLED_COUNTERPARTIES_ONLY, INTERNAL_TRANSFERS_NOT_COUNTED (ETH live);
 :AVAILABLE, stored with the Attribution in the Analysis snapshot
+with rulesVersion activity-1 and the threshold in use (D23-011)
 reopening the report never fetches again (D23-001); <<#palegreen>>
 stop
 

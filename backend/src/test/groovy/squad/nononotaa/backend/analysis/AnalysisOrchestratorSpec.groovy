@@ -131,7 +131,7 @@ class AnalysisOrchestratorSpec extends Specification {
     def "Address Activity is collected for the scored Attributions and stored with each of them"() {
         given:
         def unlinked = new ScoredAttribution(excludedCandidate, 0, [], '', ClassificationStatus.NOT_EXCLUDED)
-        def activityData = new AddressActivity('synthetic', true, Instant.parse('2026-11-21T12:00:00Z'), 'ETH', 1.5, 0.5, 2,
+        def activityData = new AddressActivity('synthetic', true, Instant.parse('2026-11-21T12:00:00Z'), 'activity-1', new BigDecimal('1000'), 'ETH', 1.5, 0.5, 2,
                 null, null, [], [
                     AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY
                 ])

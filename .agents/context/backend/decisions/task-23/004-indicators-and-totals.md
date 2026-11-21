@@ -31,7 +31,7 @@ Option 1.
 
 ## Consequences and risks
 - The Analyst sees no plain transfer list; the transaction count and the period give the scale.
-- Live data reads one page (mempool: 25 confirmed transactions; Blockscout: 50 transactions and 50 token transfers). Paging is not implemented (D23-009).
+- Live data reads one page (mempool: the most recent page of up to 50 transactions, confirmed ones used; Blockscout: 50 transactions and 50 token transfers). Paging is not implemented (D23-009).
 - BTC totals come from mempool `funded_txo_sum` / `spent_txo_sum`; like every explorer they include change sent back to the address.
 
 ## Verification

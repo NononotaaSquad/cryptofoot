@@ -54,7 +54,7 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - Part of the Analysis: a stage after scoring; the outcome is stored on each Attribution in the snapshot and never fetched again when the report is reopened.
 - Only Attributions with a Confidence Level above 0 are checked. Status per Attribution: `AVAILABLE` (totals, period, cash-out signals, source, synthetic flag, time read, coverage limitations), `UNAVAILABLE` (no source answered), `NOT_CHECKED` (0%, or an Analysis stored before E4).
 - Sources in order: the synthetic demo fixture (demo addresses only), then keyless self-hostable explorers (mempool.space BTC, Blockscout ETH), which are off by default.
-- Cash-out signal: an outgoing transfer to a labelled off-ramp (exchange, P2P, payment gateway, crypto card) at any amount, or a swap into a USD stablecoin of at least 1000 units. A signal is a lead, not proof of a fiat withdrawal.
+- Cash-out signal: an outgoing transfer to a labelled off-ramp (exchange, P2P, payment gateway, crypto card) at any amount, or a swap into a USD stablecoin of at least 1000 units. A signal is a lead, not proof of a fiat withdrawal. The rules have a version (`activity-1`), stored with each Address Activity together with the threshold in use.
 - Invariants: unknown data is never shown as zero activity (a total is stated by the source or summed from a complete history, otherwise empty); unavailable activity makes the Analysis `PARTIAL` with `BLOCKCHAIN_DATA_UNAVAILABLE`, never `FAILED`.
 
 ## Lifecycles

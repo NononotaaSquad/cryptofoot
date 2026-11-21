@@ -16,7 +16,7 @@ The placeholder DTOs (`AddressActivityEventResponse` with `RECEIVED/SENT/SWAP/CA
 ```
 addressActivityStatus: AVAILABLE | UNAVAILABLE | NOT_CHECKED
 addressActivity: AddressActivityResponse | null      // non-null only when AVAILABLE
-  sourceName, synthetic, checkedAt, unit
+  sourceName, synthetic, checkedAt, rulesVersion?, stablecoinSwapThreshold?, unit   // "activity-1"; null only before versioning (D23-011)
   totalReceived?, totalSent?, transactionCount?, firstActivityAt?, lastActivityAt?   // null = unknown, never 0
   cashOutSignals: [CashOutSignalResponse]            // time order
     kind: EXCHANGE | P2P | PAYMENT_GATEWAY | CRYPTO_CARD | STABLECOIN_SWAP

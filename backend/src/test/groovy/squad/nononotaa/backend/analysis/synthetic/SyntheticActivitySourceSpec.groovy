@@ -53,6 +53,8 @@ class SyntheticActivitySourceSpec extends Specification {
 
         then:
         activity.synthetic
+        activity.rulesVersion == 'activity-1'
+        activity.stablecoinSwapThreshold == 1000
         activity.unit == 'ETH'
         activity.totalReceived == 10.2
         activity.totalSent == 8.1

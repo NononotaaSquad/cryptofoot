@@ -1,6 +1,7 @@
 package squad.nononotaa.backend.service
 
 import squad.nononotaa.backend.model.CanonicalAddress
+import squad.nononotaa.backend.model.CashOutSignalKind
 import squad.nononotaa.backend.model.ExclusionLabel
 import squad.nononotaa.backend.model.ExclusionReason
 import squad.nononotaa.backend.model.Network
@@ -59,7 +60,7 @@ class ExclusionLabelDirectory(
                 EtherscanTagMapping.reasonFor(entry.labels)?.let { reason ->
                     val tags = entry.labels.sorted().joinToString(", ")
                     val name = entry.name?.takeIf { it.isNotBlank() } ?: "no name"
-                    CanonicalAddress(Network.ETH, address.lowercase()) to ExclusionLabel(reason, "$name [$tags]", ETHERSCAN_SOURCE)
+                    CanonicalAddress(Network.ETH, address.lowercase()) to ExclusionLabel(reason, "$name [$tags]", ETHERSCAN_SOURCE, entry.labels.sorted())
                 }
             }
             // upstream keeps a few addresses twice with different letter case: the first by sorted key wins
@@ -108,11 +109,24 @@ object EtherscanTagMapping {
 
     val fundraiserTags = setOf("donate", "crowdfunding")
 
+    // off-ramp kinds named by exchange tags; such addresses stay Excluded Addresses with reason EXCHANGE (D23-010)
+    val p2pTags = setOf("remitano")
+    val cryptoCardTags = setOf("wirex")
+    val paymentGatewayTags = setOf("fiat-gateway")
+
     /** Deterministic precedence when an entry has tags of several reasons. */
     fun reasonFor(tags: Collection<String>): ExclusionReason? = when {
         tags.any { it in mixerTags } -> ExclusionReason.MIXER
         tags.any { it in exchangeTags } -> ExclusionReason.EXCHANGE
         tags.any { it in fundraiserTags } -> ExclusionReason.FUNDRAISER
         else -> null
+    }
+
+    // kind of cash-out signal for a transfer to an exchange-tagged counterparty, with a fixed precedence
+    fun offRampKindFor(tags: Collection<String>): CashOutSignalKind = when {
+        tags.any { it in p2pTags } -> CashOutSignalKind.P2P
+        tags.any { it in cryptoCardTags } -> CashOutSignalKind.CRYPTO_CARD
+        tags.any { it in paymentGatewayTags } -> CashOutSignalKind.PAYMENT_GATEWAY
+        else -> CashOutSignalKind.EXCHANGE
     }
 }

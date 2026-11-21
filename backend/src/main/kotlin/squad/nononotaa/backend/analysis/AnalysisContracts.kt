@@ -104,6 +104,9 @@ data class AddressActivity(
     val sourceName: String,
     val synthetic: Boolean,
     val checkedAt: Instant,
+    // null: stored before the activity rules were versioned (D23-011)
+    val rulesVersion: String? = null,
+    val stablecoinSwapThreshold: BigDecimal? = null,
     val unit: String,
     val totalReceived: BigDecimal?,
     val totalSent: BigDecimal?,
