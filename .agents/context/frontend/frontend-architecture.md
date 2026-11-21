@@ -2,6 +2,8 @@
 
 Context and rationale. The rules an agent follows are in `.agents/rules/frontend.md`.
 
+Views and user paths: [views.md](views.md). Visual design from the KAS / Ministry of Finance materials: [kas-ui-ux/](kas-ui-ux/README.md).
+
 ## Technology Stack
 
 Versions are major versions only. Exact ranges live in `package.json` files.

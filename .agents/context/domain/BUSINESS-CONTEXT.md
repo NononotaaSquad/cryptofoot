@@ -18,9 +18,21 @@ _Avoid_: investigation, project
 A cryptocurrency address entered by the Analyst as an identifier of the Case (one address, Bitcoin or Ethereum). It is the Analyst's own input, not a finding from a source: it is never a Mention, never an independent confirmation and does not by itself make an Attribution.
 _Avoid_: address candidate, found address
 
+**Case Number** (PL: Numer sprawy):
+The short number that the Analyst uses to name and find a Case: the year and a sequence number, e.g. 2026/0006.
+_Avoid_: ID, identifier (an identifier is a datum of the investigated person)
+
 **Analysis** (PL: Analiza):
 One run of search and scoring for a Case, saved in its history. Started manually (priority) or on a schedule.
 _Avoid_: run, scan, pass
+
+**New Results** (PL: Nowe wyniki):
+The state of a Case whose newest Analysis has ended and which the Analyst has not yet marked as Reviewed.
+_Avoid_: unread, pending, waiting for review
+
+**Reviewed** (PL: Przejrzana):
+The state of a Case after the Analyst marked it so in Case details. Opening the report alone does not make a Case Reviewed.
+_Avoid_: read, closed, done
 
 **Mention** (PL: Wzmianka):
 A place in a public source where the data of the investigated person or a cryptocurrency address appeared.
@@ -35,8 +47,8 @@ A number from 0 to 100% that says how likely it is that the address belongs to t
 _Avoid_: Confidence Score, scoring, result
 
 **Justification** (PL: Uzasadnienie):
-References to the Mentions that the Confidence Level is based on. It points to sources; it is not a text description.
-_Avoid_: premises, explanation, written description
+A short plain-language text that tells the Analyst why the address is connected with the investigated person. It is built from a template of the scoring rules that applied, so the same Mentions always give the same text. It shows no numbers and is not written by an AI model. The Mentions it is based on are shown next to it.
+_Avoid_: premises, explanation, AI narrative
 
 **Excluded Address** (PL: Adres wykluczony):
 An address that must not be connected with a person (exchange, smart contract, mixer, fundraiser). It has a Confidence Level of 0% and a stated reason.

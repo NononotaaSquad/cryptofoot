@@ -50,10 +50,14 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Light only: the KAS design has no dark palette (ADR-0006). */}
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        forcedTheme="light"
+        // `useTheme().theme` (read by the Toaster) ignores `forcedTheme`;
+        // without these it would report "system" and follow a dark OS.
+        defaultTheme="light"
+        enableSystem={false}
         disableTransitionOnChange
       >
         {children}
