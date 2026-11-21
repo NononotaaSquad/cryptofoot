@@ -5994,6 +5994,67 @@
                               "children": [
                                 {
                                   "type": "frame",
+                                  "id": "JXZFI",
+                                  "name": "Blok – Punktacja",
+                                  "width": 760,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "fA2dE",
+                                      "name": "Nagłówek bloku",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "justifyContent": "space_between",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "x044n0",
+                                          "name": "Tytuł bloku",
+                                          "fill": "$text",
+                                          "content": "Punktacja",
+                                          "lineHeight": 1.3,
+                                          "fontFamily": "$font",
+                                          "fontSize": 18,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "heFtv",
+                                          "name": "Rozwiń punktację",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "ChXJ4",
+                                              "name": "Tekst akcji",
+                                              "fill": "$primary",
+                                              "content": "Rozwiń",
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "icon",
+                                              "id": "d1t19",
+                                              "name": "Ikona rozwijania",
+                                              "width": 24,
+                                              "height": 24,
+                                              "icon": "chevron-down",
+                                              "library": "lucide",
+                                              "fill": "$primary"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
                                   "id": "HGd42",
                                   "name": "Blok – Uzasadnienie",
                                   "width": 760,
@@ -12513,6 +12574,2242 @@
             {
               "type": "text",
               "id": "KE9As",
+              "name": "Stopka – nazwa",
+              "fill": "$text-muted",
+              "content": "Wszelkie prawa zastrzeżone. Krajowa Administracja Skarbowa, projekt OŁCyŚ.",
+              "lineHeight": 1.5,
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "q7ykDp",
+      "x": 12640,
+      "y": 3188,
+      "name": "[STAN] Szczegóły sprawy – punktacja rozwinięta",
+      "clip": true,
+      "width": 1920,
+      "fill": "$white",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "kCD0R",
+          "name": "Nagłówek",
+          "width": "fill_container",
+          "height": 72,
+          "fill": "$white",
+          "stroke": "$border",
+          "strokeWidth": {
+            "bottom": 1
+          },
+          "padding": [
+            0,
+            360
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zA5C8",
+              "name": "Marka",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JgVym",
+                  "name": "Logo KAS",
+                  "width": 64,
+                  "height": 48,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "kas-logo-mark.png",
+                    "mode": "fit"
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "zoX7O",
+                  "name": "Znak słowny",
+                  "fill": "$navy",
+                  "content": "Projekt OŁCyŚ",
+                  "fontFamily": "$font",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "t9IPmy",
+              "name": "Nawigacja",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Lp9zm",
+                  "name": "Link – odstęp",
+                  "padding": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "D41Oms",
+                      "name": "Link Lista spraw",
+                      "fill": "$primary",
+                      "content": "← Lista spraw",
+                      "fontFamily": "$font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "e0bFO",
+                  "name": "Licznik spraw do przejrzenia",
+                  "height": 20,
+                  "fill": "$error",
+                  "cornerRadius": 10,
+                  "padding": [
+                    0,
+                    6
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "cNSwW",
+                      "name": "Liczba",
+                      "fill": "$white",
+                      "content": "3",
+                      "fontFamily": "$font",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "oPPLO",
+          "name": "Treść",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            40,
+            360,
+            56,
+            360
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "yUfMy",
+              "name": "Zakres sprawy",
+              "width": "fill_container",
+              "gap": 32,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SaQwd",
+                  "name": "Dane sprawy",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "l4gCUv",
+                      "name": "Osoba i numer",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FUjir",
+                          "name": "Osoba",
+                          "fill": "$text",
+                          "content": "Jan Kowalski",
+                          "lineHeight": 1.25,
+                          "fontFamily": "$font",
+                          "fontSize": 40,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "o9eaOi",
+                          "name": "Numer sprawy",
+                          "fill": "$text-muted",
+                          "content": "2026/0006",
+                          "fontFamily": "$font",
+                          "fontSize": 20,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "T5cMs3",
+                      "name": "Identyfikatory",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IIrWC",
+                          "name": "Rodzaj",
+                          "fill": "$text-muted",
+                          "content": "Nick:",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "yWXv6",
+                          "name": "Wartość",
+                          "fill": "$text",
+                          "content": "krypto_janek",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Qcu0O",
+                          "name": "Separator",
+                          "fill": "$text-muted",
+                          "content": "·",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fFFkO",
+                          "name": "Rodzaj",
+                          "fill": "$text-muted",
+                          "content": "E-mail:",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "s7d8qv",
+                          "name": "Wartość",
+                          "fill": "$text",
+                          "content": "jan.kowalski@example.com",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "toumK",
+                          "name": "Separator",
+                          "fill": "$text-muted",
+                          "content": "·",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "GyLAz",
+                          "name": "Więcej",
+                          "fill": "$primary",
+                          "content": "+2 więcej",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DSmTB",
+                  "name": "Akcje",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Nkaqm",
+                      "name": "Przycisk – Oznacz jako przejrzaną",
+                      "height": 48,
+                      "fill": "$white",
+                      "cornerRadius": "$radius",
+                      "stroke": "$primary",
+                      "strokeWidth": 2,
+                      "padding": [
+                        0,
+                        24
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KjaDi",
+                          "name": "Etykieta przycisku",
+                          "fill": "$primary",
+                          "content": "Oznacz jako przejrzaną",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Vrttx",
+                      "name": "Przycisk – Rozpocznij nową analizę",
+                      "height": 48,
+                      "fill": "$primary",
+                      "cornerRadius": "$radius",
+                      "padding": [
+                        0,
+                        28
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "C8Z0Yu",
+                          "name": "Etykieta przycisku",
+                          "fill": "$white",
+                          "content": "Rozpocznij nową analizę",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "HH4Wm",
+              "name": "Historia analiz – pole wyboru",
+              "width": "fill_container",
+              "stroke": "$border",
+              "strokeWidth": {
+                "top": 1,
+                "bottom": 1
+              },
+              "gap": 48,
+              "padding": [
+                24,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "R7Cuue",
+                  "name": "Pole – Wyświetlana analiza",
+                  "width": 560,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "V2iDk",
+                      "name": "Tekst etykiety",
+                      "fill": "$text",
+                      "content": "Wyświetlana analiza",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "c7nJk",
+                      "name": "Pole wyboru",
+                      "width": "fill_container",
+                      "height": 44,
+                      "fill": "$white",
+                      "cornerRadius": "$radius",
+                      "stroke": "$border-strong",
+                      "strokeWidth": 1,
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "jjkC9",
+                          "name": "Wybrana wartość",
+                          "fill": "$text",
+                          "content": "21.11.2026, 14:32 · Ręczna · Zakończona",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "kmNqP",
+                          "name": "Ikona rozwijania",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "chevron-down",
+                          "library": "lucide",
+                          "fill": "$text"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "C1BzQ7",
+                      "name": "Podpowiedź",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Wybierz wcześniejszą analizę, aby zobaczyć jej raport. Liczba analiz: 4.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "x3Glaw",
+              "name": "Raport analizy",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 40,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "O9GFh",
+                  "name": "Podsumowanie raportu",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DJl77",
+                      "name": "Tytuł raportu",
+                      "fill": "$text",
+                      "content": "Raport analizy z 21.11.2026, 14:32",
+                      "lineHeight": 1.25,
+                      "fontFamily": "$font",
+                      "fontSize": 28,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "D29tJ",
+                      "name": "Status i czas",
+                      "gap": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ywLfy",
+                          "name": "Status – Zakończona",
+                          "fill": "$success-tint",
+                          "cornerRadius": "$radius",
+                          "gap": 6,
+                          "padding": [
+                            4,
+                            10,
+                            4,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "KEVoH",
+                              "name": "Ikona statusu",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "circle-check",
+                              "library": "lucide",
+                              "fill": "$success-text"
+                            },
+                            {
+                              "type": "text",
+                              "id": "o6Pzq",
+                              "name": "Tekst statusu",
+                              "fill": "$success-text",
+                              "content": "Zakończona",
+                              "fontFamily": "$font",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "F6kjCG",
+                          "name": "Rozpoczęto:",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Lerq3",
+                              "name": "Etykieta",
+                              "fill": "$text-muted",
+                              "content": "Rozpoczęto:",
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "R8Vtg",
+                              "name": "Wartość",
+                              "fill": "$text",
+                              "content": "21.11.2026, 14:32",
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "y6wEv",
+                          "name": "Zakończono:",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "M1ZBj",
+                              "name": "Etykieta",
+                              "fill": "$text-muted",
+                              "content": "Zakończono:",
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "y7Skl",
+                              "name": "Wartość",
+                              "fill": "$text",
+                              "content": "21.11.2026, 14:33",
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "o8tQez",
+                      "name": "Źródła i sieci",
+                      "width": "fill_container",
+                      "gap": 48,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PZvOM",
+                          "name": "Sprawdzone źródła",
+                          "width": 728,
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "r1EvA",
+                              "name": "Etykieta",
+                              "fill": "$text",
+                              "content": "Sprawdzone źródła (4 z 4)",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "qeFmu",
+                              "name": "Źródło – GitHub",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "CkFX2",
+                                  "name": "Ikona – sprawdzone",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$success-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "o7z80",
+                                  "name": "Nazwa źródła",
+                                  "fill": "$text",
+                                  "content": "GitHub",
+                                  "fontFamily": "$font",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vBvq9",
+                              "name": "Źródło – Forum kryptowalut (forum.example)",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "fkfqY",
+                                  "name": "Ikona – sprawdzone",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$success-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "YH3Iz",
+                                  "name": "Nazwa źródła",
+                                  "fill": "$text",
+                                  "content": "Forum kryptowalut (forum.example)",
+                                  "fontFamily": "$font",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BbB37",
+                              "name": "Źródło – Serwis ogłoszeń P2P (ogloszenia.example)",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Zc0LY",
+                                  "name": "Ikona – sprawdzone",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$success-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "w4UHdb",
+                                  "name": "Nazwa źródła",
+                                  "fill": "$text",
+                                  "content": "Serwis ogłoszeń P2P (ogloszenia.example)",
+                                  "fontFamily": "$font",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "c0WLV",
+                              "name": "Źródło – Telegram – kanały publiczne",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "U5nJl",
+                                  "name": "Ikona – sprawdzone",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "check",
+                                  "library": "lucide",
+                                  "fill": "$success-text"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "H5GVC",
+                                  "name": "Nazwa źródła",
+                                  "fill": "$text",
+                                  "content": "Telegram – kanały publiczne",
+                                  "fontFamily": "$font",
+                                  "fontSize": 16,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j9kgN",
+                          "name": "Sieci",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xl095",
+                              "name": "Etykieta",
+                              "fill": "$text",
+                              "content": "Sieci",
+                              "lineHeight": 1.5,
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "r8gCoj",
+                              "name": "Sieć",
+                              "fill": "$text",
+                              "content": "Bitcoin",
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dIh1t",
+                              "name": "Sieć",
+                              "fill": "$text",
+                              "content": "Ethereum",
+                              "fontFamily": "$font",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "S2rblp",
+                  "name": "Uwaga – tropy, nie dowody",
+                  "width": "fill_container",
+                  "stroke": "$border-strong",
+                  "strokeWidth": {
+                    "left": 4
+                  },
+                  "gap": 10,
+                  "padding": [
+                    10,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "c2Vin",
+                      "name": "Ikona",
+                      "width": 20,
+                      "height": 20,
+                      "icon": "info",
+                      "library": "lucide",
+                      "fill": "$text"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wIRaH",
+                      "name": "Treść uwagi",
+                      "fill": "$text",
+                      "content": "Powiązania są tropami do dalszej weryfikacji, a nie dowodami.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hhBdn",
+                  "name": "Sekcja – Powiązania",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kRFNB",
+                      "name": "Tytuł sekcji",
+                      "fill": "$text",
+                      "content": "Powiązania (3)",
+                      "lineHeight": 1.25,
+                      "fontFamily": "$font",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Sde1Z",
+                      "name": "Lista powiązań",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "AslmL",
+                          "name": "Nagłówki kolumn",
+                          "width": "fill_container",
+                          "stroke": "$border-strong",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "gap": 24,
+                          "padding": [
+                            8,
+                            16,
+                            8,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "EgLv9",
+                              "name": "Nagłówek – Adres",
+                              "fill": "$text-muted",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Adres i sieć",
+                              "fontFamily": "$font",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "SltVT",
+                              "name": "Nagłówek – Stopień pewności",
+                              "width": 380,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IXyq3",
+                                  "name": "Tekst",
+                                  "fill": "$text-muted",
+                                  "content": "Stopień pewności",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "g78rXJ",
+                              "name": "Nagłówek – Wzmianki",
+                              "width": 110,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "i4EneA",
+                                  "name": "Tekst",
+                                  "fill": "$text-muted",
+                                  "content": "Wzmianki",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wiX6b",
+                              "name": "Odstęp",
+                              "width": 24,
+                              "height": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GBq7N",
+                          "name": "Powiązanie 1 – rozwinięte",
+                          "width": "fill_container",
+                          "stroke": "$primary",
+                          "strokeWidth": {
+                            "left": 4
+                          },
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "jt6a7",
+                              "name": "Wiersz – bc1qxy2kgd",
+                              "width": "fill_container",
+                              "fill": "$primary-tint",
+                              "layout": "vertical",
+                              "gap": 10,
+                              "padding": [
+                                18,
+                                16,
+                                18,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "g1HZFJ",
+                                  "name": "Adres, stopień pewności i wzmianki",
+                                  "width": "fill_container",
+                                  "gap": 24,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "YnvkN",
+                                      "name": "Adres i sieć",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 4,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "tX6xa",
+                                          "name": "Adres",
+                                          "fill": "$text",
+                                          "textGrowth": "fixed-width",
+                                          "width": "fill_container",
+                                          "content": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                                          "lineHeight": 1.4,
+                                          "fontFamily": "$font",
+                                          "fontSize": 16,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "S8YXjm",
+                                          "name": "Sieć",
+                                          "fill": "$text-muted",
+                                          "content": "Bitcoin",
+                                          "fontFamily": "$font",
+                                          "fontSize": 16,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "U1oh4",
+                                      "name": "Stopień pewności",
+                                      "width": 380,
+                                      "layout": "vertical",
+                                      "gap": 8,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "jmdO0",
+                                          "name": "Wartość i przedział",
+                                          "gap": 10,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "Gb0oO",
+                                              "name": "Procent",
+                                              "fill": "$text",
+                                              "content": "95%",
+                                              "fontFamily": "$font",
+                                              "fontSize": 20,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "vtq71",
+                                              "name": "Przedział",
+                                              "fill": "$text",
+                                              "content": "Bardzo wysokie prawdopodobieństwo",
+                                              "fontFamily": "$font",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "BLYDi",
+                                          "name": "Pasek 0–100",
+                                          "width": 200,
+                                          "height": 6,
+                                          "fill": "$surface",
+                                          "cornerRadius": 3,
+                                          "stroke": "$border-strong",
+                                          "strokeWidth": 1,
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "cshlr",
+                                              "name": "Wypełnienie",
+                                              "width": 190,
+                                              "height": 6,
+                                              "fill": "$primary",
+                                              "cornerRadius": 3
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "p309sR",
+                                      "name": "Wzmianki",
+                                      "width": 110,
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "A6EVxU",
+                                          "name": "Liczba wzmianek",
+                                          "fill": "$text",
+                                          "content": "2 wzmianki",
+                                          "fontFamily": "$font",
+                                          "fontSize": 16,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "PFqH6",
+                                      "name": "Ikona zwijania",
+                                      "width": 24,
+                                      "height": 24,
+                                      "icon": "chevron-up",
+                                      "library": "lucide",
+                                      "fill": "$primary"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ePPDq",
+                              "name": "Szczegóły powiązania",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 36,
+                              "padding": [
+                                28,
+                                16,
+                                36,
+                                20
+                              ],
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Hbt3y",
+                                  "name": "Blok – Punktacja",
+                                  "width": 760,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "UTU9Y",
+                                      "name": "Nagłówek bloku",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "justifyContent": "space_between",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "QgAnh",
+                                          "name": "Tytuł bloku",
+                                          "fill": "$text",
+                                          "content": "Punktacja",
+                                          "lineHeight": 1.3,
+                                          "fontFamily": "$font",
+                                          "fontSize": 18,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "H0q4xZ",
+                                          "name": "Rozwiń punktację",
+                                          "gap": 6,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "JCC60",
+                                              "name": "Tekst akcji",
+                                              "fill": "$primary",
+                                              "content": "Zwiń",
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "icon",
+                                              "id": "T8p5S",
+                                              "name": "Ikona zwijania",
+                                              "width": 24,
+                                              "height": 24,
+                                              "icon": "chevron-up",
+                                              "library": "lucide",
+                                              "fill": "$primary"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "a1lqoi",
+                                      "name": "Składniki punktacji",
+                                      "width": "fill_container",
+                                      "stroke": "$border",
+                                      "strokeWidth": {
+                                        "top": 1
+                                      },
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "oUUN6",
+                                          "name": "Składnik – Adres na własnym profilu osoby (GitHub)",
+                                          "width": "fill_container",
+                                          "stroke": "$border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 24,
+                                          "padding": [
+                                            12,
+                                            0
+                                          ],
+                                          "justifyContent": "space_between",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "OFYNB",
+                                              "name": "Nazwa składnika",
+                                              "fill": "$text",
+                                              "content": "Adres na własnym profilu osoby (GitHub)",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "VSh1E",
+                                              "name": "Wartość",
+                                              "fill": "$text",
+                                              "content": "80",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "PW5r5",
+                                          "name": "Składnik – Ten sam adres w drugim niezależnym źródle (ogłoszenie P2P)",
+                                          "width": "fill_container",
+                                          "stroke": "$border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 24,
+                                          "padding": [
+                                            12,
+                                            0
+                                          ],
+                                          "justifyContent": "space_between",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "UyTRv",
+                                              "name": "Nazwa składnika",
+                                              "fill": "$text",
+                                              "content": "Ten sam adres w drugim niezależnym źródle (ogłoszenie P2P)",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "aHEH7",
+                                              "name": "Wartość",
+                                              "fill": "$text",
+                                              "content": "+15",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kdnM8",
+                                          "name": "Składnik – Stopień pewności",
+                                          "width": "fill_container",
+                                          "stroke": "$border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 24,
+                                          "padding": [
+                                            12,
+                                            0
+                                          ],
+                                          "justifyContent": "space_between",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "wZbm8",
+                                              "name": "Nazwa składnika",
+                                              "fill": "$text",
+                                              "content": "Stopień pewności",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "LIQyO",
+                                              "name": "Wartość",
+                                              "fill": "$text",
+                                              "content": "95%",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "k4PoVy",
+                                  "name": "Blok – Uzasadnienie",
+                                  "width": 760,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "bNma7",
+                                      "name": "Nagłówek bloku",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "L6Rga",
+                                          "name": "Tytuł bloku",
+                                          "fill": "$text",
+                                          "content": "Uzasadnienie",
+                                          "lineHeight": 1.3,
+                                          "fontFamily": "$font",
+                                          "fontSize": 18,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "y7x6T",
+                                      "name": "Treść uzasadnienia",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Adres został opublikowany na profilu GitHub badanej osoby i powtórzony w ogłoszeniu P2P podpisanym tym samym nickiem. Dwa niezależne źródła wskazują na ten sam adres.",
+                                      "lineHeight": 1.5,
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "m9Wv6U",
+                                  "name": "Blok – Wzmianki (2)",
+                                  "width": 760,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "UTckP",
+                                      "name": "Nagłówek bloku",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "pzpB7",
+                                          "name": "Tytuł bloku",
+                                          "fill": "$text",
+                                          "content": "Wzmianki (2)",
+                                          "lineHeight": 1.3,
+                                          "fontFamily": "$font",
+                                          "fontSize": 18,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "r5tjGb",
+                                      "name": "Lista wzmianek",
+                                      "width": "fill_container",
+                                      "layout": "vertical",
+                                      "gap": 20,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "JbwqU",
+                                          "name": "Wzmianka – GitHub – profil krypto-janek",
+                                          "width": "fill_container",
+                                          "layout": "vertical",
+                                          "gap": 6,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "HU82P",
+                                              "name": "Źródło",
+                                              "fill": "$text",
+                                              "content": "GitHub – profil krypto-janek",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "w0hY8r",
+                                              "name": "Link i czas",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "RlxRP",
+                                                  "name": "Link",
+                                                  "fill": "$primary",
+                                                  "content": "https://github.com/krypto-janek",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "icon",
+                                                  "id": "RKdLk",
+                                                  "name": "Ikona – otwiera się w nowej karcie",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "external-link",
+                                                  "library": "lucide",
+                                                  "fill": "$primary"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "Losdp",
+                                              "name": "Czas pobrania",
+                                              "fill": "$text-muted",
+                                              "content": "Pobrano 21.11.2026, 14:32",
+                                              "fontFamily": "$font",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "mEKHe",
+                                              "name": "Cytat",
+                                              "width": "fill_container",
+                                              "stroke": "$border-strong",
+                                              "strokeWidth": {
+                                                "left": 3
+                                              },
+                                              "padding": [
+                                                4,
+                                                0,
+                                                4,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "y7BBnn",
+                                                  "name": "Treść cytatu",
+                                                  "fill": "$text",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "„Wsparcie: BTC bc1qxy2k…x0wlh”",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "SSSt8",
+                                          "name": "Wzmianka – Serwis ogłoszeń P2P",
+                                          "width": "fill_container",
+                                          "stroke": "$border",
+                                          "strokeWidth": {
+                                            "top": 1
+                                          },
+                                          "layout": "vertical",
+                                          "gap": 6,
+                                          "padding": [
+                                            20,
+                                            0,
+                                            0,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "uOvQW",
+                                              "name": "Źródło",
+                                              "fill": "$text",
+                                              "content": "Serwis ogłoszeń P2P",
+                                              "lineHeight": 1.5,
+                                              "fontFamily": "$font",
+                                              "fontSize": 16,
+                                              "fontWeight": "600"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "S9lCJh",
+                                              "name": "Link i czas",
+                                              "width": "fill_container",
+                                              "gap": 8,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "nv7EM",
+                                                  "name": "Link",
+                                                  "fill": "$primary",
+                                                  "content": "https://ogloszenia.example/oferta/48213",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "icon",
+                                                  "id": "PrS2v",
+                                                  "name": "Ikona – otwiera się w nowej karcie",
+                                                  "width": 16,
+                                                  "height": 16,
+                                                  "icon": "external-link",
+                                                  "library": "lucide",
+                                                  "fill": "$primary"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "MoSwU",
+                                              "name": "Czas pobrania",
+                                              "fill": "$text-muted",
+                                              "content": "Pobrano 21.11.2026, 14:32",
+                                              "fontFamily": "$font",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "rribY",
+                                              "name": "Cytat",
+                                              "width": "fill_container",
+                                              "stroke": "$border-strong",
+                                              "strokeWidth": {
+                                                "left": 3
+                                              },
+                                              "padding": [
+                                                4,
+                                                0,
+                                                4,
+                                                14
+                                              ],
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "p6LR9",
+                                                  "name": "Treść cytatu",
+                                                  "fill": "$text",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "„Sprzedam kartę graficzną, płatność BTC na adres bc1qxy2k…x0wlh. Kontakt: krypto_janek”",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "HslLg",
+                                  "name": "Blok – Aktywność adresu w sieci Bitcoin",
+                                  "width": 760,
+                                  "layout": "vertical",
+                                  "gap": 14,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "mRnAs",
+                                      "name": "Nagłówek bloku",
+                                      "width": "fill_container",
+                                      "gap": 12,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "vacDY",
+                                          "name": "Tytuł bloku",
+                                          "fill": "$text",
+                                          "content": "Aktywność adresu w sieci Bitcoin",
+                                          "lineHeight": 1.3,
+                                          "fontFamily": "$font",
+                                          "fontSize": 18,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Kn8w4",
+                                      "name": "Podsumowanie aktywności",
+                                      "width": "fill_container",
+                                      "gap": 32,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "GP0Jw",
+                                          "name": "Łączny wolumen",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "MWhJm",
+                                              "name": "Etykieta",
+                                              "fill": "$text-muted",
+                                              "content": "Łączny wolumen",
+                                              "fontFamily": "$font",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "kw3sP",
+                                              "name": "Wartość",
+                                              "fill": "$text",
+                                              "content": "2,41 BTC",
+                                              "fontFamily": "$font",
+                                              "fontSize": 18,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "VUQba",
+                                          "name": "Liczba transakcji",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "b72e7A",
+                                              "name": "Etykieta",
+                                              "fill": "$text-muted",
+                                              "content": "Liczba transakcji",
+                                              "fontFamily": "$font",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "z9lyH",
+                                              "name": "Wartość",
+                                              "fill": "$text",
+                                              "content": "37",
+                                              "fontFamily": "$font",
+                                              "fontSize": 18,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "LAdtr",
+                                          "name": "Okres",
+                                          "layout": "vertical",
+                                          "gap": 2,
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "o4DJlO",
+                                              "name": "Etykieta",
+                                              "fill": "$text-muted",
+                                              "content": "Okres",
+                                              "fontFamily": "$font",
+                                              "fontSize": 14,
+                                              "fontWeight": "normal"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "lM3mq",
+                                              "name": "Wartość",
+                                              "fill": "$text",
+                                              "content": "03.2025 – 11.2026",
+                                              "fontFamily": "$font",
+                                              "fontSize": 18,
+                                              "fontWeight": "700"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "L1W6ey",
+                                      "name": "Zdarzenia chronologicznie",
+                                      "width": "fill_container",
+                                      "stroke": "$border",
+                                      "strokeWidth": {
+                                        "top": 1
+                                      },
+                                      "layout": "vertical",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "aqair",
+                                          "name": "Zdarzenie – 12.08.2026",
+                                          "width": "fill_container",
+                                          "stroke": "$border",
+                                          "strokeWidth": {
+                                            "bottom": 1
+                                          },
+                                          "gap": 16,
+                                          "padding": [
+                                            12,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "qpilg",
+                                              "name": "Data",
+                                              "width": 96,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "RXadT",
+                                                  "name": "Tekst daty",
+                                                  "fill": "$text",
+                                                  "content": "12.08.2026",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "zQmUz",
+                                              "name": "Opis zdarzenia",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "BHnng",
+                                                  "name": "Opis",
+                                                  "fill": "$text",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "Wymiana 0,60 BTC na stablecoin (USDT)",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "XpXUo",
+                                                  "name": "Transakcja",
+                                                  "fill": "$text-muted",
+                                                  "content": "Transakcja 4f2a…9c1e",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "oe4Gc",
+                                          "name": "Zdarzenie – 03.10.2026",
+                                          "width": "fill_container",
+                                          "gap": 16,
+                                          "padding": [
+                                            12,
+                                            0
+                                          ],
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "xaCWX",
+                                              "name": "Data",
+                                              "width": 96,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "fNA6E",
+                                                  "name": "Tekst daty",
+                                                  "fill": "$text",
+                                                  "content": "03.10.2026",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "dqFMv",
+                                              "name": "Opis zdarzenia",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "mP9U8",
+                                                  "name": "Opis",
+                                                  "fill": "$text",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "Przelew 0,85 BTC na adres giełdy",
+                                                  "lineHeight": 1.5,
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 16,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "cjcRh",
+                                                  "name": "Transakcja",
+                                                  "fill": "$text-muted",
+                                                  "content": "Transakcja a81b…07d3",
+                                                  "fontFamily": "$font",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "normal"
+                                                },
+                                                {
+                                                  "type": "frame",
+                                                  "id": "upkwn",
+                                                  "name": "Sygnał",
+                                                  "layout": "vertical",
+                                                  "gap": 8,
+                                                  "padding": [
+                                                    6,
+                                                    0,
+                                                    0,
+                                                    0
+                                                  ],
+                                                  "children": [
+                                                    {
+                                                      "type": "frame",
+                                                      "id": "qufcy",
+                                                      "name": "Sygnał – treść",
+                                                      "gap": 6,
+                                                      "alignItems": "center",
+                                                      "children": [
+                                                        {
+                                                          "type": "text",
+                                                          "id": "SHbNO",
+                                                          "name": "Tekst sygnału",
+                                                          "fill": "$text",
+                                                          "content": "Możliwe wyjście do walut tradycyjnych.",
+                                                          "fontFamily": "$font",
+                                                          "fontSize": 16,
+                                                          "fontWeight": "normal"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KN3W4",
+                          "name": "Wiersz – 0x7a3f9c2B",
+                          "width": "fill_container",
+                          "stroke": "$border",
+                          "strokeWidth": {
+                            "bottom": 1
+                          },
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            18,
+                            16,
+                            18,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "I13KN",
+                              "name": "Adres, stopień pewności i wzmianki",
+                              "width": "fill_container",
+                              "gap": 24,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "nMpq7",
+                                  "name": "Adres i sieć",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "NjNrP",
+                                      "name": "Adres",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "0x7a3f9c2B41d8E5f6A0b3C7d9E1F2a4B6c8D0e2F4",
+                                      "lineHeight": 1.4,
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "dEjqO",
+                                      "name": "Sieć",
+                                      "fill": "$text-muted",
+                                      "content": "Ethereum",
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "MqCU1",
+                                  "name": "Stopień pewności",
+                                  "width": 380,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "f5rQz",
+                                      "name": "Wartość i przedział",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "Fl7ES",
+                                          "name": "Procent",
+                                          "fill": "$text",
+                                          "content": "65%",
+                                          "fontFamily": "$font",
+                                          "fontSize": 20,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "UlqSG",
+                                          "name": "Przedział",
+                                          "fill": "$text",
+                                          "content": "Prawdopodobny",
+                                          "fontFamily": "$font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Njkyr",
+                                      "name": "Pasek 0–100",
+                                      "width": 200,
+                                      "height": 6,
+                                      "fill": "$surface",
+                                      "cornerRadius": 3,
+                                      "stroke": "$border-strong",
+                                      "strokeWidth": 1,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "dLUdo",
+                                          "name": "Wypełnienie",
+                                          "width": 130,
+                                          "height": 6,
+                                          "fill": "$primary",
+                                          "cornerRadius": 3
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZWzVj",
+                                  "name": "Wzmianki",
+                                  "width": 110,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "u7J7I",
+                                      "name": "Liczba wzmianek",
+                                      "fill": "$text",
+                                      "content": "1 wzmianka",
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "MVOCj",
+                                  "name": "Ikona rozwijania",
+                                  "width": 24,
+                                  "height": 24,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$primary"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j9E8q",
+                          "name": "Wiersz – bc1q9h7gar",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            18,
+                            16,
+                            18,
+                            20
+                          ],
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "T1FPlo",
+                              "name": "Adres, stopień pewności i wzmianki",
+                              "width": "fill_container",
+                              "gap": 24,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "RV2Td",
+                                  "name": "Adres i sieć",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 4,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kTVLU",
+                                      "name": "Adres",
+                                      "fill": "$text",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "bc1q9h7garjcdkl2m8xv5t4n3w6p0ezsy4u2f8a9xk",
+                                      "lineHeight": 1.4,
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "meRzT",
+                                      "name": "Sieć",
+                                      "fill": "$text-muted",
+                                      "content": "Bitcoin",
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "g5b2q",
+                                  "name": "Stopień pewności",
+                                  "width": 380,
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "cTNiX",
+                                      "name": "Wartość i przedział",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "txfpQ",
+                                          "name": "Procent",
+                                          "fill": "$text",
+                                          "content": "45%",
+                                          "fontFamily": "$font",
+                                          "fontSize": 20,
+                                          "fontWeight": "700"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "eL7Nr",
+                                          "name": "Przedział",
+                                          "fill": "$text",
+                                          "content": "Średni",
+                                          "fontFamily": "$font",
+                                          "fontSize": 14,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TI07N",
+                                      "name": "Pasek 0–100",
+                                      "width": 200,
+                                      "height": 6,
+                                      "fill": "$surface",
+                                      "cornerRadius": 3,
+                                      "stroke": "$border-strong",
+                                      "strokeWidth": 1,
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "rLc7Q",
+                                          "name": "Wypełnienie",
+                                          "width": 90,
+                                          "height": 6,
+                                          "fill": "$primary",
+                                          "cornerRadius": 3
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "RY2iS",
+                                  "name": "Wzmianki",
+                                  "width": 110,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "DwynS",
+                                      "name": "Liczba wzmianek",
+                                      "fill": "$text",
+                                      "content": "1 wzmianka",
+                                      "fontFamily": "$font",
+                                      "fontSize": 16,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "X9xxDx",
+                                  "name": "Ikona rozwijania",
+                                  "width": 24,
+                                  "height": 24,
+                                  "icon": "chevron-down",
+                                  "library": "lucide",
+                                  "fill": "$primary"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "S3OER",
+                  "name": "Sekcja – Adresy wykluczone",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16,
+                    12,
+                    0
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "W4ssqN",
+                      "name": "Tytuł sekcji",
+                      "fill": "$text",
+                      "content": "Adresy wykluczone (2)",
+                      "lineHeight": 1.25,
+                      "fontFamily": "$font",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "E8kvu",
+                      "name": "Rozwiń",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "la3Ge",
+                          "name": "Tekst akcji",
+                          "fill": "$primary",
+                          "content": "Rozwiń",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Th9L6",
+                          "name": "Ikona rozwijania",
+                          "width": 24,
+                          "height": 24,
+                          "icon": "chevron-down",
+                          "library": "lucide",
+                          "fill": "$primary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "IMx66",
+          "name": "Stopka",
+          "width": "fill_container",
+          "stroke": "$border",
+          "strokeWidth": {
+            "top": 1
+          },
+          "padding": [
+            20,
+            360
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "Q0azHw",
               "name": "Stopka – nazwa",
               "fill": "$text-muted",
               "content": "Wszelkie prawa zastrzeżone. Krajowa Administracja Skarbowa, projekt OŁCyŚ.",
