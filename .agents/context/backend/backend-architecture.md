@@ -88,6 +88,10 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 - **Negative:** None significant
 - **Location:** `squad.nononotaa.backend.exception.RestExceptionHandler`
 
+### Analysis orchestration (task #24, proposed)
+
+`squad.nononotaa.backend.analysis.AnalysisOrchestrator` runs one Analysis through the ports `MentionSearch`, `CandidatePreparation`, `ExclusionClassifier` and `ConfidenceScoring`, and hands the outcome to `AnalysisRecorder` (owned by #25). It derives the status (running/completed/partial/failed) and contains no search, validation, classification or scoring logic. It is a plain class: no production adapters or endpoint exist yet. Contracts and decisions: `.agents/context/backend/decisions/task-24/` (all still proposed, not approved by the module owners).
+
 ## Project Structure
 
 ```

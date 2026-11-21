@@ -6,10 +6,12 @@ Status: empty. Add domain terms as soon as they are agreed (the `hackathon-kicko
 
 ## Language
 
-**<TermName>**:
-One or two sentences defining what this concept IS in our domain.
-_Avoid_: <synonym1>, <synonym2>
+Full definitions of the remaining terms are in `domain/BUSINESS-CONTEXT.md`.
 
-**<AnotherTerm>**:
-One or two sentences defining what this concept IS in our domain.
-_Avoid_: <synonym1>, <synonym2>
+**Analysis** (PL: Analiza):
+One run of search and scoring for a Case, saved in its history. Has a trigger (manual or scheduled) and a status.
+_Avoid_: run, scan, pass
+
+**Analysis status** (PL: Status analizy):
+The outcome of an Analysis: running, completed, partial or failed (proposed, see `backend/decisions/task-24/`). No results is not a failure.
+_Avoid_: state, result

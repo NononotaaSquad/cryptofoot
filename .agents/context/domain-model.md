@@ -16,6 +16,15 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 
 States and allowed transitions for each aggregate that has a lifecycle, with who or what triggers each transition.
 
+### Analysis (proposed, see decisions `D24-001`, `D24-002`; not yet approved by the team)
+
+- States: `RUNNING` -> exactly one of `COMPLETED`, `PARTIAL`, `FAILED`. Terminal states never change; a rerun is a new Analysis.
+- Trigger (separate from status): `MANUAL`, `SCHEDULED`.
+- `COMPLETED`: every stage ran and nothing was unavailable. Zero Mentions from healthy sources is still `COMPLETED` ("no results").
+- `PARTIAL`: some sources or classifications were unavailable; the rest of the result is kept. Candidates with unavailable classification are still scored but their Attribution is flagged `classificationStatus = UNAVAILABLE` (D24-006).
+- `FAILED`: no usable Attributions can be produced (all sources unavailable, or the search, candidate preparation, exclusion or scoring module failed). Retained in history; never shown as an Analysis with zero findings.
+- Orchestration (#24) derives the status; storage of the Analysis (#25) is a separate responsibility.
+
 ## Relationships
 
 How aggregates reference each other (by ID across aggregates) and the cardinality.
