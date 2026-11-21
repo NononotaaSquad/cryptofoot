@@ -79,6 +79,22 @@ class GitHubMentionSourceSpec extends Specification {
         }
     }
 
+    def "a rejected token is unavailability and the request is never repeated anonymously"() {
+        given:
+        server.answer('/users/octo-dev', '{"message":"Bad credentials"}', status)
+
+        when:
+        source('revoked-token').findMentions(login())
+
+        then:
+        thrown(SourceUnavailableException)
+        server.requests.size() == 1
+        server.requests[0].headers['authorization'] == 'Bearer revoked-token'
+
+        where:
+        status << [401, 403]
+    }
+
     def "a missing profile README does not erase the valid profile"() {
         given:
         server.answer('/users/octo-dev', Web2Fixtures.githubUser())
