@@ -1,0 +1,37 @@
+@startuml 14-error-handling
+title Error mapping: RestExceptionHandler (ADR-004); client-facing messages in Polish
+
+skinparam shadowing false
+
+start
+:exception leaves a controller;
+switch (type)
+case (BadRequestException)
+  :400 with its Polish message
+  (e.g. comparison of different Cases, demo cadence off);
+case (@Valid failure, missing or mistyped field)
+  :400 "Popraw błędy w formularzu."
+  errors: [{field, message}];
+case (NotFoundException)
+  :404 (unknown Case or Analysis);
+case (ConflictException)
+  :409 (Analysis already running, report of a running Analysis,
+  comparison with a running Analysis);
+case (ValidationException)
+  :422;
+case (DuplicateKeyException)
+  :409 with a fixed Polish message;
+case (Spring MVC error: unknown route, wrong method, malformed body)
+  :standard status with a fixed Polish message;
+case (anything else)
+  :500 reason phrase only, logged with stack trace;
+endswitch
+:ErrorResponse(code, message, errors?);
+note right
+  Services log WARN where they throw a 4xx exception;
+  the handler logs only unexpected 5xx errors.
+  Analysis stage failures never reach HTTP: the orchestrator
+  stores them as FAILED or PARTIAL with fixed failure codes.
+end note
+stop
+@enduml

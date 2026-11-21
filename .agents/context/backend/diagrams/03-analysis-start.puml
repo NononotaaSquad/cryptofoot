@@ -1,0 +1,63 @@
+@startuml 03-analysis-start
+title E2.1 / E6.2: start an Analysis with one click (POST /api/1/cases/{caseId}/analyses) and poll it
+
+skinparam shadowing false
+autonumber
+
+actor Analyst
+participant "Frontend" as FE
+participant "CaseController" as CC
+participant "AnalysisController" as AC
+participant "AnalysisRerunService" as RS
+participant "CaseService\n(CaseIdentifierSource)" as CS
+database "analyses" as DB
+participant "AnalysisOrchestrator" as ORC
+participant "AnalysisRecorderService" as REC
+participant "Analysis executor\n(virtual threads)" as EX
+participant "AnalysisHistoryService" as HS
+
+Analyst -> FE : "Rozpocznij analizę"
+FE -> CC : POST /cases/{caseId}/analyses
+CC -> RS : rerun(caseId, MANUAL)
+RS -> CS : currentIdentifiers(caseId)
+alt unknown Case
+  CS --> RS : null
+  RS --> FE : 404 "Nie znaleziono sprawy o podanym identyfikatorze."
+else Case exists
+  CS --> RS : identifiers
+  RS -> DB : existsByCaseIdAndStatus(caseId, RUNNING)
+  alt an Analysis of the Case is already running
+    RS --> FE : 409 "Analiza tej sprawy już trwa."
+  else no running Analysis
+    RS -> ORC : start(AnalysisRequest(caseId, MANUAL, identifiers))
+    ORC -> REC : begin(request)
+    REC -> DB : insert AnalysisRecord(status = RUNNING,\nstartedAt, identifiers used, networks = [BTC, ETH])
+    REC --> ORC : analysisId
+    ORC --> RS : analysisId
+    RS ->> EX : execute(analysisId, request)
+    RS -> HS : get(analysisId)
+    HS --> RS : AnalysisResponse
+    RS --> CC : AnalysisResponse (RUNNING)
+    CC --> FE : 202 Accepted
+  end
+end
+
+== asynchronous execution (see 04-analysis-pipeline) ==
+EX -> ORC : execute(analysisId, request)
+ORC -> ORC : search, prepare candidates,\nclassify exclusions, score
+ORC -> REC : finish(analysisId, AnalysisResult)
+REC -> DB : save once: status COMPLETED | PARTIAL | FAILED,\nfinishedAt, result (never written again)
+note right of EX
+  An exception while recording is logged;
+  the Analysis then stays RUNNING (D25-004).
+end note
+
+== polling ==
+loop until status != RUNNING
+  FE -> AC : GET /analyses/{analysisId}
+  AC -> HS : get(analysisId)
+  AC --> FE : AnalysisResponse(status, sources, counts)
+end
+FE -> AC : GET /analyses/{analysisId}/report (see 10-report-and-history)
+
+@enduml

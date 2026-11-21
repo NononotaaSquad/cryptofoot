@@ -1,0 +1,55 @@
+@startuml 07-exclusion-classification
+title E3: ExclusionClassifierService.classify(candidates) (D22-001 to D22-007)
+
+skinparam shadowing false
+
+start
+:valid Candidate (network, canonical address, mentionIds);
+if (network supported?) then (no)
+  :unclassified; <<#lightyellow>>
+  stop
+endif
+:look up offline label lists
+(Etherscan labels + own list; own list wins);
+if (label found?) then (yes)
+  :Excluded Address
+  reason EXCHANGE | MIXER | FUNDRAISER
+  source "<list>: <name> [tags]"; <<#pink>>
+  stop
+endif
+if (network) then (BTC)
+  :accepted
+  (no contract code on BTC); <<#palegreen>>
+  stop
+else (ETH)
+endif
+if (app.exclusion.onchain-check-enabled?) then (false)
+  :unclassified
+  (nothing leaves the application); <<#lightyellow>>
+  stop
+endif
+repeat :next ContractCodeSource\n(1. JSON-RPC eth_getCode, 2. Blockchair);
+  :check(address);
+  if (answer) then (ACCOUNT: "0x" or EIP-7702 delegation)
+    :accepted; <<#palegreen>>
+    stop
+  elseif (CONTRACT: executable code) then
+    :Excluded Address
+    reason SMART_CONTRACT
+    source "<service>: executable code present"; <<#pink>>
+    stop
+  else (UNAVAILABLE)
+  endif
+repeat while (more sources?) is (yes)
+->no;
+:unclassified; <<#lightyellow>>
+note right
+  Unclassified candidates are scored but flagged
+  classificationStatus = UNAVAILABLE; the Analysis is PARTIAL
+  with CLASSIFICATION_UNAVAILABLE (D24-006).
+  An Excluded Address keeps its mentionIds for the report (E5.3)
+  and never reaches scoring.
+end note
+stop
+
+@enduml

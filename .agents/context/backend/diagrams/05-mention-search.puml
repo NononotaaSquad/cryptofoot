@@ -1,0 +1,56 @@
+@startuml 05-mention-search
+title E2: SearchService.search(identifiers): sources, relevance, snippet, detection, Mention identity
+
+skinparam shadowing false
+autonumber
+
+participant "AnalysisOrchestrator" as ORC
+participant "SearchService" as S
+participant "Executor\n(virtual thread per source)" as EX
+participant "MentionSource\n(synthetic, synthetic-broken, ...)" as SRC
+participant "AddressCandidateDetector" as DET
+participant "AddressValidator" as VAL
+database "mentions" as DB
+
+ORC -> S : search(identifiers)
+S -> EX : submit one query per source
+EX -> SRC : findMentions(identifiers)
+alt answered within sources.timeout (default 10s)
+  SRC --> S : RawMention(url, collectedAt, content)*\nSourceReport(CHECKED, synthetic, checkedAt)
+else threw or timed out
+  S -> S : SourceReport(UNAVAILABLE, checkedAt = null)\nnever reported as "no Mentions"
+end
+
+loop every RawMention, sources in registration order
+  group relevance filter (findMatch)
+    S -> S : skip FULL_NAME identifiers\n(a full name alone is too general, E1.1)
+    alt identifier looks like an address
+      S -> DET : detect(content)
+      S -> VAL : canonical(detected) == canonical(identifier)?
+      note right
+        The Case stores the canonical wallet (ETH lowercased);
+        the source keeps the original spelling (D50-002).
+      end note
+    else other identifier
+      S -> S : case-insensitive text match
+    end
+  end
+  alt no identifier matched
+    S -> S : drop the RawMention (not persisted)
+  else matched
+    S -> S : context = snippet of at most 200 chars\nstarting 100 chars before the match
+    S -> DET : detect(context): raw BTC Base58, bech32 (any case), 0x+40 hex
+    S -> S : identity = SHA-256(sourceName, url, context)
+    alt identity already seen in this search
+      S -> S : skip duplicate
+    else identity stored by an earlier Analysis
+      S -> DB : findByIdentity(identity)
+      DB --> S : existing Mention (same id reused)
+    else new
+      S -> DB : save Mention(sourceName, url, collectedAt,\ncontext, detectedAddresses, identity)
+    end
+  end
+end
+S --> ORC : SearchResult(FoundMention*, SourceReport*)
+
+@enduml

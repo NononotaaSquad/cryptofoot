@@ -1,5 +1,7 @@
 # D27-009: Scheduler runtime and wiring
 
+> **Superseded in part by DS1-001** (backend-sync-1, 2026-11-21): the flow is now wired; see `../sync-1/`.
+
 - **Status:** proposed
 - **Date:** 2026-11-21
 - **Type:** own proposal; scope limit; missing wiring from #24/#26

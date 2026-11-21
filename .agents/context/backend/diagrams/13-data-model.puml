@@ -1,0 +1,126 @@
+@startuml 13-data-model
+title MongoDB documents and the embedded Analysis snapshot (D25-002)
+
+skinparam shadowing false
+hide empty methods
+
+package "collection cases" {
+  class CaseRecord <<Document>> {
+    id : String <<generated, stable>>
+    identifiers : PersonIdentifiers
+    createdAt : Instant
+  }
+  class PersonIdentifiers {
+    nickname, login, email, messengerId,
+    profileUrl, fullName : String?
+    walletAddress : String? <<canonical BTC/ETH>>
+  }
+}
+
+package "collection analyses" {
+  class AnalysisRecord <<Document>> {
+    id : String
+    version : Long <<@Version>>
+    caseId : String <<index caseId, startedAt desc>>
+    trigger : MANUAL | SCHEDULED
+    status : RUNNING | COMPLETED | PARTIAL | FAILED
+    startedAt : Instant
+    finishedAt : Instant?
+    identifiers : List<CaseIdentifier>
+    networks : List<Network>
+    result : AnalysisResult? <<null while RUNNING>>
+  }
+  class CaseIdentifier {
+    type : IdentifierType
+    value : String
+  }
+  class AnalysisResult {
+    status
+    failures : List<StageFailure>
+    limitations : List<ReportLimitation>
+    algorithmVersion : String?
+  }
+  class SourceReport {
+    sourceName
+    status : CHECKED | UNAVAILABLE
+    synthetic : Boolean
+    checkedAt : Instant?
+  }
+  class FoundMention {
+    id <<= Mention.id>>
+    sourceName, url
+    collectedAt : Instant
+    context : String?
+    detectedAddresses : List<String>
+  }
+  class RejectedCandidate {
+    mentionId, value
+    reason <<AddressValidationFailure>>
+  }
+  class Candidate {
+    network <<BTC | ETH>>
+    address <<canonical>>
+    mentionIds : List<String>
+  }
+  class ExcludedCandidate {
+    reason : EXCHANGE | SMART_CONTRACT | MIXER | FUNDRAISER
+    classificationSource : String
+  }
+  class ScoredAttribution {
+    confidenceLevel : 0..100
+    appliedRules : List<AppliedRule>
+    classificationStatus : NOT_EXCLUDED | UNAVAILABLE
+  }
+  class StageFailure {
+    stage : SEARCH | CANDIDATE_PREPARATION | EXCLUSION | SCORING
+    detail : String
+  }
+}
+
+package "collection mentions" {
+  class Mention <<Document>> {
+    id : String
+    sourceName, url
+    collectedAt : Instant
+    context : String?
+    detectedAddresses : List<String>
+    identity : String <<indexed, SHA-256(source, url, context)>>
+  }
+}
+
+package "collection schedules" {
+  class ScheduleRecord <<Document>> {
+    caseId : String <<id>>
+    version : Long <<@Version>>
+    enabled : Boolean
+    cadence : SchedulePreset
+    nextExecutionAt : Instant?
+  }
+  class ScheduleAttempt {
+    attemptedAt : Instant
+    outcome : STARTED | SKIPPED_OVERLAP | SKIPPED_DOWNTIME | FAILED
+    analysisId : String?
+  }
+}
+
+CaseRecord *-- PersonIdentifiers
+AnalysisRecord *-- "*" CaseIdentifier : identifiers used
+AnalysisRecord *-- "0..1" AnalysisResult
+AnalysisResult *-- "*" SourceReport : sources
+AnalysisResult *-- "*" FoundMention : mentions (snapshot)
+AnalysisResult *-- "*" RejectedCandidate : rejected
+AnalysisResult *-- "*" ExcludedCandidate : excluded
+AnalysisResult *-- "*" Candidate : unclassified
+AnalysisResult *-- "*" ScoredAttribution : attributions
+AnalysisResult *-- "*" StageFailure : failures
+ExcludedCandidate *-- Candidate
+ScoredAttribution *-- Candidate
+ScheduleRecord *-- "0..1" ScheduleAttempt : lastAttempt
+
+AnalysisRecord ..> CaseRecord : caseId
+ScheduleRecord ..> CaseRecord : caseId (Case must exist on PUT)
+ScheduleAttempt ..> AnalysisRecord : analysisId
+FoundMention ..> Mention : same id, content snapshotted
+Candidate ..> FoundMention : mentionIds (Justification)
+
+@enduml

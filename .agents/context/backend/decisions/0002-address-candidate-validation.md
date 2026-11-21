@@ -38,3 +38,4 @@ AddressCandidates(
 - Frontend types: `network` is the union `'BTC' | 'ETH'`. `DetectedAddressResponse` gains `validationFailure`.
 - Adding a network means a new enum value, a validator branch, test vectors and an api-sync.
 - Open: confirm the `AddressCandidates` shape with the Confidence Level owner. E2 must emit `RawAddressCandidate`s and map `AddressValidation` into `DetectedAddressResponse`.
+- Done in backend-sync-1: `CandidatePreparationService` emits `RawAddressCandidate`s (DS1-002) and `AnalysisReportService` maps `AddressValidation` into `DetectedAddressResponse` (DS1-005).

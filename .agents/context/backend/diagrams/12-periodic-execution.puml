@@ -1,0 +1,58 @@
+@startuml 12-periodic-execution
+title E6.4: schedule of a Case and the scheduled run (D27-001 to D27-009, DS1-001, DS1-006)
+
+skinparam shadowing false
+autonumber
+
+actor Analyst
+participant "Frontend" as FE
+participant "CaseController" as CC
+participant "ScheduleService" as SS
+participant "ScheduleCalculator\n(Europe/Warsaw)" as CAL
+database "cases" as CDB
+database "schedules" as SDB
+participant "ScheduledRunner\n(@Scheduled every app.scheduler.tick)" as SR
+participant "AnalysisRerunService\n(same flow as the manual start)" as RS
+
+== enable, change or disable ==
+Analyst -> FE : switch the schedule
+FE -> CC : PUT /cases/{caseId}/schedule {enabled, cadence?}
+CC -> SS : update(caseId, request)
+SS -> CDB : existsById(caseId)
+alt unknown Case
+  SS --> FE : 404 "Nie znaleziono sprawy o podanym identyfikatorze."
+else demo cadence while app.scheduler.demo-enabled = false
+  SS --> FE : 400 "Tryb demonstracyjny harmonogramu jest wyłączony."
+else
+  SS -> CAL : next(cadence, now)\nDAILY 06:00 | EVERY_6_HOURS | WEEKLY Mon 06:00 | DEMO_EVERY_MINUTE
+  note right: unchanged enabled cadence keeps its next term;\ndisabled clears it
+  SS -> SDB : save ScheduleRecord(caseId, enabled, cadence, nextExecutionAt)
+  SS --> FE : ScheduleResponse(enabled, cadence, demo, timezone,\nnextExecutionAt, lastAttempt)
+end
+
+== every tick (bean absent when app.scheduler.enabled = false) ==
+SR -> SDB : findByEnabledTrueAndNextExecutionAtLessThanEqual(now)
+loop every due schedule
+  SR -> SDB : claim: save nextExecutionAt = next(cadence, now)\n(@Version; a concurrent claim loses)
+  alt now > due + app.scheduler.grace (default 2 min)
+    SR -> SR : SKIPPED_DOWNTIME (missed terms are not made up)
+  else on time
+    SR -> RS : rerun(caseId, SCHEDULED)
+    alt started
+      RS --> SR : RUNNING AnalysisResponse
+      SR -> SR : STARTED with analysisId
+    else ConflictException (an Analysis is running)
+      SR -> SR : SKIPPED_OVERLAP
+    else any other error (e.g. Case deleted)
+      SR -> SR : FAILED
+    end
+  end
+  SR -> SDB : save lastAttempt(attemptedAt, outcome, analysisId?)
+end
+
+note over SR, RS
+  The scheduled Analysis runs asynchronously like a manual one (see 03, 04)
+  and is compared and reported through the same endpoints.
+end note
+
+@enduml

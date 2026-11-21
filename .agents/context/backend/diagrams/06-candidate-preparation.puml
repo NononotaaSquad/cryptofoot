@@ -1,0 +1,49 @@
+@startuml 06-candidate-preparation
+title E2 -> E3 handoff: CandidatePreparationService.prepare(mentions) (ADR 0002, DS1-002)
+
+skinparam shadowing false
+
+start
+:FoundMention(id, detectedAddresses)*
+from the search;
+:map every detected string to
+RawAddressCandidate(mentionId, rawAddress);
+:AddressCandidateService.prepare(rawCandidates);
+partition "per raw candidate: AddressValidator.validate" {
+  if (starts with 0x) then (ETH)
+    if (40 hex?) then (no)
+      :MALFORMED;
+    elseif (mixed case and not EIP-55?) then (yes)
+      :CHECKSUM_MISMATCH;
+    else (ok)
+      :Valid ETH, lowercased;
+    endif
+  elseif (bc1 / tb1 / bcrt1) then (segwit)
+    :bech32 (v0) / bech32m (v1+), all one case;
+    note right: tb1, bcrt1 -> UNSUPPORTED_NETWORK
+    :Valid BTC, lowercased
+    or MALFORMED / CHECKSUM_MISMATCH;
+  elseif (1, 3, m, n, 2) then (Base58)
+    :Base58Check, version 0x00 / 0x05;
+    note right: testnet versions -> UNSUPPORTED_NETWORK
+    :Valid BTC, kept as is
+    or MALFORMED / CHECKSUM_MISMATCH;
+  else (other)
+    :UNSUPPORTED_NETWORK;
+  endif
+}
+:group valid ones by CanonicalAddress(network, address);
+:mentionIds deduplicated and sorted,
+candidates sorted by (network, address);
+:PreparedCandidates(
+  valid = Candidate(network name, canonical address, mentionIds)*,
+  rejected = RejectedCandidate(mentionId, rawAddress, failure name)*
+);
+note right
+  Rejected candidates are a separate list and can never
+  become Attributions; the Mentions endpoint shows them
+  as valid = false with their validationFailure.
+end note
+stop
+
+@enduml

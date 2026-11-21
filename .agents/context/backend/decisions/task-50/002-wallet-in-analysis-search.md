@@ -1,5 +1,7 @@
 # D50-002: What the Analysis does with the wallet: search for Mentions of it
 
+> **Known gap closed by DS1-004** (backend-sync-1, 2026-11-21): the search now matches the canonical wallet, and the flow runs in the application (DS1-001).
+
 - **Status:** accepted (the choice by the task owner; the contract with the E2 and E3 owners is not agreed)
 - **Date:** 2026-11-21
 - **Type:** decision chosen by the user; requirement of the competition brief; own interpretation of the answer

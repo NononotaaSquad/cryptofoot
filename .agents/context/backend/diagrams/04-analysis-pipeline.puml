@@ -1,0 +1,76 @@
+@startuml 04-analysis-pipeline
+title AnalysisOrchestrator.execute: stages and status derivation (D24-001, D24-002, D24-006)
+
+skinparam shadowing false
+
+start
+:SEARCH: MentionSearch.search(identifiers);
+if (module threw?) then (yes)
+  :FAILED
+  failure SEARCH:MODULE_ERROR; <<#pink>>
+  stop
+endif
+if (no source checked,\nor every source UNAVAILABLE?) then (yes)
+  :FAILED
+  failure SEARCH:NO_SOURCE_CHECKED
+  or SEARCH:ALL_SOURCES_UNAVAILABLE; <<#pink>>
+  stop
+endif
+:each UNAVAILABLE source adds
+SEARCH:SOURCE_UNAVAILABLE:<name>;
+if (no Mentions?) then (yes)
+  :COMPLETED when no failures, else PARTIAL
+  ("no results" is never FAILED); <<#palegreen>>
+  stop
+endif
+
+:CANDIDATE_PREPARATION: CandidatePreparation.prepare(mentions)
+valid canonical candidates + rejected raw addresses;
+if (module threw?) then (yes)
+  :FAILED
+  failure CANDIDATE_PREPARATION:MODULE_ERROR; <<#pink>>
+  stop
+endif
+if (no valid candidate?) then (yes)
+  :COMPLETED or PARTIAL
+  (rejected candidates kept); <<#palegreen>>
+  stop
+endif
+
+:EXCLUSION: ExclusionClassifier.classify(valid)
+accepted / excluded / unclassified;
+if (module threw?) then (yes)
+  :FAILED
+  failure EXCLUSION:MODULE_ERROR; <<#pink>>
+  stop
+endif
+:each unclassified candidate adds
+EXCLUSION:CLASSIFICATION_UNAVAILABLE:<address>;
+if (accepted + unclassified empty?) then (yes)
+  :COMPLETED or PARTIAL
+  (only Excluded Addresses); <<#palegreen>>
+  stop
+endif
+
+:SCORING: ConfidenceScoring.score(accepted + unclassified, mentions)
+Excluded Addresses never reach scoring;
+if (module threw?) then (yes)
+  :FAILED
+  failure SCORING:MODULE_ERROR
+  (earlier stage output kept); <<#pink>>
+  stop
+endif
+:flag Attributions of unclassified candidates
+classificationStatus = UNAVAILABLE (D24-006);
+:COMPLETED when no failures, else PARTIAL; <<#palegreen>>
+
+note right
+  After every outcome the limitations are added:
+  * SOURCE_UNAVAILABLE when a source was unavailable
+  * CLASSIFICATION_UNAVAILABLE when a candidate is unclassified
+  * ANALYSIS_INCOMPLETE when the status is not COMPLETED
+  then AnalysisRecorder.finish(analysisId, result)
+end note
+stop
+
+@enduml
