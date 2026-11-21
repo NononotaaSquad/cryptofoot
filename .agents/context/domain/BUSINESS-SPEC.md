@@ -47,7 +47,7 @@ Analogy: a detective agency. Boundary rule: **the field agent does not judge, th
 ### M3a. Scoring: whose address
 
 - Gives every address a Confidence Level (0–100%).
-- The Justification is references to Mentions, with no text description.
+- The Justification is references to Mentions, with no text description. *Superseded on 2026-11-21: the Justification is a short template text built by the backend (D9-006); the Mentions are listed next to it, and the report shows the Scoring breakdown (Punktacja).*
 - Filters out Excluded Addresses: exchanges, smart contracts, mixers, fundraisers.
 
 ### M3b. Scoring: what the address did
@@ -127,7 +127,7 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 
 - Deriving new identifiers of the person from the findings about an entered wallet address (option C of D50-002). Entering a wallet and searching for it is in scope; it is not part of the demo (D50-007).
 - General internet search outside the chosen sources.
-- A Justification as a text description.
+- A Justification as a text description. *Back in scope on 2026-11-21 as a template text, not written by AI (D9-006).*
 - Login and multiple users.
 - Print, PDF export and passing the report outside the application.
 - Assigning epics to people (a separate step before implementation).
@@ -150,7 +150,7 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 2. Should we show Address Activity, in what scope, and for which Attributions: all, above a threshold, or on request? The acceptance of E4 depends on this answer. *Owner proposal (D23-001, D23-002, D23-004): every Attribution above 0%, inside the Analysis; totals plus cash-out signals in time order. Not confirmed by the mentors.*
 4. Which external sources and services are "approved", given the ban on sending data outside (Z p.4 item 7)? (also E5-D4, E7-D4)
 5. What value counts as "significant" for signals of withdrawal to traditional currencies? *Owner proposal (D23-006): a transfer to an off-ramp at any amount; a swap into a stablecoin from 1000. Not confirmed by the mentors.*
-6. Is a Confidence Level with a reference to the Mention enough as "pointing to sources, premises and scoring rules" (Z p.9), or is a short description of the rule needed? *Proposal in [E5.2](epics/E5-report-for-the-official.md#e52-verify-one-attribution): show the applied scoring rules, their contributions and the algorithm version, without a text description. Not confirmed; it conflicts with the current definition of Justification.*
+6. Is a Confidence Level with a reference to the Mention enough as "pointing to sources, premises and scoring rules" (Z p.9), or is a short description of the rule needed? *Proposal in [E5.2](epics/E5-report-for-the-official.md#e52-verify-one-attribution): show the applied scoring rules, their contributions and the algorithm version, without a text description. Not confirmed; it conflicts with the current definition of Justification.* *Resolved on 2026-11-21: a template text Justification (D9-006) plus the Scoring breakdown (Punktacja) with rules and points; the algorithm version is not shown.*
 11. Do the mentors accept the synthetic demo plus a separate check on real sources as the required presentation? (E7-D1)
 
 ### Open questions for the team

@@ -30,7 +30,7 @@ addressActivity: AddressActivityResponse | null      // non-null only when AVAIL
 - `./scripts/api-sync.sh` was run; `frontend/apps/web/lib/api/` is regenerated.
 
 ## Consequences and risks
-- The frontend report branch (seam S2) must map `cashOutSignals` instead of `events`. The transaction count and the period now come from the backend, not from counting events. `addressActivity == null` must be read together with `addressActivityStatus`: only `UNAVAILABLE` shows "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności."
+- The frontend report (seam S2, merged in #64) was adapted in the merge: it maps `cashOutSignals` instead of `events`, takes the transaction count and the period from the backend, and reads `addressActivity == null` together with `addressActivityStatus` (`UNAVAILABLE` shows "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności.", `NOT_CHECKED` says the activity was not checked).
 - Amounts are JSON numbers (`BigDecimal`), exact on the backend; 18-decimal ETH values lose precision only in JavaScript display.
 
 ## Verification

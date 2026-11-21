@@ -11,8 +11,6 @@ interface PageShellProps {
 }
 
 // Header, centred content column (1200 px) and footer shared by every view.
-// The Case counter next to the header link is not rendered until the backend
-// returns it.
 export function PageShell({ headerLink, children }: PageShellProps) {
   return (
     <div className="flex min-h-svh flex-col">

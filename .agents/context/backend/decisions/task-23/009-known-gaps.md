@@ -12,4 +12,4 @@
 | A3 | Live explorers read one page (mempool 25 confirmed, Blockscout 50 + 50). | Older signals are missed on busy addresses (`RECENT_TRANSACTIONS_ONLY`). | E4 owner |
 | A4 | ETH coin totals ignore internal transfers from contracts. | Totals may be lower than the real volume (`INTERNAL_TRANSFERS_NOT_COUNTED`). | E4 owner |
 | A5 | E6.3 comparison does not compare Address Activity (new signals between two Analyses). | A new cash-out signal is not listed as a change. | E6 owner (#26) |
-| A6 | The frontend report branch planned `events` with `CASH_OUT_SIGNAL` and derived figures (seam S2); the contract changed (D23-008). | The frontend must adapt `toAddressActivityFigures` before merging. | Frontend report owner |
+| A6 | The frontend report (#64) planned `events` with `CASH_OUT_SIGNAL` and derived figures (seam S2); the contract changed (D23-008). | **Closed in the merge of #64 into #65:** `toAddressActivityFigures(status, activity)` maps the new contract, the block shows the source, transaction references, counterparties and one sentence per coverage limitation. | Frontend report owner (review) |

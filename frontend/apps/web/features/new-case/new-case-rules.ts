@@ -1,7 +1,8 @@
+import { narrowingIdentifierKinds } from "@/lib/identifiers/identifier-kinds";
+
 import {
   type NewCaseFieldName,
   type NewCaseFormValues,
-  narrowingIdentifierKinds,
 } from "./identifier-fields";
 
 // Every identifier holds one value or `null` when absent (backend

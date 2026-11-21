@@ -15,11 +15,11 @@ Join the findings together and judge them for the Analyst: every address gets a 
 ## Out of scope
 
 - A Justification written by an AI model.
-- Numbers of the scoring rules (base value, contributions) and the algorithm version in the text shown to the Analyst.
+- Numbers of the scoring rules (base value, contributions) and the algorithm version in the text shown to the Analyst. (The points are shown apart from the text, in the Scoring breakdown, Punktacja.)
 
 ## Open questions
 
-- Exact wording of the Justification template: one sentence per scoring rule. (team)
+- Exact wording of the Justification template: one sentence per scoring rule. (team) *Answered on 2026-11-21 by D9-006 (backend templates, algorithm `confidence-1`).*
 
 - Should we show Excluded Addresses, and how? (mentors)
 - Is a Confidence Level with a reference enough as "pointing to premises and scoring rules" (Z p.9)? (mentors)
