@@ -4,11 +4,17 @@ import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { Button } from "@workspace/ui/components/button";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { isApiError } from "@/lib/api/client";
 
+import {
+  type CreatedCase,
+  type StartedAnalysis,
+  StartAnalysisError,
+  runAnalysis,
+} from "./analysis-flow";
 import { AnalysisLoader } from "./analysis-loader";
 import { IdentifierField } from "./identifier-field";
 import {
@@ -21,11 +27,11 @@ import {
 } from "./identifier-fields";
 import {
   type ValidationProblem,
+  PollingErrorDialog,
   StartAnalysisErrorDialog,
   ValidationDialog,
 } from "./new-case-dialogs";
 import { type NewCaseIdentifiers, decideMinimumData } from "./new-case-rules";
-import { startAnalysis } from "./start-analysis";
 
 const formFieldDefinitions: readonly IdentifierFieldDefinition[] = [
   ...narrowingIdentifierFields,
@@ -41,6 +47,21 @@ function toFormFieldName(field: string): NewCaseFieldName | undefined {
 interface FailedStart {
   error: unknown;
   identifiers: NewCaseIdentifiers;
+  // Reused by the next start with the same identifiers: no second Case.
+  createdCase: CreatedCase | null;
+}
+
+interface FailedPolling {
+  error: unknown;
+  analysis: StartedAnalysis;
+}
+
+// Typed routes check the template literal type, not a plain string.
+function caseDetailsPath({
+  caseId,
+  analysisId,
+}: StartedAnalysis): `/cases/${string}?analysis=${string}` {
+  return `/cases/${caseId}?analysis=${analysisId}`;
 }
 
 interface FieldGroupProps {
@@ -81,13 +102,39 @@ export function NewCaseForm() {
   // Kept after the pop-up closes, so its text does not change while the
   // closing animation runs and "Spróbuj ponownie" has the identifiers.
   const [failedStart, setFailedStart] = useState<FailedStart | null>(null);
+  const [failedPolling, setFailedPolling] = useState<FailedPolling | null>(
+    null
+  );
+  // Stops polling when the form unmounts (e.g. the browser Back button), so
+  // a late result does not navigate away from the page the user went to.
+  const pollingAbort = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      pollingAbort.current?.abort();
+    },
+    []
+  );
 
   const analysis = useMutation({
-    mutationFn: startAnalysis,
-    onSuccess: ({ caseId, analysisId }) => {
-      router.push(`/cases/${caseId}?analysis=${analysisId}`);
+    mutationFn: (identifiers: NewCaseIdentifiers) => {
+      pollingAbort.current = new AbortController();
+      return runAnalysis(
+        identifiers,
+        failedStart?.createdCase ?? null,
+        pollingAbort.current.signal
+      );
     },
-    onError: (error, identifiers) => {
+    onSuccess: (flow) => {
+      if (flow.result === "ended") {
+        router.push(caseDetailsPath(flow.analysis));
+      } else {
+        setFailedPolling({ error: flow.error, analysis: flow.analysis });
+      }
+    },
+    onError: (failure, identifiers) => {
+      // Anything else is the abort on unmount: nothing left to show.
+      if (!(failure instanceof StartAnalysisError)) return;
+      const error = failure.cause;
       const unmatched: string[] = [];
       if (isApiError(error)) {
         for (const fieldError of error.fieldErrors) {
@@ -103,18 +150,25 @@ export function NewCaseForm() {
         }
       }
       setFormErrors(unmatched);
-      setFailedStart({ error, identifiers });
+      setFailedStart({
+        error,
+        identifiers,
+        createdCase: failure.createdCase,
+      });
       setErrorDialogOpen(true);
     },
   });
 
-  // After success the loader stays until the navigation unmounts this form,
-  // so the form does not flash back; the tab-close warning stops at once.
-  const analysisRunning = analysis.isPending || analysis.isSuccess;
+  // After the Analysis ends the loader stays until the navigation unmounts
+  // this form, so the form does not flash back; the tab-close warning stops
+  // at once. A failed poll closes the loader for its dialog instead.
+  const analysisRunning =
+    analysis.isPending ||
+    (analysis.isSuccess && analysis.data.result === "ended");
 
   const start = (identifiers: NewCaseIdentifiers) => {
     // No second Analysis while one runs or while navigating to its Case.
-    if (analysisRunning) return;
+    if (analysis.isPending || analysis.isSuccess) return;
     clearErrors();
     setFormErrors([]);
     analysis.mutate(identifiers);
@@ -216,6 +270,16 @@ export function NewCaseForm() {
         onRetry={() => {
           setErrorDialogOpen(false);
           if (failedStart !== null) start(failedStart.identifiers);
+        }}
+      />
+
+      <PollingErrorDialog
+        open={failedPolling !== null}
+        error={failedPolling?.error}
+        onConfirm={() => {
+          if (failedPolling !== null) {
+            router.push(caseDetailsPath(failedPolling.analysis));
+          }
         }}
       />
 
