@@ -69,6 +69,7 @@ package "collection analyses" {
   class ScoredAttribution {
     confidenceLevel : 0..100
     appliedRules : List<AppliedRule>
+    justification : String (template text, D9-006)
     classificationStatus : NOT_EXCLUDED | UNAVAILABLE
   }
   class StageFailure {

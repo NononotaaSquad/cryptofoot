@@ -1,39 +1,68 @@
 @startuml 08-confidence-scoring
-title E3: ProvisionalConfidenceScoring.score(candidates, mentions), algorithm "provisional-1" (DS1-003)
+title E3: ConfidenceScoringService.score(ScoringInput), algorithm "confidence-1" (task #9, D9-001 to D9-008)
 
 skinparam shadowing false
 
 start
-:accepted + unclassified candidates
-and the Mentions of the Analysis;
+:ScoringInput(accepted, unclassified,
+Mentions of the Analysis, Case identifiers);
 note right
-  Placeholder until issue #9 (Marcin) delivers the real
-  algorithm behind the same ConfidenceScoring port.
+  Excluded Addresses never get here (#22).
+  Pure function: no database, no clock, no external call.
 end note
-while (next candidate?) is (yes)
-  :supporting = Mentions whose id is in candidate.mentionIds;
-  :rule MENTIONED_WITH_IDENTIFIER = 40
-  (the address appears in a Mention that also names
-   a narrowing identifier: cheat-sheet band 40-59,
-   "needs a second trace");
-  if (two supporting Mentions on different URL hosts\nwith a different text? (www., case, whitespace ignored)) then (yes)
-    :rule INDEPENDENT_SOURCES = +15
-    (cheat-sheet synergy rule);
-  else (no)
-    :no bonus: several Mentions on one service,
-    or a copy of the same text on another service (E7.3);
+while (next candidate? (accepted first, then unclassified)) is (yes)
+  if (address == Case wallet?) then (yes)
+    :ENTERED_BY_ANALYST (0)
+    input, not evidence (D50-006);
+  endif
+  :for each Mention of the candidate (D9-004):
+  linked = Case identifiers in URL or snippet
+    (wallet never counts);
+  warning = warning word in the sentence holding the address;
+  conflicting = snippet has e-mails, none of them the Case's;
+  supports = linked has nickname / login / e-mail /
+    messenger ID / profile address (full name never)
+    and not warning and not conflicting;
+  if (any supporting Mention?) then (no)
+    :NO_PERSON_LINK (0) -> 0%;
+  else (yes)
+    :source kind of each supporting Mention (D9-003):
+    OWN_PROFILE 80 = URL under the profile address,
+      or nickname page + e-mail / messenger ID / full name
+    MASS_COMMENT 10 = giveaway, konkurs, promo...
+    SALE_OR_SETTLEMENT 60 = ogłosz, sprzeda, p2p, wpłat...
+    DISCUSSION 40 = otherwise
+    base = strongest kind (D9-002);
+    if (pair with different host AND different\naddress sentence? (D9-005)) then (yes)
+      :INDEPENDENT_SOURCES +15 (once);
+    elseif (pair with different host, same sentence?) then (yes)
+      :COPIED_TEXT (0);
+    elseif (several Mentions on one host?) then (yes)
+      :SAME_SERVICE (0);
+    else (single Mention)
+    endif
+    if (all supporting Mentions linked only by nickname / login?) then (yes)
+      :NICKNAME_ONLY (0);
+    endif
+  endif
+  if (any warning Mention?) then (yes)
+    :WARNING_CONTEXT (0);
+  endif
+  if (any conflicting e-mail Mention?) then (yes)
+    :CONFLICTING_EMAIL (0);
+  endif
+  if (candidate unclassified?) then (yes)
+    :CLASSIFICATION_UNAVAILABLE (0) (D9-007);
   endif
   :ScoredAttribution(candidate,
     confidenceLevel = sum of contributions, capped 0..100,
-    appliedRules);
+    appliedRules in ScoringRule order,
+    justification = one Polish sentence per rule, no numbers (D9-006));
 endwhile (no)
-:ScoringResult(attributions in input order,
-algorithmVersion = "provisional-1");
+:ScoringResult(attributions, algorithmVersion = "confidence-1");
 note right
-  Same Mentions -> same Confidence Level (order independent).
-  Known gaps for #9: source kind bands (80-100 own profile,
-  60-79 P2P ad, 10-39 mass comments), wallet entered by the
-  Analyst is not evidence (D50-006), Justification text.
+  Same input -> same result (order independent).
+  The orchestrator still flags classificationStatus = UNAVAILABLE (D24-006).
 end note
 stop
 

@@ -1,6 +1,6 @@
 # DS1-003: Provisional Confidence Level algorithm; the scoring port receives the Mentions
 
-- **Status:** proposed, placeholder (issue #9 is open)
+- **Status:** superseded by task #9 (`../task-9/`, D9-001 to D9-008): `ProvisionalConfidenceScoring` is deleted, the port takes `ScoringInput`, algorithm `confidence-1`
 - **Date:** 2026-11-21
 - **Type:** own proposal; temporary implementation of another owner's task; port change
 - **Source:** issue #9 acceptance criteria; challenge cheat sheet KROK 2 (bands, +15 for independent sources, "several occurrences within one service are no extra confirmation"); E7.3 (copied Mention gives no bonus); D24-003 open point "whether Mention content is needed by scoring"

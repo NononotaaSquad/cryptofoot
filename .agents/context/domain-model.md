@@ -42,6 +42,13 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - Order: offline label lists (exchange, mixer, fundraiser) -> ETH bytecode via keyless public services (code = smart contract; an EIP-7702 delegated account is still a private account) -> unclassified when no check could be made. An unlisted BTC address is accepted.
 - An Excluded Address never reaches the Confidence Level algorithm; an unclassified candidate is scored but flagged `UNAVAILABLE` (D24-006).
 
+### Attribution scoring, algorithm `confidence-1` (see decisions `D9-001` to `D9-008`)
+
+- Every accepted or unclassified candidate becomes one Attribution with a Confidence Level 0–100, the applied scoring rules with their contributions, and a Justification: a short Polish text built from one template sentence per applied rule, with no numbers. The Mentions it rests on are listed next to it.
+- A Mention supports an address only if it names the person by a non-wallet narrowing identifier (the full name and the Analyst's wallet never count), does not quote the address in a warning, and holds no other person's e-mail. No supporting Mention gives 0%.
+- Base = strongest supporting source kind: own profile 80, sale or settlement 60, discussion 40, mass comment 10. +15 once when two supporting Mentions differ in origin (host) and in the sentence that holds the address; repeats on one service and copies give nothing.
+- Invariant: the same input (candidates, Mentions, identifiers) always gives the same Confidence Level, rules and text; the version is stored with the Analysis.
+
 ## Lifecycles
 
 States and allowed transitions for each aggregate that has a lifecycle, with who or what triggers each transition.

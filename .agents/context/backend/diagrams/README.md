@@ -11,7 +11,7 @@ One diagram per backend aspect, drawn from the code on branch `backend-sync-1` (
 | [05-mention-search.puml](05-mention-search.puml) | Parallel sources, timeout, relevance filter, snippet, detection, Mention identity | sequence | E2, DS1-004 |
 | [06-candidate-preparation.puml](06-candidate-preparation.puml) | Detected strings -> validated canonical candidates and rejected ones | activity | ADR 0002, DS1-002 |
 | [07-exclusion-classification.puml](07-exclusion-classification.puml) | Label lists, bytecode check, accepted / Excluded Address / unclassified | activity | E3, D22-* |
-| [08-confidence-scoring.puml](08-confidence-scoring.puml) | Provisional Confidence Level rules (`provisional-1`) | activity | E3, DS1-003 |
+| [08-confidence-scoring.puml](08-confidence-scoring.puml) | Confidence Level algorithm `confidence-1`: support, source kind, bonus, Justification text | activity | E3, D9-* |
 | [09-analysis-lifecycle.puml](09-analysis-lifecycle.puml) | `RUNNING` -> `COMPLETED` / `PARTIAL` / `FAILED` | state | D24-001, D25-001 |
 | [10-report-and-history.puml](10-report-and-history.puml) | Case list and details, history, Mentions and report reads | sequence | E5, E6.1, DS1-005 |
 | [11-analysis-comparison.puml](11-analysis-comparison.puml) | Comparison categories, `absenceVerifiable`, comparability limitations | activity | E6.3, D26-* |
