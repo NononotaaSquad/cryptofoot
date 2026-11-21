@@ -30,6 +30,12 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - Each due term starts an ordinary Analysis with trigger `SCHEDULED`. Attempt outcomes: started, skipped because an Analysis was running, skipped because the term was missed during downtime (not made up), failed to start.
 - A shortened demo cadence exists only in demo mode and is labelled.
 
+### Excluded Address classification (see decisions `D22-001` to `D22-007`; mentor question 4 open)
+
+- Each valid candidate ends in exactly one of: accepted, Excluded Address (`ExclusionReason` + classification source + its Mentions), unclassified.
+- Order: offline label lists (exchange, mixer, fundraiser) -> ETH bytecode via keyless public services (code = smart contract; an EIP-7702 delegated account is still a private account) -> unclassified when no check could be made. An unlisted BTC address is accepted.
+- An Excluded Address never reaches the Confidence Level algorithm; an unclassified candidate is scored but flagged `UNAVAILABLE` (D24-006).
+
 ## Lifecycles
 
 States and allowed transitions for each aggregate that has a lifecycle, with who or what triggers each transition.
