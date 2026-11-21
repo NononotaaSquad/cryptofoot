@@ -1,0 +1,32 @@
+{
+  "version": "demo-v1",
+  "synthetic": true,
+  "person": {
+    "firstName": "Zenon",
+    "lastName": "Fikcyjny",
+    "identifiers": [
+      { "type": "NICKNAME", "value": "zenek_fx" },
+      { "type": "LOGIN", "value": "@zenek_fx" },
+      { "type": "EMAIL", "value": "zenon.fikcyjny@example.com" },
+      { "type": "MESSENGER_ID", "value": "zenek.fx@signal" },
+      { "type": "PROFILE_URL", "value": "https://x.example/zenek_fx" }
+    ]
+  },
+  "mentions": [
+    {
+      "url": "https://forum.example/t/porady-p2p-od-zenka/123",
+      "collectedAt": "2026-11-20T09:15:00Z",
+      "content": "Cześć, tu zenek_fx (Zenon Fikcyjny). Sprzedaję BTC i ETH, kontakt: zenon.fikcyjny@example.com. Mój BTC: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa, mój ETH: 0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed."
+    },
+    {
+      "url": "https://x.example/zenek_fx/status/555",
+      "collectedAt": "2026-11-20T18:40:00Z",
+      "content": "@zenek_fx: trust wallet — BTC 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa, ETH 0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed. DM open."
+    },
+    {
+      "url": "https://p2p.example/ad/987",
+      "collectedAt": "2026-11-21T07:05:00Z",
+      "content": "Ogłoszenie P2P od zenek_fx. Adres premium (tylko tutaj): bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4. Wpłaty na hot wallet giełdy: 0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae. Stary uszkodzony adres: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfN0 — nie używać."
+    }
+  ]
+}

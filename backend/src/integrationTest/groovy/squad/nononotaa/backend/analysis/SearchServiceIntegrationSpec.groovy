@@ -23,6 +23,7 @@ class SearchServiceIntegrationSpec extends BaseSpec {
     @DynamicPropertySource
     static void searchProperties(DynamicPropertyRegistry registry) {
         registry.add('sources.timeout') { '300ms' }
+        registry.add('sources.synthetic.enabled') { 'false' }
     }
 
     def setup() {
