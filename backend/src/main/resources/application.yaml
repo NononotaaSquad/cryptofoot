@@ -22,6 +22,16 @@ management:
     health:
       probes:
         enabled: true
+sources:
+  timeout: 30s
+  web:
+    enabled: false
+    bot-user-agent: "OLCYS-Bot/1.0 (KAS OSINT tool; hacknation2026)"
+    max-text-length: 500000
+    min-delay-between-requests: 3s
+    respect-robots-txt: true
+    headless: true
+    whitelist: []
 app:
   exclusion:
     # Keyless ETH bytecode check (public JSON-RPC, Blockchair fallback); false keeps every address inside the app (D22-005)

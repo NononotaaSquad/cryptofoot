@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.bouncycastle.bcprov)
+    implementation(libs.playwright)
 }
 
 testing {
@@ -37,6 +38,8 @@ testing {
             useSpock(libs.versions.spock)
             dependencies {
                 implementation(libs.groovy)
+                implementation(libs.bytebuddy)
+                implementation(libs.objenesis)
                 runtimeOnly(libs.junit.platform.launcher)
             }
         }

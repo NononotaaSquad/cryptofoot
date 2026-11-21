@@ -7,6 +7,9 @@ spotless = "8.11.0"
 ktlint = "1.8.0"
 spock = "2.5-groovy-5.0"
 bouncycastle = "1.81"
+playwright = "1.58.0"
+bytebuddy = "1.15.11"
+objenesis = "3.3"
 
 [libraries]
 spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-starter-webmvc" }
@@ -24,6 +27,9 @@ springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openap
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+bytebuddy = { module = "net.bytebuddy:byte-buddy", version.ref = "bytebuddy" }
+objenesis = { module = "org.objenesis:objenesis", version.ref = "objenesis" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

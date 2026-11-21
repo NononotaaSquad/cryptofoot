@@ -3,3 +3,13 @@ app:
   scheduler:
     demo-enabled: true
     tick: PT5S
+sources:
+  web:
+    enabled: true
+    whitelist:
+      - name: "github-code"
+        searchUrl: "https://github.com/search?q={identifier}&type=code"
+        enabled: true
+      - name: "github-users"
+        searchUrl: "https://github.com/search?q={identifier}&type=users"
+        enabled: true
