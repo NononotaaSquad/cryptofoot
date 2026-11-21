@@ -19,11 +19,9 @@ export function AttributionDetails({
     <div className="flex flex-col gap-6">
       <Scoring attribution={attribution} />
 
-      {attribution.justification !== "" ? (
-        <Block heading="Uzasadnienie">
-          <p>{attribution.justification}</p>
-        </Block>
-      ) : null}
+      <Block heading="Uzasadnienie">
+        <p>{attribution.justification}</p>
+      </Block>
 
       <Block heading={attribution.mentionsHeading}>
         <ul className="flex flex-col gap-4">

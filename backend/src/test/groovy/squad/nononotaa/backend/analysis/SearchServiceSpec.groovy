@@ -317,4 +317,85 @@ class SearchServiceSpec extends Specification {
         expect:
         service.search([nickname]) == new SearchResult([], [])
     }
+
+    def "a source that was not checked is reported as such, without a check time, and the others keep their results"() {
+        given:
+        def notChecked = new FakeSource('stub-skipped', [])
+        notChecked.error = new SourceNotCheckedException('no supported identifier')
+        def ok = new FakeSource('stub-ok', [rawMention])
+        def service = new SearchService([notChecked, ok], detector, repository, validator, Duration.ofSeconds(10))
+        repository.findByIdentity(_) >> []
+        repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
+
+        when:
+        def result = service.search([nickname])
+
+        then:
+        result.sources*.status == [
+            SourceStatus.NOT_CHECKED,
+            SourceStatus.CHECKED
+        ]
+        result.sources[0].checkedAt == null
+        result.mentions.size() == 1
+    }
+
+    def "a mention fetched for the account is relevant by its author when it publishes an address, and keeps the author"() {
+        given:
+        def address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
+        def at = Instant.parse('2026-11-21T10:00:00Z')
+        def mine = new RawMention('https://reddit.example/p/1', at, ('filler ' * 60) + "pay ${address}", 'cryptonick')
+        def noAddress = new RawMention('https://reddit.example/p/2', at, 'just chatting', 'cryptonick')
+        def someoneElse = new RawMention('https://reddit.example/p/3', at, "pay ${address}", 'other')
+        def service = new SearchService([
+            new FakeSource('stub-ok', [mine, noAddress, someoneElse])
+        ], detector, repository, validator, Duration.ofSeconds(10))
+        repository.findByIdentity(_) >> []
+        Mention saved = null
+        repository.save(_) >> { args ->
+            saved = args[0] as Mention; withId(saved, 'm-1')
+        }
+
+        when:
+        def result = service.search([
+            new CaseIdentifier(IdentifierType.LOGIN, '@CryptoNick')
+        ])
+
+        then:
+        result.mentions*.url == ['https://reddit.example/p/1']
+        result.mentions[0].context.contains(address)
+        result.mentions[0].context.length() <= 200
+        result.mentions[0].detectedAddresses == [address]
+        saved.author == 'cryptonick'
+    }
+
+    def "a mention under the Case profile URL is relevant, a sibling resource is not"() {
+        given:
+        def address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
+        def at = Instant.parse('2026-11-21T10:00:00Z')
+        def source = new FakeSource('stub-ok', [
+            new RawMention('https://bitcointalk.org/index.php?action=profile;u=123', at, "address ${address}"),
+            new RawMention('https://bitcointalk.org/index.php?topic=5.msg7#msg7', at, "address ${address} one"),
+            new RawMention('https://bitcointalk.org/index.php?topic=5.msg8#msg8', at, "address ${address} two"),
+            new RawMention('https://bitcointalk.org/index.php?action=profile;u=1234', at, "address ${address} other"),
+        ])
+        def service = new SearchService([source], detector, repository, validator, Duration.ofSeconds(10))
+        repository.findByIdentity(_) >> []
+        repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
+
+        when:
+        def profile = service.search([
+            new CaseIdentifier(IdentifierType.PROFILE_URL, 'https://bitcointalk.org/index.php?action=profile;u=123')
+        ])
+        def post = service.search([
+            new CaseIdentifier(IdentifierType.PROFILE_URL, 'https://bitcointalk.org/index.php?topic=5.msg7#msg7')
+        ])
+
+        then:
+        profile.mentions*.url == [
+            'https://bitcointalk.org/index.php?action=profile;u=123'
+        ]
+        post.mentions*.url == [
+            'https://bitcointalk.org/index.php?topic=5.msg7#msg7'
+        ]
+    }
 }

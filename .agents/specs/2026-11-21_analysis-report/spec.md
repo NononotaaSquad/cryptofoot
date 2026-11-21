@@ -194,7 +194,7 @@ Master brought the backend algorithm `confidence-1` (#58, D9-006). The lead deci
 | # | Task | Decision |
 |---|---|---|
 | Q45 | 03 | The report shows the scoring breakdown. Punktacja stays on Case details as in Q38: rule label with the source names in brackets, points, bold "Stopień pewności". Every one of the 13 `confidence-1` rule codes has a Polish label in `features/analysis-report/report-labels.ts`. Replaces the `provisional-1` codes. D9-006 is amended to match. |
-| Q46 | 03 | Uzasadnienie shows the backend `AttributionResponse.justification` text as returned. The frontend has no Justification sentences of its own per rule. |
+| Q46 | 03 | Uzasadnienie shows the backend `AttributionResponse.justification` text as returned. If the text is absent or blank, the block still shows "Brak zapisanego uzasadnienia dla tej analizy". The frontend has no Justification sentences of its own per rule. For saved `provisional-1` Analyses, Punktacja retains the label "Adres przy identyfikatorze osoby" for `MENTIONED_WITH_IDENTIFIER`. |
 | Q47 | 03 | The Mentions of an Attribution and of an Excluded Address are read from `mentions`. The field `justification` is now the text, not the Mention list. |
 | Q48 | 01 | New case keeps the Analysis run of `lib/analysis-run/`. The duplicate `features/new-case/analysis-flow.ts` from #59 is removed. |
 

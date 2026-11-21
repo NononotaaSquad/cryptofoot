@@ -53,7 +53,6 @@ function attribution(values: Partial<AttributionResponse> = {}) {
     network: "BTC",
     confidenceLevel: 55,
     classificationStatus: "NOT_EXCLUDED",
-    justification: "",
     mentions: [],
     scoringRules: [],
     addressActivity: null,
@@ -406,17 +405,38 @@ describe("toReportView Attributions", () => {
     }
   });
 
-  it("passes the backend Justification text through as is", () => {
+  it("passes the backend Justification text through without trimming it", () => {
     const text =
-      "Adres pojawił się w dyskusji (p2p.example); taki ślad wymaga potwierdzenia drugim źródłem.";
+      "  Adres pojawił się w dyskusji (p2p.example); taki ślad wymaga potwierdzenia drugim źródłem.\n";
 
     expect(onlyAttribution({ justification: text }).justification).toBe(text);
   });
 
-  it.each([[undefined], [""], ["   "]])(
-    "gives an empty Justification for %j, which hides the block",
+  it("keeps legacy Punktacja and shows the fallback for an absent Justification", () => {
+    const result = onlyAttribution({
+      confidenceLevel: 40,
+      scoringRules: [{ rule: "MENTIONED_WITH_IDENTIFIER", contribution: 40 }],
+      mentions: [mention()],
+    });
+
+    expect(result.scoringLines).toEqual([
+      {
+        label: "Adres przy identyfikatorze osoby (forum.example)",
+        points: "40",
+      },
+    ]);
+    expect(result.confidenceTotal).toBe("40%");
+    expect(result.justification).toBe(
+      "Brak zapisanego uzasadnienia dla tej analizy"
+    );
+  });
+
+  it.each([[undefined], [""], [" \t\n "]])(
+    "shows the Justification fallback for %j",
     (justification) => {
-      expect(onlyAttribution({ justification }).justification).toBe("");
+      expect(onlyAttribution({ justification }).justification).toBe(
+        "Brak zapisanego uzasadnienia dla tej analizy"
+      );
     }
   );
 

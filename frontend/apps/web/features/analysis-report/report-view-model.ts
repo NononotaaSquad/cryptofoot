@@ -109,7 +109,7 @@ export interface AttributionView {
   scoringLines: ScoringLine[];
   /** "55%", the bold "Stopień pewności" line. */
   confidenceTotal: string;
-  /** The backend's Justification text; empty hides the block. */
+  /** The backend's Justification text or the missing-Justification message. */
   justification: string;
   /** "Wzmianki (2)" */
   mentionsHeading: string;
@@ -270,6 +270,7 @@ function attributionView(
   const address = attribution.address ?? "";
   const network = attribution.network ?? "";
   const percent = attribution.confidenceLevel ?? 0;
+  const justification = attribution.justification;
   const mentions = attribution.mentions ?? [];
   const rules = attribution.scoringRules ?? [];
   const sourceNames = unique(mentions.map((m) => m.sourceName ?? "")).join(
@@ -319,8 +320,9 @@ function attributionView(
       };
     }),
     confidenceTotal: `${String(percent)}%`,
-    // Built by the backend, one sentence per applied rule; shown as is.
-    justification: attribution.justification?.trim() ?? "",
+    justification: justification?.trim()
+      ? justification
+      : attributionLabels.missingJustification,
     mentionsHeading: `Wzmianki (${String(mentions.length)})`,
     mentions: mentions.map(mentionView),
     verification: [

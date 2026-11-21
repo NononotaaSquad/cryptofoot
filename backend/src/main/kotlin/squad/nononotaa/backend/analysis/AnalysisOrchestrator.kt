@@ -38,8 +38,8 @@ class AnalysisOrchestrator(
             guarded(AnalysisStage.SEARCH) { search.search(request.identifiers) }
                 ?: return failed(AnalysisStage.SEARCH, "MODULE_ERROR")
         val unavailable = found.sources.filter { it.status == SourceStatus.UNAVAILABLE }
-        if (found.sources.isEmpty() || unavailable.size == found.sources.size) {
-            val detail = if (found.sources.isEmpty()) "NO_SOURCE_CHECKED" else "ALL_SOURCES_UNAVAILABLE"
+        if (found.sources.none { it.status == SourceStatus.CHECKED }) {
+            val detail = if (unavailable.isEmpty()) "NO_SOURCE_CHECKED" else "ALL_SOURCES_UNAVAILABLE"
             return failed(AnalysisStage.SEARCH, detail, found)
         }
         val failures = unavailable.map { StageFailure(AnalysisStage.SEARCH, "SOURCE_UNAVAILABLE:${it.sourceName}") }

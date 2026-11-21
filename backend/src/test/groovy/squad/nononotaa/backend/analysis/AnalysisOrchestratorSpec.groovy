@@ -66,6 +66,29 @@ class AnalysisOrchestratorSpec extends Specification {
         finished.algorithmVersion == 'v1'
     }
 
+    def "a source that was not checked is no failure, but without any checked source the search fails"() {
+        given:
+        def skipped = new SourceReport('github', SourceStatus.NOT_CHECKED, false, null)
+        search.search(_) >>> [
+            new SearchResult([], [okSource, skipped]),
+            new SearchResult([], [skipped]),
+            new SearchResult([], [skipped, downSource])
+        ]
+
+        when:
+        def covered = orchestrator.run(request)
+        def none = orchestrator.run(request)
+        def noneDetail = finished.failures*.detail
+        def unavailable = orchestrator.run(request)
+
+        then:
+        covered.status == AnalysisStatus.COMPLETED
+        none.status == AnalysisStatus.FAILED
+        noneDetail == ['NO_SOURCE_CHECKED']
+        unavailable.status == AnalysisStatus.FAILED
+        finished.failures*.detail == ['ALL_SOURCES_UNAVAILABLE']
+    }
+
     def "no mentions from healthy sources is a completed analysis, not a failure"() {
         given:
         search.search(_) >> new SearchResult([], [okSource])

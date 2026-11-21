@@ -27,13 +27,14 @@ data class AnalysisRequest(
     val identifiers: List<CaseIdentifier>,
 )
 
-data class FoundMention(
+data class FoundMention @JvmOverloads constructor(
     val id: String,
     val sourceName: String,
     val url: String,
     val collectedAt: Instant,
     val context: String?,
     val detectedAddresses: List<String>,
+    val author: String? = null,
 )
 
 data class SourceReport(

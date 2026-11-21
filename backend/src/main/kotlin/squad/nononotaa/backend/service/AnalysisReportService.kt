@@ -94,6 +94,7 @@ class AnalysisReportService(
         collectedAt = mention.collectedAt,
         context = mention.context,
         detectedAddresses = mention.detectedAddresses.map(::detected),
+        author = mention.author,
     )
 
     private fun toResponse(activity: AddressActivity) = AddressActivityResponse(

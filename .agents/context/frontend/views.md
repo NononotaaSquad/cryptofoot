@@ -184,6 +184,18 @@ Decided by the lead in the grilling of 2026-11-21 against `frontend/apps/web/lib
 - **Copy decided after the task review (Q28–Q44, 2026-11-21):** full list in `.agents/specs/2026-11-21_analysis-report/spec.md`. Polling error: "Utracono połączenie" / "Analiza może nadal trwać. Sprawdź jej wynik w szczegółach sprawy." / "Rozumiem". No Analysis: "Ta sprawa nie ma jeszcze analizy.". Unknown Analysis in the address: "Nie znaleziono tej analizy w sprawie." with "Pokaż najnowszą analizę". Partial: "Analiza zakończyła się częściowo. Raport może być niepełny.". Empty sections show "(0)" and "Nie znaleziono adresów wykluczonych." / "Nie znaleziono adresów odrzuconych.". Missing format check: "Brak danych o sprawdzeniu formatu adresu.". Below 40% is "Niski / szum".
 - **Source check time:** every source shows "· sprawdzono o HH:MM" from `checkedAt`; a source with `status: UNAVAILABLE` shows "· niedostępne" as a warning.
 
+## Schedule on Case details (2026-11-21)
+
+Decided by the lead in the grilling of 2026-11-21 (Q1–Q18); the full record is `.agents/specs/2026-11-21_case-schedule/spec.md`. Where this section and the older text of this file differ (table row "schedule (P3)", Out of Scope, D1), this section wins.
+
+- **Frames:** "[STAN] Szczegóły sprawy – harmonogram wyłączony", "… – harmonogram włączony", "… – harmonogram, popover otwarty", "… – harmonogram, nieudane uruchomienie".
+- **Clock button:** a square outline button with a clock, right of "Rozpocznij nową analizę", name "Harmonogram". Enabled Schedule: tinted background and a check badge. Not shown on a Case without any Analysis.
+- **Popover "Harmonogram":** opens under the clock button. One radio group "Częstotliwość" ("Wyłączony", "Codziennie o 06:00", "Co 6 godzin (00:00, 06:00, 12:00, 18:00)", "Co tydzień (poniedziałek, 06:00)"), the hint "Godziny według czasu polskiego.", "Następna analiza: {date}", "Ostatnie uruchomienie: {date}" with "Pokaż analizę", then "Zapisz" and "Anuluj". Escape and a click outside close it without saving.
+- **State row:** full width between the Case header and the select, only when the Schedule is enabled: "Harmonogram: codziennie o 06:00 · następna analiza: 22.11.2026, 06:00". A skipped or failed term turns the same row into a warning.
+- **Demo Frequency:** "Co minutę (tryb demonstracyjny)", listed only when the frontend demo switch is on; a Schedule with `demo: true` is labelled "Tryb demonstracyjny".
+- **Polling:** every 30 s while the Schedule is enabled, every 5 s with `demo: true`. A Scheduled Analysis appears in the select; the displayed report does not change.
+- **Time:** Schedule dates and hours are always shown in Polish time.
+
 ## Testing Decisions
 
 Deferred. Test seams are decided after the views are laid out in Pencil. The test scope of ADR-0010 applies.

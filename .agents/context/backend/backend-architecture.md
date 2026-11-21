@@ -128,6 +128,10 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 
 `.e2e/backend/` holds black-box E2E tests of the running backend as a Postman collection and an identical Bruno collection (same requests, order and assertions; variable `baseUrl`). One ordered run covers health, Case validation and creation, a manual Analysis of the synthetic demo person (polled until finished) with its report and Mentions, rerun, history and comparison, the wallet-as-input and no-results cases, the schedule, API errors and CORS. `./scripts/e2e-backend.sh [postman|bruno|all]` runs them with `npx`. Decisions: `.agents/context/backend/decisions/e2e-1/`.
 
+### Web2 sources (task #61, proposed)
+
+`analysis/web2` holds two `MentionSource` adapters (`github`, `bitcointalk`; `synthetic=false`) on the JDK `HttpClient` (no redirects, bounded body, per-source timeout), configured by `config/Web2SourcesConfig` (`sources.<name>.*`). Both are **off by default**; Reddit was rejected by the team. Environment: `SOURCES_GITHUB_ENABLED`, `SOURCES_GITHUB_TOKEN`, `SOURCES_BITCOINTALK_ENABLED` (limits: `max-logins`, `max-posts`, `max-resources`, `max-bytes`, `timeout`, `request-delay`). Outcomes: results, valid zero (`CHECKED`), `UNAVAILABLE` (401/403/429/5xx/timeout), `NOT_CHECKED` (no supported identifier). Decisions and open points: `.agents/context/backend/decisions/task-61/`.
+
 ## Project Structure
 
 ```

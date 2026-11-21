@@ -11,4 +11,5 @@ export type SourceCoverageResponseStatus =
 export const SourceCoverageResponseStatus = {
   CHECKED: "CHECKED",
   UNAVAILABLE: "UNAVAILABLE",
+  NOT_CHECKED: "NOT_CHECKED",
 } as const;

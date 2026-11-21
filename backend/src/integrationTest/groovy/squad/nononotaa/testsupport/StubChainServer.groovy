@@ -85,6 +85,20 @@ class StubChainServer {
         explorerAnswers[pathAndQuery] = new Answer(status: 200, body: body)
     }
 
+    // an address with a complete, empty history: Address Activity is AVAILABLE with zero activity
+    void mempoolQuiet(String address) {
+        explorer("/api/address/$address", """{"address":"$address","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,
+            "spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}""")
+        explorer("/api/address/$address/txs", '[]')
+    }
+
+    void blockscoutQuiet(String address) {
+        def base = "/api/v2/addresses/$address"
+        explorer("$base/counters", '{"transactions_count":"0"}')
+        explorer("$base/transactions", '{"items":[],"next_page_params":null}')
+        explorer("$base/token-transfers?type=ERC-20", '{"items":[],"next_page_params":null}')
+    }
+
     private static void respond(HttpExchange exchange, Answer answer) {
         def chosen = answer ?: new Answer(status: 503, body: 'unavailable')
         if (chosen.delayMillis> 0) {

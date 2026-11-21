@@ -719,7 +719,8 @@
                         "type": "string",
                         "enum": [
                             "CHECKED",
-                            "UNAVAILABLE"
+                            "UNAVAILABLE",
+                            "NOT_CHECKED"
                         ]
                     },
                     "synthetic": {
@@ -1126,6 +1127,12 @@
                         "items": {
                             "$ref": "#/components/schemas/DetectedAddressResponse"
                         }
+                    },
+                    "author": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 }
             },

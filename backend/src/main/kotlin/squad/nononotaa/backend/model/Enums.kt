@@ -4,7 +4,7 @@ enum class AnalysisTrigger { MANUAL, SCHEDULED }
 
 enum class AnalysisStatus { RUNNING, COMPLETED, PARTIAL, FAILED }
 
-enum class SourceStatus { CHECKED, UNAVAILABLE }
+enum class SourceStatus { CHECKED, UNAVAILABLE, NOT_CHECKED }
 
 enum class ExclusionReason { EXCHANGE, SMART_CONTRACT, MIXER, FUNDRAISER }
 

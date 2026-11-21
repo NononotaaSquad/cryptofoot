@@ -9,19 +9,19 @@ import type { CreateCaseRequest } from "@/lib/api/generated/model";
 
 import { nextPollInterval } from "./poll-interval";
 import {
+  type NewCaseRunInput,
   type StartedAnalysis,
   runCaseAnalysis,
   runNewCaseAnalysis,
+  toNewCaseRunInput,
 } from "./run-analysis";
 
-type RunInput =
-  | { kind: "newCase"; identifiers: CreateCaseRequest }
-  | { kind: "case"; caseId: string };
+type RunInput = NewCaseRunInput | { kind: "case"; caseId: string };
 
 interface FailedStart {
   error: unknown;
-  // What "Spróbuj ponownie" sends: after `createCase` succeeded it is the
-  // created Case, so a retry never creates a second one (Q30).
+  // Keep the Case ID and identifiers together after creation so both the
+  // dialog and an unchanged form resubmission can retry only the start.
   retryInput: RunInput;
 }
 
@@ -75,6 +75,7 @@ export function useAnalysisRun({
     mutationFn: (input: RunInput) => {
       createdCaseId.current = null;
       if (input.kind === "case") return runCaseAnalysis(input.caseId);
+      if (input.caseId !== undefined) return runCaseAnalysis(input.caseId);
       return runNewCaseAnalysis(input.identifiers, (caseId) => {
         createdCaseId.current = caseId;
       });
@@ -86,7 +87,7 @@ export function useAnalysisRun({
       const caseId = createdCaseId.current;
       setFailedStart({
         error,
-        retryInput: caseId === null ? input : { kind: "case", caseId },
+        retryInput: caseId === null ? input : { ...input, caseId },
       });
       onStartError?.(error);
       setStartErrorOpen(true);
@@ -146,7 +147,13 @@ export function useAnalysisRun({
 
   return {
     startNewCase: (identifiers) => {
-      mutate({ kind: "newCase", identifiers });
+      const previous = failedStart?.retryInput;
+      mutate(
+        toNewCaseRunInput(
+          identifiers,
+          previous?.kind === "newCase" ? previous : undefined
+        )
+      );
     },
     start: (caseId) => {
       mutate({ kind: "case", caseId });
