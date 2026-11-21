@@ -580,8 +580,21 @@
                             "$ref": "#/components/schemas/SourceCoverageResponse"
                         }
                     },
+                    "networks": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "BTC",
+                                "ETH"
+                            ]
+                        }
+                    },
                     "algorithmVersion": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "attributionCount": {
                         "type": [

@@ -11,6 +11,7 @@ export * from "./addressActivityResponse";
 export * from "./analysisComparisonResponse";
 export * from "./analysisComparisonResponseComparabilityLimitationsItem";
 export * from "./analysisResponse";
+export * from "./analysisResponseNetworksItem";
 export * from "./analysisResponseStatus";
 export * from "./analysisResponseTrigger";
 export * from "./attributionChangeResponse";

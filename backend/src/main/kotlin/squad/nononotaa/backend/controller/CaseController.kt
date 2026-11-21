@@ -15,10 +15,14 @@ import squad.nononotaa.backend.dto.CaseResponse
 import squad.nononotaa.backend.dto.CreateCaseRequest
 import squad.nononotaa.backend.dto.ScheduleResponse
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
+import squad.nononotaa.backend.service.AnalysisHistoryService
 import squad.nononotaa.backend.util.ApiController
+import squad.nononotaa.backend.util.logger
 
 @ApiController("/cases")
-class CaseController {
+class CaseController(
+    private val analysisHistory: AnalysisHistoryService,
+) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun createCase(
@@ -42,7 +46,10 @@ class CaseController {
     @GetMapping("/{caseId}/analyses")
     fun listAnalyses(
         @PathVariable caseId: String,
-    ): List<AnalysisResponse> = TODO("E6.1: Analysis history of the Case, newest first, failures included")
+    ): List<AnalysisResponse> {
+        logger.debug("GET /cases/{}/analyses", caseId)
+        return analysisHistory.listByCase(caseId)
+    }
 
     @GetMapping("/{caseId}/comparison")
     fun compareAnalyses(
@@ -61,4 +68,8 @@ class CaseController {
         @PathVariable caseId: String,
         @Valid @RequestBody request: UpdateScheduleRequest,
     ): ScheduleResponse = TODO("E6.4: enable/disable periodic Analyses; cadence and timezone pending E6-D3")
+
+    companion object {
+        private val logger = logger()
+    }
 }
