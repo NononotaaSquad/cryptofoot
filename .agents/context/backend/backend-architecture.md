@@ -130,7 +130,7 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 
 ### Web2 sources (task #61, proposed)
 
-`analysis/web2` holds two `MentionSource` adapters (`github`, `bitcointalk`; `synthetic=false`) on the JDK `HttpClient` (no redirects, bounded body, per-source timeout), configured by `config/Web2SourcesConfig` (`sources.<name>.*`). Both are **off by default**; Reddit was rejected by the team. Environment: `SOURCES_GITHUB_ENABLED`, `SOURCES_GITHUB_TOKEN`, `SOURCES_BITCOINTALK_ENABLED` (limits: `max-logins`, `max-posts`, `max-resources`, `max-bytes`, `timeout`, `request-delay`). Outcomes: results, valid zero (`CHECKED`), `UNAVAILABLE` (401/403/429/5xx/timeout), `NOT_CHECKED` (no supported identifier). Decisions and open points: `.agents/context/backend/decisions/task-61/`.
+`analysis/web2` holds two `MentionSource` adapters (`github`, `bitcointalk`; `synthetic=false`) on the JDK `HttpClient` (no redirects, bounded body, per-source timeout), configured by `config/Web2SourcesConfig` (`sources.<name>.*`). Both are **on by default** (`application.yaml`; the `local` profile and the integration specs switch them off so the demo, the E2E suites and CI stay offline); Reddit was rejected by the team. Environment: `SOURCES_GITHUB_ENABLED`, `SOURCES_GITHUB_TOKEN`, `SOURCES_BITCOINTALK_ENABLED` (limits: `max-logins`, `max-posts`, `max-resources`, `max-bytes`, `timeout`, `request-delay`). Outcomes: results, valid zero (`CHECKED`), `UNAVAILABLE` (401/403/429/5xx/timeout), `NOT_CHECKED` (no supported identifier). Decisions and open points: `.agents/context/backend/decisions/task-61/`.
 
 ## Project Structure
 
