@@ -13,11 +13,11 @@ export const multiValueIdentifierKinds = [
 export type MultiValueIdentifierKind =
   (typeof multiValueIdentifierKinds)[number];
 
-// All six narrowing kinds. The cryptocurrency address takes exactly one value
+// All six narrowing kinds. The wallet address takes exactly one value
 // (backend contract `CreateCaseRequest`), so it is not in the multi-value list.
 export const narrowingIdentifierKinds = [
   ...multiValueIdentifierKinds,
-  "cryptocurrencyAddress",
+  "walletAddress",
 ] as const;
 
 export type NarrowingIdentifierKind = (typeof narrowingIdentifierKinds)[number];
@@ -71,10 +71,10 @@ export const narrowingIdentifierFields = [
     narrowing: true,
   },
   {
-    name: "cryptocurrencyAddress",
-    label: "Adres kryptowalutowy",
+    name: "walletAddress",
+    label: "Adres portfela",
     example: "np. bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf",
-    hint: "Adres portfela, na przykład w sieci Bitcoin lub Ethereum.",
+    hint: "Publiczny adres kryptowalutowy, na przykład w sieci Bitcoin lub Ethereum.",
     narrowing: true,
   },
 ] as const satisfies readonly IdentifierFieldDefinition[];
@@ -93,6 +93,6 @@ export const emptyNewCaseFormValues: NewCaseFormValues = {
   email: "",
   messengerId: "",
   profileUrl: "",
-  cryptocurrencyAddress: "",
+  walletAddress: "",
   fullName: "",
 };

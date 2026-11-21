@@ -58,39 +58,37 @@ describe("decideMinimumData", () => {
     expect(decision.result).toBe("ok");
     if (decision.result === "ok") {
       expect(decision.identifiers[kind]).toEqual(["value"]);
-      expect(decision.identifiers.cryptocurrencyAddress).toBeNull();
+      expect(decision.identifiers.walletAddress).toBeNull();
       expect(decision.identifiers.fullName).toBeNull();
     }
   });
 
-  it("returns ok for cryptocurrencyAddress alone with the trimmed address", () => {
+  it("returns ok for walletAddress alone with the trimmed address", () => {
     const decision = decideMinimumData(
-      form({ cryptocurrencyAddress: "  bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf " })
+      form({ walletAddress: "  bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf " })
     );
 
     expect(decision.result).toBe("ok");
     if (decision.result === "ok") {
-      expect(decision.identifiers.cryptocurrencyAddress).toBe(
+      expect(decision.identifiers.walletAddress).toBe(
         "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf"
       );
       expect(decision.identifiers.fullName).toBeNull();
     }
   });
 
-  it("returns empty when the cryptocurrency address holds only spaces", () => {
-    expect(decideMinimumData(form({ cryptocurrencyAddress: "   " }))).toEqual({
+  it("returns empty when the wallet address holds only spaces", () => {
+    expect(decideMinimumData(form({ walletAddress: "   " }))).toEqual({
       result: "empty",
     });
   });
 
-  it("keeps a cryptocurrency address with a comma as one trimmed value", () => {
-    const decision = decideMinimumData(
-      form({ cryptocurrencyAddress: " abc, def " })
-    );
+  it("keeps a wallet address with a comma as one trimmed value", () => {
+    const decision = decideMinimumData(form({ walletAddress: " abc, def " }));
 
     expect(decision.result).toBe("ok");
     if (decision.result === "ok") {
-      expect(decision.identifiers.cryptocurrencyAddress).toBe("abc, def");
+      expect(decision.identifiers.walletAddress).toBe("abc, def");
     }
   });
 
@@ -111,7 +109,7 @@ describe("decideMinimumData", () => {
         email: ["jan@example.com"],
         messengerId: [],
         profileUrl: [],
-        cryptocurrencyAddress: null,
+        walletAddress: null,
         fullName: "Jan Kowalski",
       },
     });

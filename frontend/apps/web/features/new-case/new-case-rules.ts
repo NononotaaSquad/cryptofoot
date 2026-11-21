@@ -4,10 +4,10 @@ import {
   multiValueIdentifierKinds,
 } from "./identifier-fields";
 
-// Five narrowing kinds hold lists; the cryptocurrency address and the full
+// Five narrowing kinds hold lists; the wallet address and the full
 // name hold one value or `null` when absent (backend `CreateCaseRequest`).
 export type NewCaseIdentifiers = Record<MultiValueIdentifierKind, string[]> & {
-  cryptocurrencyAddress: string | null;
+  walletAddress: string | null;
   fullName: string | null;
 };
 
@@ -44,17 +44,17 @@ export function decideMinimumData(
     messengerId: splitValues(values.messengerId),
     profileUrl: splitValues(values.profileUrl),
   };
-  const cryptocurrencyAddress = singleValue(values.cryptocurrencyAddress);
+  const walletAddress = singleValue(values.walletAddress);
   const fullName = singleValue(values.fullName);
 
   const hasNarrowingIdentifier =
-    cryptocurrencyAddress !== null ||
+    walletAddress !== null ||
     multiValueIdentifierKinds.some((kind) => multiValue[kind].length > 0);
 
   if (hasNarrowingIdentifier) {
     return {
       result: "ok",
-      identifiers: { ...multiValue, cryptocurrencyAddress, fullName },
+      identifiers: { ...multiValue, walletAddress, fullName },
     };
   }
 
