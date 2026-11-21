@@ -72,6 +72,12 @@ class WebMentionSource(
             context.newPage().use { page ->
                 page.navigate(url, com.microsoft.playwright.Page.NavigateOptions().setTimeout(30_000.0))
                 page.waitForLoadState(com.microsoft.playwright.options.LoadState.DOMCONTENTLOADED)
+                try {
+                    page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE)
+                } catch (e: Exception) {
+                    logger.debug("networkidle timeout for url={}", url)
+                }
+                page.waitForTimeout(1500.0)
                 val html = page.content()
                 val text = htmlToText(html)
                 return if (text.length > props.maxTextLength) text.take(props.maxTextLength) else text

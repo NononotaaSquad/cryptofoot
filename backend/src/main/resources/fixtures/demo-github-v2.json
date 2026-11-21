@@ -1,0 +1,31 @@
+{
+  "version": "demo-github-v2",
+  "synthetic": true,
+  "person": {
+    "firstName": "Maksymilian",
+    "lastName": "Wmanow",
+    "identifiers": [
+      { "type": "NICKNAME", "value": "maksymuimanov" },
+      { "type": "LOGIN", "value": "@maksymuimanov" },
+      { "type": "EMAIL", "value": "maksymilian.wmanow@example.com" },
+      { "type": "PROFILE_URL", "value": "https://github.com/maksymuimanov" }
+    ]
+  },
+  "mentions": [
+    {
+      "url": "https://github.com/maksymuimanov?tab=repositories",
+      "collectedAt": "2026-11-21T10:00:00Z",
+      "content": "Profil GitHub maksymuimanov (Maksymilian Wmanow). Mój portfel ETH do darowizn: 0x71C7656EC7ab88b098defB751B7401B5f6d8976F. Kontakt: maksymilian.wmanow@example.com."
+    },
+    {
+      "url": "https://gist.github.com/maksymuimanov/abc123",
+      "collectedAt": "2026-11-21T14:30:00Z",
+      "content": "Gist od @maksymuimanov: Sprzedam NFT za ETH. Wpłaty na adres: 0x71C7656EC7ab88b098defB751B7401B5f6d8976F lub BTC: bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq."
+    },
+    {
+      "url": "https://forum.example/t/watek-maksymuimanov/456",
+      "collectedAt": "2026-11-21T18:00:00Z",
+      "content": "Hej, tu maksymuimanov. Kupię BTC po dobrej cenie, mój adres BTC: bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq. Płatność tylko na ten adres."
+    }
+  ]
+}

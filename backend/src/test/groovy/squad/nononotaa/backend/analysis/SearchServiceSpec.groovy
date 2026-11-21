@@ -176,7 +176,7 @@ class SearchServiceSpec extends Specification {
         result.mentions[0].context.contains('CRYPTONICK')
     }
 
-    def "snippet is at most 200 chars and centered around the first match"() {
+    def "snippet is at most 500 chars and centered around the first match"() {
         given:
         def content = ('x' * 500) + 'CryptoNick' + ('y' * 500)
         def source = new FakeSource('stub-ok', [
@@ -191,8 +191,8 @@ class SearchServiceSpec extends Specification {
 
         then:
         result.mentions.size() == 1
-        result.mentions[0].context.length() <= 200
-        result.mentions[0].context == content.substring(400, 600)
+        result.mentions[0].context.length() <= 500
+        result.mentions[0].context == content.substring(400, 900)
         result.mentions[0].context.contains('CryptoNick')
     }
 

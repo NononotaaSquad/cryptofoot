@@ -81,7 +81,7 @@ class SearchService(
     ): Mention? {
         val match = findMatch(raw.content, identifiers) ?: return null
         val context = snippet(raw.content, match)
-        val detectedAddresses = detector.detect("", context).map { it.rawAddress }
+        val detectedAddresses = detector.detect("", raw.content).map { it.rawAddress }
         val identity = Mention.computeIdentity(source.sourceName, raw.url, context)
         if (!seenIdentities.add(identity)) return null
         mentionRepository.findByIdentity(identity).firstOrNull()?.let { return it }
@@ -145,7 +145,7 @@ class SearchService(
     )
 
     companion object {
-        private const val MAX_SNIPPET_LENGTH = 200
+        private const val MAX_SNIPPET_LENGTH = 500
         private const val SNIPPET_MARGIN = 100
         private val logger = logger()
     }

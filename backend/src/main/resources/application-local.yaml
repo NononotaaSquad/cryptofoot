@@ -7,9 +7,9 @@ sources:
   web:
     enabled: true
     whitelist:
-      - name: "github-code"
-        searchUrl: "https://github.com/search?q={identifier}&type=code"
+      - name: "github-profile"
+        searchUrl: "https://github.com/{identifier}"
         enabled: true
-      - name: "github-users"
-        searchUrl: "https://github.com/search?q={identifier}&type=users"
+      - name: "github-search-code"
+        searchUrl: "https://github.com/search?q={identifier}&type=code"
         enabled: true
