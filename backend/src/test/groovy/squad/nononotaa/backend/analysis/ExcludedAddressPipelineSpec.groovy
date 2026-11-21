@@ -46,6 +46,12 @@ class ExcludedAddressPipelineSpec extends Specification {
     def contract = new Candidate('ETH', CONTRACT_ADDRESS, ['m1'])
     def person = new Candidate('ETH', PERSON, ['m1'])
     def unchecked = new Candidate('ETH', UNCHECKED, ['m1'])
+    List<Candidate> candidates = [
+        exchange,
+        contract,
+        person,
+        unchecked
+    ]
     AnalysisResult finished
 
     def setup() {
@@ -53,12 +59,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         search.search(_) >> new SearchResult([mention], [
             new SourceReport('forum', SourceStatus.CHECKED, true, Instant.parse('2026-11-21T10:00:00Z'))
         ])
-        preparation.prepare(_) >> new PreparedCandidates([
-            exchange,
-            contract,
-            person,
-            unchecked
-        ], [])
+        preparation.prepare(_) >> { new PreparedCandidates(candidates, []) }
         recorder.begin(_) >> 'a-1'
         recorder.finish('a-1', _) >> { id, result -> finished = result }
     }
@@ -94,5 +95,67 @@ class ExcludedAddressPipelineSpec extends Specification {
         finished.unclassified == [unchecked]
         finished.status == AnalysisStatus.PARTIAL
         finished.limitations.contains(ReportLimitation.CLASSIFICATION_UNAVAILABLE)
+    }
+
+    def "when every candidate is an Excluded Address the scoring is never called and the Analysis is completed"() {
+        given:
+        candidates = [exchange, contract]
+
+        when:
+        orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
+
+        then:
+        0 * scoring.score(_)
+        finished.status == AnalysisStatus.COMPLETED
+        finished.attributions.isEmpty()
+        finished.unclassified.isEmpty()
+        finished.excluded*.candidate == [exchange, contract]
+        finished.excluded*.candidate*.mentionIds == [['m1'], ['m1']]
+        finished.limitations.isEmpty()
+    }
+
+    def "with the on-chain check switched off only listed addresses are excluded and every other ETH Attribution is flagged"() {
+        given:
+        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), scoring, recorder)
+        candidates = [exchange, person]
+
+        when:
+        offline.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
+
+        then:
+        1 * scoring.score([person]) >> new ScoringResult([
+            new ScoredAttribution(person, 70, [
+                new AppliedRule('forum-post', 70)
+            ], ClassificationStatus.NOT_EXCLUDED)
+        ], 'v1')
+        finished.excluded*.candidate == [exchange]
+        finished.attributions*.classificationStatus == [
+            ClassificationStatus.UNAVAILABLE
+        ]
+        finished.status == AnalysisStatus.PARTIAL
+        finished.limitations.contains(ReportLimitation.CLASSIFICATION_UNAVAILABLE)
+    }
+
+    def "a crash inside the classifier fails the Analysis instead of producing unchecked Attributions"() {
+        given:
+        ContractCodeSource broken = Stub() {
+            getSourceName() >> 'broken'
+            check(_) >> { throw new IllegalStateException('bug') }
+        }
+        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), scoring, recorder)
+        candidates = [exchange, person]
+
+        when:
+        def run = crashing.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
+
+        then:
+        0 * scoring.score(_)
+        run.status == AnalysisStatus.FAILED
+        finished.status == AnalysisStatus.FAILED
+        finished.failures == [
+            new StageFailure(AnalysisStage.EXCLUSION, 'MODULE_ERROR')
+        ]
+        finished.attributions.isEmpty()
+        finished.excluded.isEmpty()
     }
 }

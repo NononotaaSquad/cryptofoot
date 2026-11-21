@@ -11,6 +11,7 @@ import spock.lang.Specification
 import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.CanonicalAddress
 import squad.nononotaa.backend.model.ExclusionLabel
+import tools.jackson.core.type.TypeReference
 import tools.jackson.module.kotlin.ExtensionsKt
 
 class ExclusionLabelDirectorySpec extends Specification {
@@ -79,6 +80,7 @@ class ExclusionLabelDirectorySpec extends Specification {
         'a Kraken wallet'         | ETH     | '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'    | EXCHANGE   | 'Kraken 4'                      | 'Etherscan labels'
         'the Tornado Cash router' | ETH     | '0xd90e2f925da726b50c4ed8d0fb90ad053324f31b'    | MIXER      | 'Tornado.Cash: Router'          | 'Etherscan labels'
         'a donation address'      | ETH     | '0x165cd37b4c644c2921454429e7f9358d18a45e14'    | FUNDRAISER | 'Ukraine Crypto Donation'       | 'Etherscan labels'
+        'a foundation tip jar'    | ETH     | '0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359'    | FUNDRAISER | 'FoundationTipJar'              | 'Etherscan labels'
         'a BTC exchange wallet'   | BTC     | '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'            | EXCHANGE   | 'Binance.com'                   | 'Own label list'
     }
 
@@ -135,13 +137,103 @@ class ExclusionLabelDirectorySpec extends Specification {
         labels[new CanonicalAddress(ETH, '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd')].name == 'Upper [kraken]'
     }
 
-    def "an own entry overrides the dataset entry for the same address"() {
+    def "loading lets an own entry override the dataset entry for the same address"() {
         given:
-        def address = new CanonicalAddress(ETH, '0x165cd37b4c644c2921454429e7f9358d18a45e14')
-        def dataset = [(address): new ExclusionLabel(FUNDRAISER, 'dataset', 'Etherscan labels')]
-        def own = [(address): new ExclusionLabel(EXCHANGE, 'own', 'Own label list (ref)')]
+        def dataset = '{"0x165CD37B4C644C2921454429E7F9358D18A45E14": {"name": "Upstream", "labels": ["donate"]},' +
+                ' "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0": {"name": "Kraken 4", "labels": ["kraken"]}}'
+        def own = '{"entries": [{"network": "ETH", "address": "0x165cd37b4c644c2921454429e7f9358d18a45e14",' +
+                ' "reason": "EXCHANGE", "name": "Corrected", "reference": "https://ref.test"}]}'
+
+        when:
+        def directory = ExclusionLabelDirectory.load(mapper, stream(dataset), stream(own))
+
+        then:
+        directory.size == 2
+        directory.find(new CanonicalAddress(ETH, '0x165cd37b4c644c2921454429e7f9358d18a45e14')) ==
+                new ExclusionLabel(EXCHANGE, 'Corrected', 'Own label list (https://ref.test)')
+        directory.find(new CanonicalAddress(ETH, '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0')) ==
+                new ExclusionLabel(EXCHANGE, 'Kraken 4 [kraken]', ExclusionLabelDirectory.ETHERSCAN_SOURCE)
+    }
+
+    def "a dataset entry without a name is still labelled, and its tags are listed sorted"() {
+        given:
+        def entries = [
+            '0x1111111111111111111111111111111111111111': new ExclusionLabelDirectory.EtherscanEntry(name, ['otc', 'binance'])
+        ]
 
         expect:
-        new ExclusionLabelDirectory(dataset + own).find(address).name == 'own'
+        ExclusionLabelDirectory.fromEtherscan(entries)[new CanonicalAddress(ETH, '0x1111111111111111111111111111111111111111')].name ==
+                'no name [binance, otc]'
+
+        where:
+        name << [null, '', '   ']
+    }
+
+    def "loading tolerates dataset entries with missing fields"() {
+        given:
+        def dataset = '{"0x2222222222222222222222222222222222222222": {"labels": ["kraken"]},' +
+                ' "0x3333333333333333333333333333333333333333": {"name": "No tags"},' +
+                ' "0x4444444444444444444444444444444444444444": {}}'
+
+        when:
+        def directory = ExclusionLabelDirectory.load(mapper, stream(dataset), stream('{"entries": []}'))
+
+        then:
+        directory.size == 1
+        directory.find(new CanonicalAddress(ETH, '0x2222222222222222222222222222222222222222')).name == 'no name [kraken]'
+    }
+
+    def "the canonical form of #raw on #network is #expected"() {
+        expect:
+        ExclusionLabelDirectory.canonical(network, raw) == new CanonicalAddress(network, expected)
+
+        where:
+        network | raw                                              | expected
+        ETH     | '0x267BE1C1D684F78CB4F6A176C4911B741E4FFDC0'     | '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'
+        ETH     | ' 0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0 '   | '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'
+        BTC     | 'BC1QW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KV8F3T4'     | 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
+        BTC     | ' 1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'            | '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'
+        BTC     | '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'             | '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'
+    }
+
+    def "every mapped tag gives its reason"() {
+        given:
+        def mapping = EtherscanTagMapping.INSTANCE
+
+        expect:
+        mapping.mixerTags.every { mapping.reasonFor([it]) == MIXER }
+        mapping.exchangeTags.every { mapping.reasonFor([it]) == EXCHANGE }
+        mapping.fundraiserTags.every { mapping.reasonFor([it]) == FUNDRAISER }
+        (mapping.mixerTags.intersect(mapping.exchangeTags) + mapping.exchangeTags.intersect(mapping.fundraiserTags)).isEmpty()
+    }
+
+    // Pinned counts (D22-002): a change of the tag table or the dataset must update them deliberately.
+    def "the bundled dataset yields exactly the mapped addresses, canonical, with the pinned count per reason"() {
+        given:
+        def raw = mapper.readValue(resource('etherscan-labels.json'), new TypeReference<Map<String, ExclusionLabelDirectory.EtherscanEntry>>() {})
+        def labels = ExclusionLabelDirectory.fromEtherscan(raw)
+        def mappedAddresses = raw.findAll { k, v ->
+            EtherscanTagMapping.INSTANCE.reasonFor(v.labels) != null
+        }
+        .keySet()*.toLowerCase() as Set
+
+        expect:
+        raw.size() == 29945
+        labels.size() == 855
+        labels.values().countBy {
+            it.reason
+        } == [(EXCHANGE): 640, (FUNDRAISER): 129, (MIXER): 86]
+        labels.keySet().every {
+            it.network == ETH && it.address ==~ /^0x[0-9a-f]{40}$/
+        }
+        labels.keySet()*.address as Set == mappedAddresses
+        labels.values().every {
+            it.source == ExclusionLabelDirectory.ETHERSCAN_SOURCE
+        }
+        bundled.size == labels.size() + 1
+    }
+
+    private static InputStream stream(String json) {
+        new ByteArrayInputStream(json.getBytes('UTF-8'))
     }
 }

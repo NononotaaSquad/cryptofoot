@@ -5,6 +5,7 @@ import static squad.nononotaa.backend.model.ContractCodeCheck.CONTRACT
 import static squad.nononotaa.backend.model.ContractCodeCheck.UNAVAILABLE
 import static squad.nononotaa.backend.model.ExclusionReason.EXCHANGE
 import static squad.nononotaa.backend.model.ExclusionReason.FUNDRAISER
+import static squad.nononotaa.backend.model.ExclusionReason.MIXER
 import static squad.nononotaa.backend.model.ExclusionReason.SMART_CONTRACT
 import static squad.nononotaa.backend.model.Network.BTC
 import static squad.nononotaa.backend.model.Network.ETH
@@ -22,10 +23,12 @@ class ExclusionClassifierServiceSpec extends Specification {
     static final String BTC_DONATION = '357a3So9CbsNfBBgFYACGvxxS6tMaDoa1P'
     static final String ETH_ADDRESS = '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed'
     static final String BTC_PERSON = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
+    static final String BTC_MIXER = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
 
     def labels = new ExclusionLabelDirectory([
         (new CanonicalAddress(ETH, KRAKEN))      : new ExclusionLabel(EXCHANGE, 'Kraken 4 [kraken]', 'Etherscan labels'),
-        (new CanonicalAddress(BTC, BTC_DONATION)): new ExclusionLabel(FUNDRAISER, 'Ukraine Crypto Donation (BTC)', 'Own label list (ref)')
+        (new CanonicalAddress(BTC, BTC_DONATION)): new ExclusionLabel(FUNDRAISER, 'Ukraine Crypto Donation (BTC)', 'Own label list (ref)'),
+        (new CanonicalAddress(BTC, BTC_MIXER))   : new ExclusionLabel(MIXER, 'Test mixer', 'Own label list (ref)')
     ])
     ContractCodeSource rpc = Mock() {
         getSourceName() >> 'Ethereum JSON-RPC eth_getCode (rpc.test)'
@@ -183,5 +186,117 @@ class ExclusionClassifierServiceSpec extends Specification {
             '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy'
         ]
         first.excluded*.candidate*.address == [KRAKEN, BTC_DONATION]
+    }
+
+    def "accepts an ETH account confirmed by the fallback service"() {
+        given:
+        def person = new Candidate('ETH', ETH_ADDRESS, ['m1'])
+
+        when:
+        def result = classifier.classify([person])
+
+        then:
+        1 * rpc.check(ETH_ADDRESS) >> UNAVAILABLE
+        1 * blockchair.check(ETH_ADDRESS) >> ACCOUNT
+        result == new ExclusionResult([person], [], [])
+    }
+
+    def "a bech32 label matches regardless of letter case"() {
+        given:
+        def mixer = new Candidate('BTC', BTC_MIXER.toUpperCase(), ['m1'])
+
+        expect:
+        classifier.classify([mixer]).excluded == [
+            new ExcludedCandidate(mixer, MIXER, 'Own label list (ref): Test mixer')
+        ]
+    }
+
+    def "a Base58 label is case-sensitive, so a different spelling is not that address"() {
+        given:
+        def other = new Candidate('BTC', BTC_DONATION.toLowerCase(), ['m1'])
+
+        expect:
+        classifier.classify([other]) == new ExclusionResult([other], [], [])
+    }
+
+    def "surrounding spaces are ignored and the on-chain check gets the canonical address"() {
+        given:
+        def listed = new Candidate('ETH', "  ${KRAKEN.toUpperCase().replace('0X', '0x')}  ".toString(), ['m1'])
+        def unlisted = new Candidate('ETH', " 0x${ETH_ADDRESS.substring(2).toUpperCase()} ".toString(), ['m2'])
+
+        when:
+        def result = classifier.classify([listed, unlisted])
+
+        then:
+        1 * rpc.check(ETH_ADDRESS) >> ACCOUNT
+        result.excluded*.candidate == [listed]
+        result.accepted == [unlisted]
+    }
+
+    def "network names must match exactly: #network"() {
+        given:
+        def candidate = new Candidate(network, ETH_ADDRESS, ['m1'])
+
+        when:
+        def result = classifier.classify([candidate])
+
+        then:
+        0 * rpc.check(_)
+        result == new ExclusionResult([], [], [candidate])
+
+        where:
+        network << ['eth', 'ETHEREUM', '', 'BTC ']
+    }
+
+    def "no candidates give an empty result without any call"() {
+        when:
+        def result = classifier.classify([])
+
+        then:
+        0 * rpc.check(_)
+        0 * blockchair.check(_)
+        result == new ExclusionResult([], [], [])
+    }
+
+    def "every candidate lands in exactly one list and an exclusion keeps all its Mentions"() {
+        given:
+        def candidates = [
+            new Candidate('ETH', KRAKEN, ['m1', 'm2', 'm3']),
+            new Candidate('ETH', ETH_ADDRESS, ['m4']),
+            new Candidate('ETH', '0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359', ['m5']),
+            new Candidate('ETH', '0xdbf03b407c01e7cd3cbea99509d93f8dddc8c6fb', ['m6']),
+            new Candidate('BTC', BTC_PERSON, ['m7']),
+            new Candidate('BTC', BTC_MIXER, ['m8', 'm9']),
+            new Candidate('TRON', 'TXYZ', ['m10'])
+        ]
+        rpc.check(ETH_ADDRESS) >> CONTRACT
+        rpc.check('0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359') >> ACCOUNT
+        rpc.check('0xdbf03b407c01e7cd3cbea99509d93f8dddc8c6fb') >> UNAVAILABLE
+        blockchair.check(_) >> UNAVAILABLE
+
+        when:
+        def result = classifier.classify(candidates)
+
+        then:
+        (result.accepted + result.excluded*.candidate + result.unclassified) as Set == candidates as Set
+        result.accepted.size() + result.excluded.size() + result.unclassified.size() == candidates.size()
+        result.excluded.collectEntries {
+            [(it.candidate.address): [
+                    it.reason,
+                    it.candidate.mentionIds
+                ]]
+        } == [
+            (KRAKEN)     : [EXCHANGE, ['m1', 'm2', 'm3']],
+            (ETH_ADDRESS): [SMART_CONTRACT, ['m4']],
+            (BTC_MIXER)  : [MIXER, ['m8', 'm9']]
+        ]
+        result.accepted*.address == [
+            '0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359',
+            BTC_PERSON
+        ]
+        result.unclassified*.address == [
+            '0xdbf03b407c01e7cd3cbea99509d93f8dddc8c6fb',
+            'TXYZ'
+        ]
     }
 }

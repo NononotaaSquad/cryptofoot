@@ -1,16 +1,29 @@
 package squad.nononotaa.backend.service
 
+import java.time.Duration
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Requires
 import squad.nononotaa.backend.BaseSpec
 import squad.nononotaa.backend.analysis.Candidate
 import squad.nononotaa.backend.analysis.ExclusionClassifier
+import squad.nononotaa.backend.config.ExclusionProperties
 import squad.nononotaa.backend.model.ExclusionReason
 
 class ExclusionClassifierWiringSpec extends BaseSpec {
 
     @Autowired
     ExclusionClassifier classifier
+
+    @Autowired
+    ExclusionProperties properties
+
+    def "the default application configuration enables the check against the public services unless switched off"() {
+        expect:
+        properties.onchainCheckEnabled == (System.getenv('EXCLUSION_ONCHAIN_CHECK_ENABLED') != 'false')
+        properties.ethRpcUrl == URI.create('https://ethereum-rpc.publicnode.com')
+        properties.blockchairUrl == URI.create('https://api.blockchair.com')
+        properties.timeout == Duration.ofSeconds(5)
+    }
 
     def "the application classifies listed addresses from the bundled label lists without an on-chain call"() {
         given:
