@@ -18,4 +18,6 @@ export interface PersonIdentifiersResponse {
   profileUrl?: string | null;
   /** @nullable */
   fullName?: string | null;
+  /** @nullable */
+  walletAddress?: string | null;
 }

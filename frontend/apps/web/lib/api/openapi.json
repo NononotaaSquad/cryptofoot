@@ -551,6 +551,12 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "walletAddress": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 }
             },
@@ -690,6 +696,12 @@
                         ]
                     },
                     "fullName": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "walletAddress": {
                         "type": [
                             "string",
                             "null"

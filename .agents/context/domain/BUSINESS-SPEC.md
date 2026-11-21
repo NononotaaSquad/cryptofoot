@@ -16,7 +16,7 @@ Frame decisions:
 
 - User: one Analyst, an official without IT knowledge, no login.
 - Judges: a jury made of KAS officials.
-- Direction: person → addresses only.
+- Direction: person to addresses. A cryptocurrency wallet address entered by the Analyst is also searched for (D50-001, D50-002, task owner's decision, team confirmation pending), but new identifiers of the person are not derived from the findings.
 - Main rule: little noise. We do not show information that increases the number of false leads to analyse.
 
 ## 2. Business modules
@@ -34,9 +34,9 @@ Analogy: a detective agency. Boundary rule: **the field agent does not judge, th
 ### M1. Input data
 
 - The form accepts from one field up to the full set of data.
-- **Narrowing identifiers** (at least one is required): nickname, login, e-mail, messenger ID, profile address.
+- **Narrowing identifiers** (at least one is required): nickname, login, e-mail, messenger ID, profile address, cryptocurrency wallet address.
 - **Full name** is an additional field. Alone it cannot start an Analysis, because it is too general.
-- A cryptocurrency address is not input data (the direction address → person is postponed).
+- A **cryptocurrency wallet address** can be entered as a narrowing identifier: one address, Bitcoin or Ethereum, validated and stored in canonical form (D50-001, D50-003, D50-004). It is the Analyst's own input, not a finding from a source: it is never a Mention, never an independent confirmation and does not by itself make an Attribution (D50-006). The Analysis searches the public sources for Mentions of it (D50-002).
 
 ### M2. Information search
 
@@ -122,7 +122,7 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 
 ### Out of scope for now
 
-- The direction address → person.
+- Deriving new identifiers of the person from the findings about an entered wallet address (option C of D50-002). Entering a wallet and searching for it is in scope; it is not part of the demo (D50-007).
 - General internet search outside the chosen sources.
 - A Justification as a text description.
 - Login and multiple users.
@@ -155,7 +155,7 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 7. Which 2–3 public sources do we choose? (the demo itself runs on synthetic data, see answered questions)
 8. Which Confidence Level bands do we use: our own or the ones from the appendix to the task?
 9. What counts as a "change" when comparing two Analyses? *Proposal in [E6.3](epics/E6-returning-to-a-case.md#e63-compare-two-analyses): a new Attribution, an Attribution not seen in the later Analysis, a changed Confidence Level, a changed exclusion. Not confirmed (E6-D2).*
-10. When do we add the direction address → person?
+10. When do we add the direction address to person? *Answered by the task owner on 2026-11-21: a wallet address may be entered, counts as a narrowing identifier and is searched for ([D50-001](../backend/decisions/task-50/001-wallet-as-narrowing-identifier.md), [D50-002](../backend/decisions/task-50/002-wallet-in-analysis-search.md)). Team confirmation, agreement of the E2 and E3 owners and mentor acceptance are still open; not part of the demo ([D50-007](../backend/decisions/task-50/007-demo-scope.md)).*
 12. How often and at what time do periodic Analyses run, and can the Analyst change it? (E6-D3)
 
 ### Risks to decide on knowingly

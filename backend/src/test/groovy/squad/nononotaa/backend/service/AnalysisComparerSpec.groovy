@@ -190,6 +190,10 @@ class AnalysisComparerSpec extends Specification {
         comparer.limitations(record(), record(identifiers: [
             new CaseIdentifier(IdentifierType.NICKNAME, 'other')
         ])) == [Limit.IDENTIFIERS_DIFFER]
+        comparer.limitations(record(), record(identifiers: [
+            new CaseIdentifier(IdentifierType.NICKNAME, 'nick'),
+            new CaseIdentifier(IdentifierType.WALLET_ADDRESS, '0xabc')
+        ])) == [Limit.IDENTIFIERS_DIFFER]
         comparer.limitations(record(), record(sources: [
             new SourceReport('forum', SourceStatus.UNAVAILABLE, true, null)
         ])) == [Limit.SOURCE_COVERAGE_DIFFERS]

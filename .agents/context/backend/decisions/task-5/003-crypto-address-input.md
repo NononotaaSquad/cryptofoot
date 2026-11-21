@@ -1,6 +1,6 @@
 # D5-003: What "a cryptocurrency address is not input data" means
 
-- **Status:** accepted (by the task owner; not confirmed by the team)
+- **Status:** superseded in part by [D50-001](../task-50/001-wallet-as-narrowing-identifier.md): the API now has a wallet address field and a wallet alone is accepted. Still valid: other fields are not scanned for address-like values, and unknown properties such as `address` are ignored. Reason of the change: the task owner decided on 2026-11-21 that a wallet address must be an input field (issue #50). The text below is kept as decided on that day.
 - **Date:** 2026-11-21
 - **Type:** decision chosen by the user among offered options; resolves a contradiction between sources
 - **Source:** `BUSINESS-SPEC.md` M1 ("A cryptocurrency address is not input data (the direction address to person is postponed)") and "Out of scope"; `epics/E1-creating-a-case.md` Out of scope; the competition brief `MF - Pelna Tresc Zadania Konkursowego.md` section 2 (lists a public cryptocurrency address as a possible identifier); issue #5

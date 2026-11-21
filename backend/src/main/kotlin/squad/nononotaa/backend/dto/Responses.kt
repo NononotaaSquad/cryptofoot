@@ -27,6 +27,7 @@ data class PersonIdentifiersResponse(
     val messengerId: String?,
     val profileUrl: String?,
     val fullName: String?,
+    val walletAddress: String?,
 )
 
 data class CaseResponse(
