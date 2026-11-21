@@ -1,0 +1,53 @@
+@startuml 02-case-creation
+title E1: create a Case (POST /api/1/cases), tasks #5 and #50
+
+skinparam shadowing false
+autonumber
+
+actor Analyst
+participant "Frontend" as FE
+participant "Jackson\n(TrimToNull)" as JSON
+participant "Bean Validation\n@NarrowingIdentifier\n@ValidWalletAddress, @Email" as BV
+participant "CaseController" as CC
+participant "CaseService" as CS
+participant "AddressValidator" as VAL
+database "cases" as DB
+participant "RestExceptionHandler" as EH
+
+Analyst -> FE : fill identifiers, "Rozpocznij analizę"
+FE -> CC : POST /cases {nickname?, login?, email?,\nmessengerId?, profileUrl?, walletAddress?, fullName?}
+CC -> JSON : deserialize CreateCaseRequest
+JSON --> CC : blank values become null, the rest is trimmed
+CC -> BV : @Valid
+alt no narrowing identifier (empty, blanks, or full name only)
+  BV --> EH : MethodArgumentNotValidException
+  EH --> FE : 400 "Popraw błędy w formularzu."\nerrors: [{field: null, message: "Podaj przynajmniej jeden identyfikator zawężający..."}]
+else wallet is malformed, has a bad checksum or is not BTC/ETH
+  BV -> VAL : validate(walletAddress)
+  VAL --> BV : Invalid(MALFORMED | CHECKSUM_MISMATCH | UNSUPPORTED_NETWORK)
+  BV --> EH : violation on field walletAddress
+  EH --> FE : 400, errors: [{field: "walletAddress", message: Polish text}]
+else valid request
+  CC -> CS : create(request)
+  opt walletAddress given
+    CS -> VAL : validate(walletAddress)
+    VAL --> CS : Valid(CanonicalAddress)\nETH and bech32 lowercased, Base58 kept
+  end
+  CS -> DB : insert CaseRecord(identifiers, createdAt = clock.instant())
+  DB --> CS : generated id (never changes)
+  CS --> CC : CaseResponse(id, identifiers, createdAt, latestAnalysis = null)
+  CC --> FE : 201 Created
+end
+
+note over CS, DB
+  No deduplication: the same data creates two Cases.
+  The wallet is the Analyst's input, never a Mention or evidence (D50-006).
+end note
+
+== The Case feeds every Analysis ==
+participant "AnalysisRerunService" as RS
+RS -> CS : currentIdentifiers(caseId)
+CS -> DB : findById
+CS --> RS : [NICKNAME, LOGIN, EMAIL, MESSENGER_ID,\nPROFILE_URL, WALLET_ADDRESS (canonical), FULL_NAME]\nor null for an unknown Case
+
+@enduml

@@ -180,3 +180,5 @@ The git history shows what was written during the event.
 
 MIT
 
+Third-party data: `backend/src/main/resources/exclusion-labels/etherscan-labels.json` is the Etherscan label dataset from [brianleect/etherscan-labels](https://github.com/brianleect/etherscan-labels) (MIT, licence in `etherscan-labels.LICENSE` next to it), used to recognise Excluded Addresses (decision D22-002).
+

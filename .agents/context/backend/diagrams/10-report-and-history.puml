@@ -1,0 +1,67 @@
+@startuml 10-report-and-history
+title E5 / E6.1: Case list and details, Analysis history, Mentions and report (read-only)
+
+skinparam shadowing false
+autonumber
+
+participant "Frontend" as FE
+participant "CaseController" as CC
+participant "AnalysisController" as AC
+participant "CaseService" as CS
+participant "AnalysisHistoryService" as HS
+participant "AnalysisReportService" as REP
+participant "AddressValidator" as VAL
+database "cases" as CDB
+database "analyses" as ADB
+
+== Case list and details (E6.1) ==
+FE -> CC : GET /cases
+CC -> CS : list()
+CS -> CDB : findAll(sort createdAt desc, _id desc)
+loop every Case
+  CS -> ADB : findFirstByCaseIdOrderByStartedAtDescIdDesc
+  CS -> HS : toResponse(latest)
+end
+CC --> FE : CaseResponse* with latestAnalysis (or null)
+
+FE -> CC : GET /cases/{caseId}
+CC -> CS : get(caseId)
+alt unknown Case
+  CS --> FE : 404 "Nie znaleziono sprawy o podanym identyfikatorze."
+else
+  CC --> FE : CaseResponse with latestAnalysis (any status, newest first)
+end
+
+== Analysis history (E6.1) ==
+FE -> CC : GET /cases/{caseId}/analyses
+CC -> HS : listByCase(caseId)
+HS -> ADB : findByCaseIdOrderByStartedAtDescIdDesc
+CC --> FE : AnalysisResponse* newest first\n(sources with mentionCount, networks,\nalgorithmVersion, attribution and exclusion counts)
+
+FE -> AC : GET /analyses/{analysisId}
+AC -> HS : get(analysisId)
+AC --> FE : AnalysisResponse or 404
+
+== Mentions and report of one saved Analysis (E2.2, E3.1, E5.1-E5.4) ==
+FE -> AC : GET /analyses/{analysisId}/mentions | /report
+AC -> REP : mentions(analysisId) | report(analysisId)
+REP -> ADB : findById
+alt unknown
+  REP --> FE : 404 "Nie znaleziono analizy o podanym identyfikatorze."
+else status RUNNING
+  REP --> FE : 409 "Analiza jeszcze trwa. Wynik będzie dostępny po jej zakończeniu."
+else finished (COMPLETED, PARTIAL or FAILED)
+  loop every detected address of every stored Mention
+    REP -> VAL : validate(raw)
+    VAL --> REP : network + valid, or validationFailure
+  end
+  REP --> FE : mentions: MentionResponse(source, url, collectedAt,\ncontext, detectedAddresses)*
+  REP --> FE : report: ReportResponse(\n analysis,\n attributions sorted by Confidence Level desc,\n   each with justification = its Mentions,\n   scoringRules, classificationStatus, addressActivity = null (E4 on hold),\n excludedAddresses with reason, classificationSource, Mentions,\n limitations)
+end
+
+note over REP, ADB
+  Everything is read from the stored Analysis snapshot:
+  reopening a report never reruns or changes the Analysis (E5.4).
+end note
+
+@enduml

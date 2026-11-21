@@ -1,0 +1,40 @@
+@startuml 08-confidence-scoring
+title E3: ProvisionalConfidenceScoring.score(candidates, mentions), algorithm "provisional-1" (DS1-003)
+
+skinparam shadowing false
+
+start
+:accepted + unclassified candidates
+and the Mentions of the Analysis;
+note right
+  Placeholder until issue #9 (Marcin) delivers the real
+  algorithm behind the same ConfidenceScoring port.
+end note
+while (next candidate?) is (yes)
+  :supporting = Mentions whose id is in candidate.mentionIds;
+  :rule MENTIONED_WITH_IDENTIFIER = 40
+  (the address appears in a Mention that also names
+   a narrowing identifier: cheat-sheet band 40-59,
+   "needs a second trace");
+  if (two supporting Mentions on different URL hosts\nwith a different text? (www., case, whitespace ignored)) then (yes)
+    :rule INDEPENDENT_SOURCES = +15
+    (cheat-sheet synergy rule);
+  else (no)
+    :no bonus: several Mentions on one service,
+    or a copy of the same text on another service (E7.3);
+  endif
+  :ScoredAttribution(candidate,
+    confidenceLevel = sum of contributions, capped 0..100,
+    appliedRules);
+endwhile (no)
+:ScoringResult(attributions in input order,
+algorithmVersion = "provisional-1");
+note right
+  Same Mentions -> same Confidence Level (order independent).
+  Known gaps for #9: source kind bands (80-100 own profile,
+  60-79 P2P ad, 10-39 mass comments), wallet entered by the
+  Analyst is not evidence (D50-006), Justification text.
+end note
+stop
+
+@enduml
