@@ -165,7 +165,7 @@ export function NewCaseForm() {
           <FieldGroup
             id="new-case-identifiers"
             heading="Identyfikatory"
-            description="Podaj co najmniej jeden. W każdym polu możesz podać kilka, oddzielając je przecinkami."
+            description="Podaj co najmniej jeden."
           >
             {narrowingIdentifierFields.map(renderField)}
           </FieldGroup>

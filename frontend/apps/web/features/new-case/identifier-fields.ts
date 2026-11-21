@@ -1,22 +1,14 @@
 // The seven fields of the New case form, defined once: the form renders them
 // and the minimum data rule reads which kinds are narrowing.
 
-// Narrowing kinds whose field may hold several values separated by commas.
-export const multiValueIdentifierKinds = [
+// All six narrowing kinds. Each field takes exactly one value, as the backend
+// contract `CreateCaseRequest` does.
+export const narrowingIdentifierKinds = [
   "nickname",
   "login",
   "email",
   "messengerId",
   "profileUrl",
-] as const;
-
-export type MultiValueIdentifierKind =
-  (typeof multiValueIdentifierKinds)[number];
-
-// All six narrowing kinds. The wallet address takes exactly one value
-// (backend contract `CreateCaseRequest`), so it is not in the multi-value list.
-export const narrowingIdentifierKinds = [
-  ...multiValueIdentifierKinds,
   "walletAddress",
 ] as const;
 
