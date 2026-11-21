@@ -52,7 +52,8 @@ data class AnalysisResponse(
     val finishedAt: Instant?,
     val identifiers: PersonIdentifiersResponse,
     val sources: List<SourceCoverageResponse>,
-    val algorithmVersion: String,
+    val networks: List<Network>,
+    val algorithmVersion: String?,
     val attributionCount: Int?,
     val excludedAddressCount: Int?,
 )
