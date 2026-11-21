@@ -1,0 +1,5 @@
+# Local runs use the shortened scheduler check interval and the labelled demo cadence (decision D28-005). Not for production.
+app:
+  scheduler:
+    demo-enabled: true
+    tick: PT5S

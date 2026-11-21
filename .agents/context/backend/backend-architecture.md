@@ -74,14 +74,14 @@ Need consistent error responses across REST API endpoints.
 
 **Decision:**
 Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptions globally:
-- `BadRequestException` → 400 BAD_REQUEST
-- `NotFoundException` → 404 NOT_FOUND
-- `ConflictException` → 409 CONFLICT
-- `ValidationException` → 422 UNPROCESSABLE_CONTENT
-- `DuplicateKeyException` → 409 with a fixed Polish message (logged at WARN without the duplicated value)
-- `@Valid` failures (body and method parameters) and missing/mistyped JSON fields → 400 "Popraw błędy w formularzu." with `errors: [{ field, message }]`; default constraint texts are Polish in `ValidationMessages.properties`, and `spring.web.locale: pl` (fixed) keeps any remaining Hibernate Validator defaults Polish
-- Spring MVC errors (unknown route, wrong method, malformed body, invalid API version) → their standard status with a fixed Polish message, via `ResponseEntityExceptionHandler`
-- `Exception` → 500 INTERNAL_SERVER_ERROR, logged server-side with a generic message to the client
+- `BadRequestException` Ã¢â€ â€™ 400 BAD_REQUEST
+- `NotFoundException` Ã¢â€ â€™ 404 NOT_FOUND
+- `ConflictException` Ã¢â€ â€™ 409 CONFLICT
+- `ValidationException` Ã¢â€ â€™ 422 UNPROCESSABLE_CONTENT
+- `DuplicateKeyException` Ã¢â€ â€™ 409 with a fixed Polish message (logged at WARN without the duplicated value)
+- `@Valid` failures (body and method parameters) and missing/mistyped JSON fields Ã¢â€ â€™ 400 "Popraw bÃ…â€šÃ„â„¢dy w formularzu." with `errors: [{ field, message }]`; default constraint texts are Polish in `ValidationMessages.properties`, and `spring.web.locale: pl` (fixed) keeps any remaining Hibernate Validator defaults Polish
+- Spring MVC errors (unknown route, wrong method, malformed body, invalid API version) Ã¢â€ â€™ their standard status with a fixed Polish message, via `ResponseEntityExceptionHandler`
+- `Exception` Ã¢â€ â€™ 500 INTERNAL_SERVER_ERROR, logged server-side with a generic message to the client
 
 **Consequences:**
 - **Positive:** Consistent error responses, centralized error handling, clean controller code
@@ -104,34 +104,38 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 
 `ScheduleService` serves `GET/PUT /api/1/cases/{caseId}/schedule` (collection `schedules`, one record per Case): enable or disable, a predefined cadence (`SchedulePreset`, default `DAILY` 06:00), fixed zone `Europe/Warsaw`, next execution and the last attempt. `ScheduledRunner` (`@Scheduled`, `app.scheduler.tick`) starts due terms through the shared `AnalysisRerunService` with trigger `SCHEDULED`; an overlapping term is skipped and recorded, terms missed during downtime (older than `app.scheduler.grace`) are not made up. `DEMO_EVERY_MINUTE` needs `app.scheduler.demo-enabled=true`. The runner idles until an `AnalysisRerunService` bean exists. Decisions: `.agents/context/backend/decisions/task-27/`.
 
+### Demo scheduler check (task #28, Bohdan's part)
+
+`application-local.yaml` (profile `local`) shortens the scheduler check to 5 seconds and allows the labelled `DEMO_EVERY_MINUTE` cadence. The repeatable verification, its blockers and the proposed (not implemented) reset boundary are in `.agents/context/backend/demo-scheduler-check.md`; decisions in `.agents/context/backend/decisions/task-28/`.
+
 ## Project Structure
 
 ```
 backend/
-├── src/
-│   ├── main/
-│   │   ├── kotlin/squad/nononotaa/backend/
-│   │   │   ├── BackendApplication.kt
-│   │   │   ├── config/
-│   │   │   ├── controller/
-│   │   │   ├── dto/
-│   │   │   │   ├── Requests.kt
-│   │   │   │   └── Responses.kt
-│   │   │   ├── exception/
-│   │   │   ├── model/
-│   │   │   ├── repository/
-│   │   │   ├── service/
-│   │   │   └── util/
-│   │   └── resources/
-│   │       ├── application.yaml
-│   │       ├── application-local.yaml
-│   │       ├── application-prod.yaml
-│   │       ├── static/
-│   │       └── templates/
-│   ├── test/groovy/            # Spock unit specs (no Spring context, mocks)
-│   └── integrationTest/groovy/ # Spock integration specs (extend BaseSpec)
-├── build.gradle.kts
-└── gradlew
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ main/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ kotlin/squad/nononotaa/backend/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ BackendApplication.kt
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ config/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ controller/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ dto/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ Requests.kt
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ Responses.kt
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ exception/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ model/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ repository/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ service/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ util/
+Ã¢â€â€š   Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ resources/
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ application.yaml
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ application-local.yaml
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ application-prod.yaml
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ static/
+Ã¢â€â€š   Ã¢â€â€š       Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ templates/
+Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ test/groovy/            # Spock unit specs (no Spring context, mocks)
+Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ integrationTest/groovy/ # Spock integration specs (extend BaseSpec)
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ build.gradle.kts
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ gradlew
 ```
 
 ## Key Components
