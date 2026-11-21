@@ -63,7 +63,7 @@ Paths relative to `frontend/apps/web/`. The file list was chosen by the lead (ar
 
 ## Notes
 
-- The form values are keyed `nickname`, `login`, `email`, `messengerId`, `profileAddress`, `cryptocurrencyAddress`, `fullName`.
+- The form values are keyed `nickname`, `login`, `email`, `messengerId`, `profileUrl`, `cryptocurrencyAddress`, `fullName`.
 - The rule returns the parsed identifiers together with `ok`, so task 03 does not parse again.
 - "Wyczyść" is a button (an action), the header link is a link (navigation): the gov.pl guide never uses a button for navigation.
 - Page description text in the metadata is not defined anywhere; propose one sentence to the lead instead of inventing it silently.

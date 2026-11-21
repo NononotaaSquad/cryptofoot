@@ -1,10 +1,13 @@
 import {
-  type NarrowingIdentifierKind,
+  type MultiValueIdentifierKind,
   type NewCaseFormValues,
-  narrowingIdentifierKinds,
+  multiValueIdentifierKinds,
 } from "./identifier-fields";
 
-export type NewCaseIdentifiers = Record<NarrowingIdentifierKind, string[]> & {
+// Five narrowing kinds hold lists; the cryptocurrency address and the full
+// name hold one value or `null` when absent (backend `CreateCaseRequest`).
+export type NewCaseIdentifiers = Record<MultiValueIdentifierKind, string[]> & {
+  cryptocurrencyAddress: string | null;
   fullName: string | null;
 };
 
@@ -13,13 +16,19 @@ export type MinimumDataDecision =
   | { result: "empty" }
   | { result: "fullNameOnly" };
 
-// One field may hold several values separated by commas. Values are only
-// trimmed, not normalised or deduplicated (open question V6).
+// A multi-value field may hold several values separated by commas. Values are
+// only trimmed, not normalised or deduplicated (open question V6).
 export function splitValues(value: string): string[] {
   return value
     .split(",")
     .map((part) => part.trim())
     .filter((part) => part !== "");
+}
+
+// A single-value field is only trimmed, never split on commas; an empty or
+// whitespace-only value counts as absent.
+function singleValue(value: string): string | null {
+  return value.trim() || null;
 }
 
 // Invariant E1: at least one narrowing identifier; a full name alone is not
@@ -28,22 +37,25 @@ export function splitValues(value: string): string[] {
 export function decideMinimumData(
   values: NewCaseFormValues
 ): MinimumDataDecision {
-  const narrowing: Record<NarrowingIdentifierKind, string[]> = {
+  const multiValue: Record<MultiValueIdentifierKind, string[]> = {
     nickname: splitValues(values.nickname),
     login: splitValues(values.login),
     email: splitValues(values.email),
     messengerId: splitValues(values.messengerId),
-    profileAddress: splitValues(values.profileAddress),
-    cryptocurrencyAddress: splitValues(values.cryptocurrencyAddress),
+    profileUrl: splitValues(values.profileUrl),
   };
-  const fullName = values.fullName.trim() || null;
+  const cryptocurrencyAddress = singleValue(values.cryptocurrencyAddress);
+  const fullName = singleValue(values.fullName);
 
-  const hasNarrowingIdentifier = narrowingIdentifierKinds.some(
-    (kind) => narrowing[kind].length > 0
-  );
+  const hasNarrowingIdentifier =
+    cryptocurrencyAddress !== null ||
+    multiValueIdentifierKinds.some((kind) => multiValue[kind].length > 0);
 
   if (hasNarrowingIdentifier) {
-    return { result: "ok", identifiers: { ...narrowing, fullName } };
+    return {
+      result: "ok",
+      identifiers: { ...multiValue, cryptocurrencyAddress, fullName },
+    };
   }
 
   return fullName === null ? { result: "empty" } : { result: "fullNameOnly" };

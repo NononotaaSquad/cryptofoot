@@ -1,12 +1,22 @@
 // The seven fields of the New case form, defined once: the form renders them
 // and the minimum data rule reads which kinds are narrowing.
 
-export const narrowingIdentifierKinds = [
+// Narrowing kinds whose field may hold several values separated by commas.
+export const multiValueIdentifierKinds = [
   "nickname",
   "login",
   "email",
   "messengerId",
-  "profileAddress",
+  "profileUrl",
+] as const;
+
+export type MultiValueIdentifierKind =
+  (typeof multiValueIdentifierKinds)[number];
+
+// All six narrowing kinds. The cryptocurrency address takes exactly one value
+// (backend contract `CreateCaseRequest`), so it is not in the multi-value list.
+export const narrowingIdentifierKinds = [
+  ...multiValueIdentifierKinds,
   "cryptocurrencyAddress",
 ] as const;
 
@@ -54,7 +64,7 @@ export const narrowingIdentifierFields = [
     narrowing: true,
   },
   {
-    name: "profileAddress",
+    name: "profileUrl",
     label: "Adres profilu",
     example: "np. https://forum.example.com/profil/janek",
     hint: "Link do profilu w mediach społecznościowych, na forum lub w serwisie ogłoszeniowym.",
@@ -82,7 +92,7 @@ export const emptyNewCaseFormValues: NewCaseFormValues = {
   login: "",
   email: "",
   messengerId: "",
-  profileAddress: "",
+  profileUrl: "",
   cryptocurrencyAddress: "",
   fullName: "",
 };

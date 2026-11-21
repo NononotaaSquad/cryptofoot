@@ -78,6 +78,7 @@ The whole application gets the KAS look first: the shared UI package carries the
   - Empty form: title "Podaj co najmniej jeden identyfikator", text "Aby rozpocząć analizę, wpisz nick, login, adres e-mail, identyfikator z komunikatora, adres profilu lub adres kryptowalutowy.", button "Rozumiem".
   - Full name only: title "Samo imię i nazwisko nie wystarczy", text "Dodaj co najmniej jeden identyfikator, na przykład nick lub adres e-mail.", button "Rozumiem".
 - **Form library.** `react-hook-form` is added to simplify the form. This replaces the earlier proposal of uncontrolled inputs read through `FormData`.
+- **Identifier names and shape (2026-11-21), following the backend contract `CreateCaseRequest` (PR #51).** The field and identifier kind `profileAddress` is renamed `profileUrl` (label stays "Adres profilu"). `cryptocurrencyAddress` takes exactly one value: it is only trimmed, never split on commas, and an empty value counts as absent (like `fullName`); it stays a narrowing identifier. Open: the group description "W każdym polu możesz podać kilka, oddzielając je przecinkami." is now inexact for the cryptocurrency address field; the UI copy is not changed yet.
 - **Architecture B** (feature split into parts, a shared page shell), with one change: **the shared UI package is set up for KAS first**, before the view is built. Tokens and the KAS shapes of the primitives live in `@workspace/ui`, not in an app-level stylesheet.
 
 ### Decisions made by Claude inside the lead's choices (confirm or change at the first checkpoint)
@@ -108,7 +109,7 @@ The whole application gets the KAS look first: the shared UI package carries the
 
 ### Names in code
 
-From `BUSINESS-CONTEXT.md` and `views.md`: `nickname`, `login`, `email`, `messengerId`, `profileAddress`, `cryptocurrencyAddress` (the six narrowing identifier kinds) and `fullName` (additional data). The feature is `new-case`. "Case", "Analysis" and "narrowing identifier" are used as in the glossary; the word "identifier" is never used for the Case Number or database ids (those are `caseId`, `analysisId`).
+From `BUSINESS-CONTEXT.md` and `views.md`: `nickname`, `login`, `email`, `messengerId`, `profileUrl`, `cryptocurrencyAddress` (the six narrowing identifier kinds) and `fullName` (additional data). The feature is `new-case`. "Case", "Analysis" and "narrowing identifier" are used as in the glossary; the word "identifier" is never used for the Case Number or database ids (those are `caseId`, `analysisId`).
 
 ### Token mapping (Pencil variable → theme token)
 
@@ -156,7 +157,7 @@ All copy is taken from the Pencil frame as written.
 | `login` | Login | np. jkowalski84 | Nazwa konta, której osoba używa do logowania. |
 | `email` | Adres e-mail | np. jan.kowalski@example.com | Adres poczty elektronicznej. |
 | `messengerId` | Identyfikator z komunikatora | np. @janek_k | Nazwa lub numer konta w komunikatorze, na przykład w Telegramie. |
-| `profileAddress` | Adres profilu | np. https://forum.example.com/profil/janek | Link do profilu w mediach społecznościowych, na forum lub w serwisie ogłoszeniowym. |
+| `profileUrl` | Adres profilu | np. https://forum.example.com/profil/janek | Link do profilu w mediach społecznościowych, na forum lub w serwisie ogłoszeniowym. |
 | `cryptocurrencyAddress` | Adres kryptowalutowy | np. bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf | Adres portfela, na przykład w sieci Bitcoin lub Ethereum. |
 | `fullName` | Imię i nazwisko (opcjonalnie) | np. Jan Kowalski | Samo imię i nazwisko nie wystarczy, ponieważ prowadzi do zbyt ogólnych wyników. |
 

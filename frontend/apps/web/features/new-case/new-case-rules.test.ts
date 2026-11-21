@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   type NewCaseFormValues,
   emptyNewCaseFormValues,
-  narrowingIdentifierKinds,
+  multiValueIdentifierKinds,
 } from "./identifier-fields";
 import { decideMinimumData, splitValues } from "./new-case-rules";
 
@@ -52,13 +52,45 @@ describe("decideMinimumData", () => {
     });
   });
 
-  it.each(narrowingIdentifierKinds)("returns ok for %s alone", (kind) => {
+  it.each(multiValueIdentifierKinds)("returns ok for %s alone", (kind) => {
     const decision = decideMinimumData(form({ [kind]: " value " }));
 
     expect(decision.result).toBe("ok");
     if (decision.result === "ok") {
       expect(decision.identifiers[kind]).toEqual(["value"]);
+      expect(decision.identifiers.cryptocurrencyAddress).toBeNull();
       expect(decision.identifiers.fullName).toBeNull();
+    }
+  });
+
+  it("returns ok for cryptocurrencyAddress alone with the trimmed address", () => {
+    const decision = decideMinimumData(
+      form({ cryptocurrencyAddress: "  bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf " })
+    );
+
+    expect(decision.result).toBe("ok");
+    if (decision.result === "ok") {
+      expect(decision.identifiers.cryptocurrencyAddress).toBe(
+        "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkf"
+      );
+      expect(decision.identifiers.fullName).toBeNull();
+    }
+  });
+
+  it("returns empty when the cryptocurrency address holds only spaces", () => {
+    expect(decideMinimumData(form({ cryptocurrencyAddress: "   " }))).toEqual({
+      result: "empty",
+    });
+  });
+
+  it("keeps a cryptocurrency address with a comma as one trimmed value", () => {
+    const decision = decideMinimumData(
+      form({ cryptocurrencyAddress: " abc, def " })
+    );
+
+    expect(decision.result).toBe("ok");
+    if (decision.result === "ok") {
+      expect(decision.identifiers.cryptocurrencyAddress).toBe("abc, def");
     }
   });
 
@@ -78,8 +110,8 @@ describe("decideMinimumData", () => {
         login: [],
         email: ["jan@example.com"],
         messengerId: [],
-        profileAddress: [],
-        cryptocurrencyAddress: [],
+        profileUrl: [],
+        cryptocurrencyAddress: null,
         fullName: "Jan Kowalski",
       },
     });
