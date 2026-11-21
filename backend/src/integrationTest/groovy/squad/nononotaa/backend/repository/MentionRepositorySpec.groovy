@@ -11,6 +11,10 @@ class MentionRepositorySpec extends BaseSpec {
     @Autowired
     MentionRepository repository
 
+    def setup() {
+        repository.deleteAll()
+    }
+
     def "saves and reads back a mention with all provenance fields"() {
         given:
         def collectedAt = Instant.parse('2026-11-21T10:00:00Z')
