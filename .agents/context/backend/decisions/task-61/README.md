@@ -12,7 +12,7 @@ IDs are `D61-NNN`. "Proposed" means the implementer's proposal; nothing here is 
 
 ## D61-001 Access matrix
 
-The mentors approved GitHub and Bitcointalk (stated by the team, not recorded in #38). **Reddit was rejected by the team and its adapter was removed from this task** (app registration failed with "Max clients have been reached"). Each source is a bean only with `sources.<name>.enabled=true` (default `false`). Enabling is a deliberate switch. A comparison project having a connector is not an approval.
+The mentors approved GitHub and Bitcointalk (stated by the team, not recorded in #38). **Reddit was rejected by the team and its adapter was removed from this task** (app registration failed with "Max clients have been reached"). Each source is a bean only with `sources.<name>.enabled=true`. Since the team asked for it, both are **on by default** (`application.yaml`, `SOURCES_<NAME>_ENABLED=false` switches one off); the `local` profile and the integration specs keep them off. A comparison project having a connector is not an approval.
 
 | Source | Data that leaves the application | Method | Credentials | Status |
 |---|---|---|---|---|

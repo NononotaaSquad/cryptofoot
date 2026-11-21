@@ -26,3 +26,9 @@ app:
   exclusion:
     # Keyless ETH bytecode check (public JSON-RPC, Blockchair fallback); false keeps every address inside the app (D22-005)
     onchain-check-enabled: ${EXCLUSION_ONCHAIN_CHECK_ENABLED:true}
+sources:
+  # Real Web2 sources (task #61): on by default, switch off with SOURCES_<NAME>_ENABLED=false
+  github:
+    enabled: ${SOURCES_GITHUB_ENABLED:true}
+  bitcointalk:
+    enabled: ${SOURCES_BITCOINTALK_ENABLED:true}

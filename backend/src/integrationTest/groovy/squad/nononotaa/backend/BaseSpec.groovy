@@ -11,7 +11,11 @@ import org.springframework.test.web.servlet.client.RestTestClient
 import org.testcontainers.mongodb.MongoDBContainer
 import spock.lang.Specification
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// CI must not reach the public internet; specs of the real sources enable them against a local stub
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [
+    'sources.github.enabled=false',
+    'sources.bitcointalk.enabled=false'
+])
 @AutoConfigureRestTestClient
 abstract class BaseSpec extends Specification {
 
