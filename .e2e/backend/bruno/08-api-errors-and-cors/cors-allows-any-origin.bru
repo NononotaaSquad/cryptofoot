@@ -1,0 +1,20 @@
+meta {
+  name: CORS allows any origin
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Origin: https://e2e.example
+}
+
+tests {
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('Access-Control-Allow-Origin is *', () => expect(res.getHeader('access-control-allow-origin')).to.equal('*'));
+}

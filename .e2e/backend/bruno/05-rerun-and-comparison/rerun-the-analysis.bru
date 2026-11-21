@@ -1,0 +1,22 @@
+meta {
+  name: Rerun the Analysis
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/analyses
+  body: none
+  auth: none
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('laterAnalysisId', body.id);
+}
+
+tests {
+  const body = res.getBody();
+  test('202 Accepted', () => expect(res.getStatus()).to.equal(202));
+  test('a rerun is a new Analysis', () => expect(body.id).to.not.equal(bru.getVar('analysisId')));
+}

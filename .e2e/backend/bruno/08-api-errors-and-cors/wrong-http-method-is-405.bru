@@ -1,0 +1,21 @@
+meta {
+  name: Wrong HTTP method is 405
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{baseUrl}}/api/1/cases
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('405 Method Not Allowed', () => expect(res.getStatus()).to.equal(405));
+  test('error body carries code 405 and the Polish message', () => {
+    expect(body.code).to.equal(405);
+    expect(body.message).to.equal('Ta operacja nie jest dostępna dla tego zasobu.');
+  });
+  test('Allow header lists the supported methods', () => expect(res.getHeader('allow')).to.include('GET'));
+}

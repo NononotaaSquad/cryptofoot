@@ -1,0 +1,36 @@
+meta {
+  name: Create a Case nobody mentions
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/1/cases
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{unknownEmail}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar('unknownEmail', 'e2e-nobody-' + Date.now() + '@example.com');
+}
+
+script:post-response {
+  const body = res.getBody();
+  bru.setVar('noResultsCaseId', body.id);
+}
+
+tests {
+  const body = res.getBody();
+  test('201 Created', () => expect(res.getStatus()).to.equal(201));
+  test('the e-mail is stored', () => expect(body.identifiers.email).to.equal(bru.getVar('unknownEmail')));
+}

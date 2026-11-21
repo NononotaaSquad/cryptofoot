@@ -1,0 +1,28 @@
+meta {
+  name: Reject an unknown cadence
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/schedule
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "enabled": true,
+    "cadence": "EVERY_SECOND"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  test('400 Bad Request', () => expect(res.getStatus()).to.equal(400));
+  test('the cadence field is reported', () => expect(body.errors.map((e) => e.field)).to.eql(['cadence']));
+}

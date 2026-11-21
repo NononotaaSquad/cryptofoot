@@ -1,0 +1,19 @@
+meta {
+  name: The schedule is off by default
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/1/cases/{{caseId}}/schedule
+  body: none
+  auth: none
+}
+
+tests {
+  const body = res.getBody();
+  test('200 OK', () => expect(res.getStatus()).to.equal(200));
+  test('disabled, no cadence, fixed zone', () => {
+    expect(body).to.eql({ enabled: false, cadence: null, demo: false, timezone: 'Europe/Warsaw', nextExecutionAt: null, lastAttempt: null });
+  });
+}
