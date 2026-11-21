@@ -1,0 +1,42 @@
+@startuml 15-address-activity
+title Address Activity (E4, task #23): AddressActivityService and AddressActivityEvaluator (D23-001 to D23-007)
+
+skinparam shadowing false
+
+start
+:Attributions scored by confidence-1;
+if (Confidence Level > 0?) then (no)
+  :not in the outcome map
+  report: NOT_CHECKED, addressActivity null (D23-002);
+  stop
+endif
+:canonical address (network + address);
+if (address in the synthetic fixture demo-v1-activity?) then (yes)
+  :SyntheticActivitySource
+  complete history, labelled "Dane testowe" (synthetic = true) (D23-007);
+elseif (app.address-activity.live-enabled?) then (yes)
+  :BTC: mempool.space /api/address/{a}, /txs
+  ETH: Blockscout /api/v2/addresses/{a}/counters, /transactions, /token-transfers
+  only the bare address leaves the application (D23-003);
+  if (usable answer?) then (no)
+    :UNAVAILABLE (never zero activity); <<#pink>>
+    stop
+  endif
+else (no)
+  :UNAVAILABLE; <<#pink>>
+  stop
+endif
+:AddressActivityEvaluator (D23-004)
+totals: stated by the source, else summed when the history is complete, else unknown
+first activity only when complete, last activity from the newest transfer;
+:cash-out signals (D23-006)
+* OUT to a counterparty labelled EXCHANGE in the offline lists, or labelled by the fixture: any amount
+* swap into USDT / USDC / DAI (by contract) of at least 1000 units
+sorted by time;
+:coverage limitations
+RECENT_TRANSACTIONS_ONLY, LABELLED_COUNTERPARTIES_ONLY, INTERNAL_TRANSFERS_NOT_COUNTED (ETH live);
+:AVAILABLE, stored with the Attribution in the Analysis snapshot
+reopening the report never fetches again (D23-001); <<#palegreen>>
+stop
+
+@enduml

@@ -1,9 +1,12 @@
 package squad.nononotaa.backend.service
 
 import org.springframework.stereotype.Service
+import squad.nononotaa.backend.analysis.AddressActivity
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.ScoredAttribution
+import squad.nononotaa.backend.dto.AddressActivityResponse
 import squad.nononotaa.backend.dto.AttributionResponse
+import squad.nononotaa.backend.dto.CashOutSignalResponse
 import squad.nononotaa.backend.dto.DetectedAddressResponse
 import squad.nononotaa.backend.dto.ExcludedAddressResponse
 import squad.nononotaa.backend.dto.MentionResponse
@@ -11,6 +14,7 @@ import squad.nononotaa.backend.dto.ReportResponse
 import squad.nononotaa.backend.dto.ScoringRuleContributionResponse
 import squad.nononotaa.backend.exception.ConflictException
 import squad.nononotaa.backend.exception.NotFoundException
+import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.AnalysisRecord
 import squad.nononotaa.backend.model.AnalysisStatus
@@ -51,7 +55,8 @@ class AnalysisReportService(
                         justification = it.justification,
                         mentions = it.candidate.mentionIds.mapNotNull(mentions::get),
                         scoringRules = it.appliedRules.map { rule -> ScoringRuleContributionResponse(rule.rule, rule.contribution) },
-                        addressActivity = null,
+                        addressActivityStatus = it.addressActivity?.status ?: AddressActivityStatus.NOT_CHECKED,
+                        addressActivity = it.addressActivity?.activity?.let(::toResponse),
                     )
                 }
         val excluded =
@@ -89,6 +94,32 @@ class AnalysisReportService(
         collectedAt = mention.collectedAt,
         context = mention.context,
         detectedAddresses = mention.detectedAddresses.map(::detected),
+    )
+
+    private fun toResponse(activity: AddressActivity) = AddressActivityResponse(
+        sourceName = activity.sourceName,
+        synthetic = activity.synthetic,
+        checkedAt = activity.checkedAt,
+        unit = activity.unit,
+        totalReceived = activity.totalReceived,
+        totalSent = activity.totalSent,
+        transactionCount = activity.transactionCount,
+        firstActivityAt = activity.firstActivityAt,
+        lastActivityAt = activity.lastActivityAt,
+        cashOutSignals =
+        activity.cashOutSignals.map {
+            CashOutSignalResponse(
+                kind = it.kind,
+                transactionId = it.transactionId,
+                transactionUrl = it.transactionUrl,
+                occurredAt = it.occurredAt,
+                amount = it.amount,
+                unit = it.unit,
+                counterpartyAddress = it.counterpartyAddress,
+                counterpartyLabel = it.counterpartyLabel,
+            )
+        },
+        coverageLimitations = activity.coverageLimitations,
     )
 
     private fun detected(rawAddress: String) = when (val validation = addressValidator.validate(rawAddress)) {

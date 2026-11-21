@@ -848,42 +848,22 @@
                     }
                 }
             },
-            "AddressActivityEventResponse": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "RECEIVED",
-                            "SENT",
-                            "SWAP",
-                            "CASH_OUT_SIGNAL"
-                        ]
-                    },
-                    "transactionId": {
-                        "type": "string"
-                    },
-                    "occurredAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "amount": {
-                        "type": [
-                            "number",
-                            "null"
-                        ]
-                    },
-                    "unit": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                }
-            },
             "AddressActivityResponse": {
                 "type": "object",
                 "properties": {
+                    "sourceName": {
+                        "type": "string"
+                    },
+                    "synthetic": {
+                        "type": "boolean"
+                    },
+                    "checkedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
                     "totalReceived": {
                         "type": [
                             "number",
@@ -896,23 +876,43 @@
                             "null"
                         ]
                     },
-                    "unit": {
+                    "transactionCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "firstActivityAt": {
                         "type": [
                             "string",
                             "null"
-                        ]
+                        ],
+                        "format": "date-time"
                     },
-                    "events": {
+                    "lastActivityAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cashOutSignals": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/AddressActivityEventResponse"
+                            "$ref": "#/components/schemas/CashOutSignalResponse"
                         }
                     },
-                    "coverageLimitation": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                    "coverageLimitations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "RECENT_TRANSACTIONS_ONLY",
+                                "LABELLED_COUNTERPARTIES_ONLY",
+                                "INTERNAL_TRANSFERS_NOT_COUNTED"
+                            ]
+                        }
                     }
                 }
             },
@@ -955,6 +955,14 @@
                             "$ref": "#/components/schemas/ScoringRuleContributionResponse"
                         }
                     },
+                    "addressActivityStatus": {
+                        "type": "string",
+                        "enum": [
+                            "AVAILABLE",
+                            "UNAVAILABLE",
+                            "NOT_CHECKED"
+                        ]
+                    },
                     "addressActivity": {
                         "oneOf": [
                             {
@@ -963,6 +971,52 @@
                             {
                                 "type": "null"
                             }
+                        ]
+                    }
+                }
+            },
+            "CashOutSignalResponse": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "EXCHANGE",
+                            "P2P",
+                            "PAYMENT_GATEWAY",
+                            "CRYPTO_CARD",
+                            "STABLECOIN_SWAP"
+                        ]
+                    },
+                    "transactionId": {
+                        "type": "string"
+                    },
+                    "transactionUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "occurredAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "counterpartyAddress": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "counterpartyLabel": {
+                        "type": [
+                            "string",
+                            "null"
                         ]
                     }
                 }

@@ -85,7 +85,7 @@ As a team, we want a rehearsal script and submission checklist, so that the demo
 | ID | Question and proposed resolution | Owner | Needed before |
 |---|---|---|---|
 | E7-D1 | TEAM CONFIRMED: controlled synthetic demo plus separate real-source integration verification. Mentor acceptance of this arrangement for the mandatory presentation remains open. | Team decision recorded; mentor validates acceptance | Before final rehearsal |
-| E7-D2 | Which network, blockchain indicator and transaction references will E4 deliver? | E4 owner and mentor | Fixture completion |
+| E7-D2 | Which network, blockchain indicator and transaction references will E4 deliver? *Owner answer for demo-v1 ([D23-007](../../backend/decisions/task-23/007-demo-fixture.md)): BTC and ETH; totals and cash-out signals (stablecoin swap, exchange, P2P) from a synthetic fixture with fictional transaction ids; the demo ETH address is hidden while the bytecode check excludes it (D23-009 A1).* | E4 owner and mentor | Fixture completion |
 | E7-D3 | Which E3 algorithm version and exact expected scores are frozen for rehearsal? | E3 owner | Expected-result completion |
 | E7-D4 | Which source/search/API/AI services are approved for test queries and results? | Mentor / organiser | External calls |
 | E7-D5 | Who records the film, prepares the slides and submits the required links? | Team | Final rehearsal |

@@ -6,6 +6,7 @@ import java.util.concurrent.Executor
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.CandidatePreparation
@@ -61,7 +62,7 @@ class DemoSchedulerCheckSpec extends BaseSpec {
     } as CaseIdentifierSource
 
     private ScheduledRunner runner() {
-        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(ConfidenceScoring), recorder)
+        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(ConfidenceScoring), Stub(AddressActivityCollector), recorder)
         def rerun = new AnalysisRerunService(orchestrator, analyses, identifiers, history, sync)
         ObjectProvider<AnalysisRerunService> provider = Stub() {
             getIfAvailable() >> rerun

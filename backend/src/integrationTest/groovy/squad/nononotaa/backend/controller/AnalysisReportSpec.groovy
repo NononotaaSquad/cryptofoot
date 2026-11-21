@@ -4,6 +4,8 @@ import groovy.json.JsonSlurper
 import java.time.Instant
 import org.springframework.beans.factory.annotation.Autowired
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivity
+import squad.nononotaa.backend.analysis.AddressActivityOutcome
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
 import squad.nononotaa.backend.analysis.AnalysisResult
@@ -11,6 +13,7 @@ import squad.nononotaa.backend.analysis.AnalysisStage
 import squad.nononotaa.backend.analysis.AppliedRule
 import squad.nononotaa.backend.analysis.Candidate
 import squad.nononotaa.backend.analysis.CaseIdentifier
+import squad.nononotaa.backend.analysis.CashOutSignal
 import squad.nononotaa.backend.analysis.ExcludedCandidate
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.IdentifierType
@@ -18,8 +21,11 @@ import squad.nononotaa.backend.analysis.RejectedCandidate
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.analysis.SourceReport
 import squad.nononotaa.backend.analysis.StageFailure
+import squad.nononotaa.backend.model.AddressActivityCoverageLimitation
+import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.CashOutSignalKind
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ExclusionReason
 import squad.nononotaa.backend.model.ReportLimitation
@@ -123,6 +129,78 @@ class AnalysisReportSpec extends BaseSpec {
             [rule: 'INDEPENDENT_SOURCES', contribution: 15]
         ]
         report.attributions*.addressActivity == [null, null]
+        report.attributions*.addressActivityStatus == ['NOT_CHECKED', 'NOT_CHECKED']
+    }
+
+    def "stored Address Activity is reported with its totals, cash-out signals, provenance and limitations; missing data stays unavailable"() {
+        given:
+        def id = begin()
+        def activity = new AddressActivity('mempool.space Bitcoin explorer API (mempool.space)', false, AT.plusSeconds(5), 'BTC',
+                new BigDecimal('1.23456789'), 0.5, 40, null, AT.minusSeconds(86400), [
+                    new CashOutSignal(CashOutSignalKind.EXCHANGE, 't-exit', 'https://mempool.space/tx/t-exit', AT.minusSeconds(86400),
+                    new BigDecimal('0.00012345'), 'BTC', '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s', 'Own label list: Binance.com')
+                ], [
+                    AddressActivityCoverageLimitation.RECENT_TRANSACTIONS_ONLY,
+                    AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY
+                ])
+        def eth = new Candidate('ETH', ETH, ['m-forum'])
+        recorder.finish(id, new AnalysisResult(AnalysisStatus.PARTIAL, [
+            new StageFailure(AnalysisStage.ADDRESS_ACTIVITY, "ADDRESS_ACTIVITY_UNAVAILABLE:${ETH}".toString())
+        ], [
+            ReportLimitation.BLOCKCHAIN_DATA_UNAVAILABLE,
+            ReportLimitation.ANALYSIS_INCOMPLETE
+        ], [
+            new SourceReport('synthetic', SourceStatus.CHECKED, true, AT)
+        ], [forum, market], [], [], [], [
+            new ScoredAttribution(new Candidate('BTC', BTC, ['m-market']), 60, [], '', ClassificationStatus.NOT_EXCLUDED,
+            new AddressActivityOutcome(AddressActivityStatus.AVAILABLE, activity)),
+            new ScoredAttribution(eth, 40, [], '', ClassificationStatus.NOT_EXCLUDED,
+            new AddressActivityOutcome(AddressActivityStatus.UNAVAILABLE, null)),
+            new ScoredAttribution(new Candidate('ETH', KRAKEN, ['m-market']), 0, [], '', ClassificationStatus.NOT_EXCLUDED, null),
+        ], 'confidence-1'))
+
+        when:
+        def report = json("/api/1/analyses/${id}/report")
+
+        then:
+        report.attributions*.addressActivityStatus == [
+            'AVAILABLE',
+            'UNAVAILABLE',
+            'NOT_CHECKED'
+        ]
+        report.attributions[0].addressActivity == [
+            sourceName         : 'mempool.space Bitcoin explorer API (mempool.space)',
+            synthetic          : false,
+            checkedAt          : '2026-11-21T10:00:05Z',
+            unit               : 'BTC',
+            totalReceived      : 1.23456789,
+            totalSent          : 0.5,
+            transactionCount   : 40,
+            firstActivityAt    : null,
+            lastActivityAt     : '2026-11-20T10:00:00Z',
+            cashOutSignals     : [
+                [
+                    kind               : 'EXCHANGE',
+                    transactionId      : 't-exit',
+                    transactionUrl     : 'https://mempool.space/tx/t-exit',
+                    occurredAt         : '2026-11-20T10:00:00Z',
+                    amount             : 0.00012345,
+                    unit               : 'BTC',
+                    counterpartyAddress: '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s',
+                    counterpartyLabel  : 'Own label list: Binance.com'
+                ]
+            ],
+            coverageLimitations: [
+                'RECENT_TRANSACTIONS_ONLY',
+                'LABELLED_COUNTERPARTIES_ONLY'
+            ]
+        ]
+        report.attributions[1].addressActivity == null
+        report.attributions[2].addressActivity == null
+        report.limitations == [
+            'BLOCKCHAIN_DATA_UNAVAILABLE',
+            'ANALYSIS_INCOMPLETE'
+        ]
     }
 
     def "an Attribution whose classification was unavailable is flagged, not shown as confirmed private"() {

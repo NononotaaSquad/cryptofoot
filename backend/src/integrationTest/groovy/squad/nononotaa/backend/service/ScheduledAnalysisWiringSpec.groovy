@@ -83,9 +83,11 @@ class ScheduledAnalysisWiringSpec extends BaseSpec {
             '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed',
             '0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae'
         ] as Set
+        // the unchecked contract is no demo address and the live explorers are off: its activity is unavailable, not zero
         saved.result.limitations == [
             ReportLimitation.SOURCE_UNAVAILABLE,
             ReportLimitation.CLASSIFICATION_UNAVAILABLE,
+            ReportLimitation.BLOCKCHAIN_DATA_UNAVAILABLE,
             ReportLimitation.ANALYSIS_INCOMPLETE
         ]
     }

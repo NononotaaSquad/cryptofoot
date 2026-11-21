@@ -1,14 +1,14 @@
 package squad.nononotaa.backend.service
 
 import squad.nononotaa.backend.model.ContractCodeCheck
+import squad.nononotaa.backend.util.EXTERNAL_USER_AGENT
+import squad.nononotaa.backend.util.bodyOrNull
 import squad.nononotaa.backend.util.logger
-import tools.jackson.databind.JsonNode
+import squad.nononotaa.backend.util.readTreeOrNull
 import tools.jackson.databind.ObjectMapper
-import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.time.Duration
 
 /** A keyless public service that tells whether an ETH address holds executable code (decision D22-003). */
@@ -28,32 +28,6 @@ internal fun codeCheckOf(code: String): ContractCodeCheck = when {
     else -> ContractCodeCheck.CONTRACT
 }
 
-private const val USER_AGENT = "osint-analysis-backend"
-
-/** Sends a request; null when the service does not answer with HTTP 200 within the timeout. */
-private fun HttpClient.bodyOrNull(
-    request: HttpRequest,
-    sourceName: String,
-): String? = try {
-    val response = send(request, HttpResponse.BodyHandlers.ofString())
-    if (response.statusCode() == 200) {
-        response.body()
-    } else {
-        ContractCodeSourceLog.logger.warn("Contract code source {} answered HTTP {}", sourceName, response.statusCode())
-        null
-    }
-} catch (e: IOException) {
-    ContractCodeSourceLog.logger.warn("Contract code source {} is unavailable: {}", sourceName, e.toString())
-    null
-} catch (e: InterruptedException) {
-    Thread.currentThread().interrupt()
-    null
-}
-
-private object ContractCodeSourceLog {
-    val logger = logger()
-}
-
 /** `eth_getCode` on a public Ethereum JSON-RPC endpoint (no API key). */
 class EthRpcContractCodeSource(
     private val endpoint: URI,
@@ -70,7 +44,7 @@ class EthRpcContractCodeSource(
                 .newBuilder(endpoint)
                 .timeout(timeout)
                 .header("Content-Type", "application/json")
-                .header("User-Agent", USER_AGENT)
+                .header("User-Agent", EXTERNAL_USER_AGENT)
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build()
         val body = http.bodyOrNull(request, sourceName) ?: return ContractCodeCheck.UNAVAILABLE
@@ -101,7 +75,7 @@ class BlockchairContractCodeSource(
             HttpRequest
                 .newBuilder(baseUrl.resolve("/ethereum/dashboards/address/$address"))
                 .timeout(timeout)
-                .header("User-Agent", USER_AGENT)
+                .header("User-Agent", EXTERNAL_USER_AGENT)
                 .GET()
                 .build()
         val body = http.bodyOrNull(request, sourceName) ?: return ContractCodeCheck.UNAVAILABLE
@@ -124,10 +98,4 @@ class BlockchairContractCodeSource(
     companion object {
         private val logger = logger()
     }
-}
-
-private fun ObjectMapper.readTreeOrNull(body: String): JsonNode? = try {
-    readTree(body)
-} catch (e: Exception) {
-    null
 }
