@@ -22,3 +22,10 @@ management:
     health:
       probes:
         enabled: true
+classification:
+  blockchair:
+    # KROK 3.2 contract check (ADR 0004); set CLASSIFICATION_BLOCKCHAIR_ENABLED=false to keep the Analysis offline
+    enabled: ${CLASSIFICATION_BLOCKCHAIR_ENABLED:true}
+    base-url: ${CLASSIFICATION_BLOCKCHAIR_BASE_URL:https://api.blockchair.com}
+    api-key: ${BLOCKCHAIR_API_KEY:}
+    timeout: 10s

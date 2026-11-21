@@ -1,6 +1,6 @@
 # 0003. Excluded Address classification: own versioned list behind pluggable sources
 
-**Status:** Accepted by the task owner · 2026-11-21. Issue: E3 "classify Excluded Addresses". Mentor question 4 (approved external services) is still open.
+**Status:** Accepted by the task owner · 2026-11-21. Amended by [0004](0004-blockchair-contract-check.md): the application now also calls Blockchair for the KROK 3.2 contract check. Issue: E3 "classify Excluded Addresses". Mentor question 4 (approved external services) is still open.
 
 ## Context
 
@@ -32,7 +32,7 @@ E3 requires that addresses of exchanges, smart contracts, mixers and fundraisers
 
 ## Options rejected
 
-- Calling Etherscan/Blockchair tags or a public RPC now: needs approval (mentor question 4).
+- ~~Calling Etherscan/Blockchair tags or a public RPC now~~: reversed by the task owner, see [0004](0004-blockchair-contract-check.md) (Blockchair contract check; tags stay on the own list because Blockchair has none and Etherscan tags are paid).
 - Treating every ETH address as `UNAVAILABLE` without a bytecode check: would flag almost every lead and make every Analysis `PARTIAL`.
 - Implementing the orchestrator's `ExclusionClassifier` port directly: it uses `network: String`; the adapter belongs to whoever wires the pipeline (D24-003, D24-005).
 
@@ -45,4 +45,4 @@ E3 requires that addresses of exchanges, smart contracts, mixers and fundraisers
 
 ## Reconsider when
 
-Mentors approve an external tag or RPC service (add a source, bump nothing else), or the team decides an ETH address without a bytecode check must be `UNAVAILABLE`.
+A tag API key becomes available (add a source, bump nothing else), or the team decides an ETH address without a bytecode check must be `UNAVAILABLE`.

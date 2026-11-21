@@ -1,5 +1,6 @@
 package squad.nononotaa.backend.service
 
+import org.springframework.core.annotation.Order
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import squad.nononotaa.backend.model.AddressValidation
@@ -11,10 +12,11 @@ import squad.nononotaa.backend.util.logger
 
 /**
  * Our own versioned list of Excluded Addresses (ADR 0003), loaded once from the classpath.
- * No network calls: the brief forbids sending data to unapproved external services.
+ * Works offline; it is the only tag source because Blockchair has no address tags (ADR 0004).
  * Every entry is validated like any candidate, so a typo in the list fails application startup.
  */
 @Component
+@Order(1)
 class OwnListClassificationSource(
     addressValidator: AddressValidator,
 ) : AddressClassificationSource {
