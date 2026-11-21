@@ -1,0 +1,84 @@
+package squad.nononotaa.testsupport
+
+import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpServer
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+/**
+ * Local stand-in for the keyless on-chain services (Ethereum JSON-RPC at /rpc, Blockchair dashboards at /ethereum/...),
+ * so integration specs exercise the real wiring without the internet. Records every request as "rpc 0x..." or
+ * "blockchair 0x...". An address without a prepared answer gets HTTP 503.
+ */
+class StubChainServer {
+
+    static class Answer {
+        int status
+        String body
+        long delayMillis
+    }
+
+    final List<String> requests = new CopyOnWriteArrayList<>()
+    private final Map<String, Answer> rpcAnswers = [:].asSynchronized()
+    private final Map<String, Answer> blockchairAnswers = [:].asSynchronized()
+    private final HttpServer server
+    private final ExecutorService executor = Executors.newCachedThreadPool()
+
+    StubChainServer() {
+        server = HttpServer.create(new InetSocketAddress('127.0.0.1', 0), 0)
+        server.executor = executor
+        server.createContext('/rpc') { HttpExchange exchange ->
+            def address = (exchange.requestBody.getText('UTF-8') =~ /0x[0-9a-fA-F]{40}/).with {
+                it.find() ? it.group() : '?'
+            }
+            requests << "rpc $address".toString()
+            respond(exchange, rpcAnswers[address])
+        }
+        server.createContext('/ethereum/dashboards/address/') { HttpExchange exchange ->
+            def address = exchange.requestURI.path.tokenize('/').last()
+            requests << "blockchair $address".toString()
+            respond(exchange, blockchairAnswers[address])
+        }
+        server.start()
+    }
+
+    String url(String path) {
+        "http://127.0.0.1:${server.address.port}$path"
+    }
+
+    void reset() {
+        requests.clear()
+        rpcAnswers.clear()
+        blockchairAnswers.clear()
+    }
+
+    void stop() {
+        server.stop(0)
+        executor.shutdownNow()
+    }
+
+    void rpcCode(String address, String code, long delayMillis = 0) {
+        rpcAnswers[address] = new Answer(status: 200, body: """{"jsonrpc":"2.0","id":1,"result":"$code"}""", delayMillis: delayMillis)
+    }
+
+    void rpcError(String address) {
+        rpcAnswers[address] = new Answer(status: 200, body: '{"jsonrpc":"2.0","id":1,"error":{"code":-32005,"message":"limit"}}')
+    }
+
+    void blockchairType(String address, String type) {
+        blockchairAnswers[address] = new Answer(status: 200,
+        body: """{"data":{"$address":{"address":{"type":"$type"}}},"context":{"code":200}}""")
+    }
+
+    private static void respond(HttpExchange exchange, Answer answer) {
+        def chosen = answer ?: new Answer(status: 503, body: 'unavailable')
+        if (chosen.delayMillis> 0) {
+            Thread.sleep(chosen.delayMillis)
+        }
+        def bytes = chosen.body.getBytes(StandardCharsets.UTF_8)
+        exchange.sendResponseHeaders(chosen.status, bytes.length)
+        exchange.responseBody.withCloseable { it.write(bytes) }
+    }
+}

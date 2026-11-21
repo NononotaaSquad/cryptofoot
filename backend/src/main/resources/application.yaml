@@ -22,3 +22,7 @@ management:
     health:
       probes:
         enabled: true
+app:
+  exclusion:
+    # Keyless ETH bytecode check (public JSON-RPC, Blockchair fallback); false keeps every address inside the app (D22-005)
+    onchain-check-enabled: ${EXCLUSION_ONCHAIN_CHECK_ENABLED:true}
