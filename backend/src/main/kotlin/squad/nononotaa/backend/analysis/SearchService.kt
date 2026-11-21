@@ -2,9 +2,11 @@ package squad.nononotaa.backend.analysis
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.Mention
 import squad.nononotaa.backend.model.SourceStatus
 import squad.nononotaa.backend.repository.MentionRepository
+import squad.nononotaa.backend.service.AddressValidator
 import squad.nononotaa.backend.util.logger
 import java.time.Duration
 import java.time.Instant
@@ -19,6 +21,7 @@ class SearchService(
     private val sources: List<MentionSource>,
     private val detector: AddressCandidateDetector,
     private val mentionRepository: MentionRepository,
+    private val addressValidator: AddressValidator,
     @Value("\${sources.timeout:10s}") private val sourceTimeout: Duration,
 ) : MentionSearch {
     override fun search(identifiers: List<CaseIdentifier>): SearchResult {
@@ -90,18 +93,40 @@ class SearchService(
         identifiers: List<CaseIdentifier>,
     ): Match? {
         for (identifier in identifiers) {
+            // a full name alone is too general to make a Mention relevant (E1.1)
+            if (identifier.type == IdentifierType.FULL_NAME) continue
             val value = identifier.value.trim()
             if (value.isEmpty()) continue
-            if (isAddress(value)) {
-                val index = content.indexOf(value)
-                if (index >= 0 && detector.detect("", content).any { it.rawAddress == value }) return Match(index, value.length)
-            } else {
-                val index = content.indexOf(value, ignoreCase = true)
-                if (index >= 0) return Match(index, value.length)
-            }
+            val match = if (isAddress(value)) findAddress(content, value) else findText(content, value)
+            if (match != null) return match
         }
         return null
     }
+
+    private fun findText(
+        content: String,
+        value: String,
+    ): Match? = content.indexOf(value, ignoreCase = true).takeIf { it >= 0 }?.let { Match(it, value.length) }
+
+    private fun findAddress(
+        content: String,
+        value: String,
+    ): Match? = detector
+        .detect("", content)
+        .firstOrNull { sameAddress(it.rawAddress, value) }
+        ?.let { Match(content.indexOf(it.rawAddress), it.rawAddress.length) }
+
+    // the Case stores the canonical form (ETH lowercased), sources keep the original spelling (D50-002)
+    private fun sameAddress(
+        found: String,
+        wanted: String,
+    ): Boolean {
+        val foundCanonical = canonical(found)
+        val wantedCanonical = canonical(wanted)
+        return if (foundCanonical != null && wantedCanonical != null) foundCanonical == wantedCanonical else found == wanted
+    }
+
+    private fun canonical(address: String) = (addressValidator.validate(address) as? AddressValidation.Valid)?.canonicalAddress
 
     private fun isAddress(value: String): Boolean = detector.detect("", value).isNotEmpty()
 

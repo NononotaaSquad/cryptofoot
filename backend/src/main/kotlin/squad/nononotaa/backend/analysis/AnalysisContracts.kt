@@ -126,7 +126,10 @@ interface ExclusionClassifier {
 }
 
 interface ConfidenceScoring {
-    fun score(candidates: List<Candidate>): ScoringResult
+    fun score(
+        candidates: List<Candidate>,
+        mentions: List<FoundMention>,
+    ): ScoringResult
 }
 
 interface AnalysisRecorder {

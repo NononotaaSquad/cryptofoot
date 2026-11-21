@@ -60,7 +60,6 @@ data class AnalysisResponse(
     val excludedAddressCount: Int?,
 )
 
-// TODO E2.2: fill network, valid and validationFailure from AddressValidator, never from the detection alone
 data class DetectedAddressResponse(
     val address: String,
     val network: Network?,

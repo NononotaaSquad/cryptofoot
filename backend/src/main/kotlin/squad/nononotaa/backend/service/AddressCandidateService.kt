@@ -13,7 +13,6 @@ import squad.nononotaa.backend.util.logger
 class AddressCandidateService(
     private val addressValidator: AddressValidator,
 ) {
-    // TODO E2.1/E3.1: call from the Analysis pipeline between Mention collection and Confidence Level calculation
     fun prepare(rawCandidates: List<RawAddressCandidate>): AddressCandidates {
         logger.debug("Preparing address candidates from {} raw candidates", rawCandidates.size)
         val mentionIdsByAddress = mutableMapOf<CanonicalAddress, MutableSet<String>>()

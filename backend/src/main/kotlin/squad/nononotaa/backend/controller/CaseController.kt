@@ -17,6 +17,7 @@ import squad.nononotaa.backend.dto.ScheduleResponse
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
 import squad.nononotaa.backend.service.AnalysisComparisonService
 import squad.nononotaa.backend.service.AnalysisHistoryService
+import squad.nononotaa.backend.service.AnalysisRerunService
 import squad.nononotaa.backend.service.CaseService
 import squad.nononotaa.backend.service.ScheduleService
 import squad.nononotaa.backend.util.ApiController
@@ -28,6 +29,7 @@ class CaseController(
     private val analysisComparison: AnalysisComparisonService,
     private val schedules: ScheduleService,
     private val cases: CaseService,
+    private val analyses: AnalysisRerunService,
 ) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -39,18 +41,27 @@ class CaseController(
     }
 
     @GetMapping
-    fun listCases(): List<CaseResponse> = TODO("E6.1: all Cases, newest first, with their latest Analysis")
+    fun listCases(): List<CaseResponse> {
+        logger.debug("GET /cases")
+        return cases.list()
+    }
 
     @GetMapping("/{caseId}")
     fun getCase(
         @PathVariable caseId: String,
-    ): CaseResponse = TODO("E6.1: Case with its latest Analysis; 404 when missing")
+    ): CaseResponse {
+        logger.debug("GET /cases/{}", caseId)
+        return cases.get(caseId)
+    }
 
     @PostMapping("/{caseId}/analyses")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun startAnalysis(
         @PathVariable caseId: String,
-    ): AnalysisResponse = TODO("E2.1/E6.2: new MANUAL Analysis in RUNNING state with the Case's current identifiers; 409 when one is already running")
+    ): AnalysisResponse {
+        logger.debug("POST /cases/{}/analyses", caseId)
+        return analyses.rerun(caseId)
+    }
 
     @GetMapping("/{caseId}/analyses")
     fun listAnalyses(

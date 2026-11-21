@@ -69,7 +69,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        1 * scoring.score([person, unchecked]) >> new ScoringResult([
+        1 * scoring.score([person, unchecked], _) >> new ScoringResult([
             new ScoredAttribution(person, 70, [
                 new AppliedRule('forum-post', 70)
             ], ClassificationStatus.NOT_EXCLUDED),
@@ -105,7 +105,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        0 * scoring.score(_)
+        0 * scoring.score(_, _)
         finished.status == AnalysisStatus.COMPLETED
         finished.attributions.isEmpty()
         finished.unclassified.isEmpty()
@@ -123,7 +123,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         offline.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        1 * scoring.score([person]) >> new ScoringResult([
+        1 * scoring.score([person], _) >> new ScoringResult([
             new ScoredAttribution(person, 70, [
                 new AppliedRule('forum-post', 70)
             ], ClassificationStatus.NOT_EXCLUDED)
@@ -149,7 +149,7 @@ class ExcludedAddressPipelineSpec extends Specification {
         def run = crashing.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))
 
         then:
-        0 * scoring.score(_)
+        0 * scoring.score(_, _)
         run.status == AnalysisStatus.FAILED
         finished.status == AnalysisStatus.FAILED
         finished.failures == [
