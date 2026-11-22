@@ -1,3 +1,7 @@
 spring:
   mongodb:
     database: ${MONGODB_DATABASE}
+sources:
+  github:
+    # production never calls GitHub anonymously: an enabled source needs SOURCES_GITHUB_TOKEN (from Secret Manager)
+    require-token: true

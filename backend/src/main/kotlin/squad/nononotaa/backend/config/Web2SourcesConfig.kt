@@ -27,10 +27,13 @@ data class Web2Properties(
         val enabled: Boolean = false,
         val apiUrl: URI = URI.create("https://api.github.com"),
         val token: String = "",
+        val requireToken: Boolean = false,
         val timeout: Duration = Duration.ofSeconds(5),
         val maxBytes: Int = 262_144,
         val maxLogins: Int = 3,
-    )
+    ) {
+        override fun toString() = "GitHub(enabled=$enabled, apiUrl=$apiUrl, token=${if (token.isBlank()) "<empty>" else "<set>"}, requireToken=$requireToken)"
+    }
 
     data class Bitcointalk(
         val enabled: Boolean = false,
@@ -52,7 +55,15 @@ class Web2SourcesConfig {
     fun githubMentionSource(
         properties: Web2Properties,
         mapper: ObjectMapper,
-    ): MentionSource = GitHubMentionSource(properties.github, mapper, Clock.systemUTC()).also { logger.info("GitHub source enabled") }
+    ): MentionSource {
+        // a secret mounted from Secret Manager may carry a trailing newline
+        val github = properties.github.copy(token = properties.github.token.trim())
+        check(github.token.isNotEmpty() || !github.requireToken) {
+            "GitHub source is enabled but sources.github.token is empty: set SOURCES_GITHUB_TOKEN (production does not fall back to anonymous requests) or SOURCES_GITHUB_ENABLED=false"
+        }
+        logger.info("GitHub source enabled authenticated={}", github.token.isNotEmpty())
+        return GitHubMentionSource(github, mapper, Clock.systemUTC())
+    }
 
     @Bean
     @ConditionalOnProperty("sources.bitcointalk.enabled", havingValue = "true")

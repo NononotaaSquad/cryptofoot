@@ -242,8 +242,31 @@ jobs:
             printf '%s' "$MONGODB_URI" | gcloud secrets versions add "$secret" --data-file=-
           fi
 
+      # The token is the GitHub Actions secret SOURCES_GITHUB_TOKEN (org or repository level), copied to the
+      # Secret Manager secret "<repo>-github-token" and mounted into Cloud Run as SOURCES_GITHUB_TOKEN. Without it
+      # the GitHub source is switched off explicitly: production never calls GitHub anonymously.
+      - name: Sync GitHub token to Secret Manager
+        env:
+          GITHUB_SOURCE_TOKEN: ${{ secrets.SOURCES_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$GITHUB_SOURCE_TOKEN" ]; then
+            echo "::warning::SOURCES_GITHUB_TOKEN secret is not set: deploying with the GitHub source disabled"
+            echo "GITHUB_SOURCE_ENABLED=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          secret="$APP-github-token"
+          gcloud secrets describe "$secret" >/dev/null 2>&1 || gcloud secrets create "$secret" --replication-policy=automatic
+          if [ "$(gcloud secrets versions access latest --secret="$secret" 2>/dev/null)" != "$GITHUB_SOURCE_TOKEN" ]; then
+            printf '%s' "$GITHUB_SOURCE_TOKEN" | gcloud secrets versions add "$secret" --data-file=-
+          fi
+          echo "GITHUB_SOURCE_ENABLED=true" >> "$GITHUB_ENV"
+
       - name: Deploy to Cloud Run
         run: |
+          secrets="MONGODB_URI=$APP-mongodb-uri:latest"
+          if [ "$GITHUB_SOURCE_ENABLED" = "true" ]; then
+            secrets="$secrets,SOURCES_GITHUB_TOKEN=$APP-github-token:latest"
+          fi
           gcloud run deploy "$SERVICE" \
             --image "$IMAGE" \
             --region "$REGION" \
@@ -252,8 +275,8 @@ jobs:
             --memory 1Gi \
             --cpu 1 \
             --max-instances 3 \
-            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=false" \
-            --set-secrets "MONGODB_URI=$APP-mongodb-uri:latest" \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=false,SOURCES_GITHUB_ENABLED=$GITHUB_SOURCE_ENABLED" \
+            --set-secrets "$secrets" \
             --quiet
 
   deploy-frontend:

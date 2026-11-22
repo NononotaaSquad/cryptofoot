@@ -11,7 +11,7 @@ class Web2Fixtures {
     static final String ETH = '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed'
 
     static Web2Properties.GitHub github(StubWeb2Server server, String token = '', Duration timeout = Duration.ofMillis(500), int maxLogins = 3) {
-        new Web2Properties.GitHub(true, URI.create(server.url()), token, timeout, 262144, maxLogins)
+        new Web2Properties.GitHub(true, URI.create(server.url()), token, false, timeout, 262144, maxLogins)
     }
 
     static Web2Properties.Bitcointalk bitcointalk(StubWeb2Server server, Duration timeout = Duration.ofMillis(500), int maxPosts = 20) {
