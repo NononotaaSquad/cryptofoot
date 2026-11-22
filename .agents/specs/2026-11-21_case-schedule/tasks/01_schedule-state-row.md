@@ -1,6 +1,6 @@
 # 01 — Read the Schedule and show the state row
 
-**Spec:** [../spec.md](../spec.md) · **Blocked by:** none · **Status:** ready-for-agent
+**Spec:** [../spec.md](../spec.md) · **Blocked by:** none · **Status:** implemented in #15 (PR feat/15-case-schedule)
 
 **What to build:** The Analyst opens `/cases/{caseId}` of a Case with an enabled Schedule and sees, between the Case header and the select "Wyświetlana analiza", a full-width state row with the Frequency and the next term, for example "Harmonogram: codziennie o 06:00 · następna analiza: 22.11.2026, 06:00". When the last attempt of the Schedule was `FAILED`, `SKIPPED_OVERLAP` or `SKIPPED_DOWNTIME`, the same row is a warning that says so. A Schedule on the demo Frequency carries the label "Tryb demonstracyjny". A disabled Schedule shows no row, and a Schedule that cannot be read shows no row and does not break the rest of the view. This task only reads: no clock button, no popover, no saving, no polling (tasks 02 and 03).
 
