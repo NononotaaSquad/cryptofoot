@@ -50,6 +50,14 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - Per Attribution: base = strongest counted kind. +15 once only for two counted Premises of at least discussion on different services with different address sentences; mass comments, repeats on one service and copies give nothing. An unclassified address is capped at 59 (`CLASSIFICATION_CAP`). Each rule names the Premises that made it apply.
 - Invariant: the same input (candidates, Mentions, identifiers) always gives the same Confidence Level, Premises, rules and text; the version is stored with the Analysis. `confidence-1` Analyses keep their result and have no Premises.
 
+### Address Activity (see decisions `D23-001` to `D23-009`; mentor questions 2, 4 and 5 open)
+
+- Part of the Analysis: a stage after scoring; the outcome is stored on each Attribution in the snapshot and never fetched again when the report is reopened.
+- Only Attributions with a Confidence Level above 0 are checked. Status per Attribution: `AVAILABLE` (totals, period, cash-out signals, source, synthetic flag, time read, coverage limitations), `UNAVAILABLE` (no source answered), `NOT_CHECKED` (0%, or an Analysis stored before E4).
+- Sources in order: the synthetic demo fixture (demo addresses only), then keyless self-hostable explorers (mempool.space BTC, Blockscout ETH), which are off by default.
+- Cash-out signal: an outgoing transfer to a labelled off-ramp (exchange, P2P, payment gateway, crypto card) at any amount, or a swap into a USD stablecoin of at least 1000 units. A signal is a lead, not proof of a fiat withdrawal. The rules have a version (`activity-1`), stored with each Address Activity together with the threshold in use.
+- Invariants: unknown data is never shown as zero activity (a total is stated by the source or summed from a complete history, otherwise empty); unavailable activity makes the Analysis `PARTIAL` with `BLOCKCHAIN_DATA_UNAVAILABLE`, never `FAILED`.
+
 ## Lifecycles
 
 States and allowed transitions for each aggregate that has a lifecycle, with who or what triggers each transition.
@@ -59,7 +67,7 @@ States and allowed transitions for each aggregate that has a lifecycle, with who
 - States: `RUNNING` -> exactly one of `COMPLETED`, `PARTIAL`, `FAILED`. Terminal states never change; a rerun is a new Analysis.
 - Trigger (separate from status): `MANUAL`, `SCHEDULED`.
 - `COMPLETED`: every stage ran and nothing was unavailable. Zero Mentions from healthy sources is still `COMPLETED` ("no results").
-- `PARTIAL`: some sources or classifications were unavailable; the rest of the result is kept. Candidates with unavailable classification are still scored but their Attribution is flagged `classificationStatus = UNAVAILABLE` (D24-006).
+- `PARTIAL`: some sources, classifications or Address Activity (D23-005) were unavailable; the rest of the result is kept. Candidates with unavailable classification are still scored but their Attribution is flagged `classificationStatus = UNAVAILABLE` (D24-006).
 - `FAILED`: no usable Attributions can be produced (all sources unavailable, or the search, candidate preparation, exclusion or scoring module failed). Retained in history; never shown as an Analysis with zero findings.
 - Orchestration (#24) derives the status; storage of the Analysis (#25) is a separate responsibility.
 

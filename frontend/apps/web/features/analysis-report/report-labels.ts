@@ -1,8 +1,10 @@
 import type {
-  AddressActivityEventResponseType,
+  AddressActivityResponseCoverageLimitationsItem,
+  AnalysisResponse,
   AnalysisResponseAssessmentMode,
   AnalysisResponseStatus,
   AnalysisResponseTrigger,
+  CashOutSignalResponseKind,
   DetectedAddressResponseValidationFailure,
   ExcludedAddressResponseReason,
   PremiseFactsResponseAuthorIsPerson,
@@ -350,24 +352,50 @@ export function rejectedReasonLabel(code: string): string {
     : code;
 }
 
-const activityEventLabels: Record<AddressActivityEventResponseType, string> = {
-  RECEIVED: "Otrzymano",
-  SENT: "Wysłano",
-  SWAP: "Zamiana",
-  CASH_OUT_SIGNAL: "Sygnał wyjścia",
+const cashOutSignalLabels: Record<CashOutSignalResponseKind, string> = {
+  EXCHANGE: "Przelew na giełdę kryptowalut",
+  P2P: "Przelew na platformę P2P",
+  PAYMENT_GATEWAY: "Przelew do bramki płatniczej",
+  CRYPTO_CARD: "Przelew do usługi karty kryptowalutowej",
+  STABLECOIN_SWAP: "Zamiana na stablecoin",
 };
 
-export function activityEventLabel(code: string): string {
-  return isKnownCode(activityEventLabels, code)
-    ? activityEventLabels[code]
+export function cashOutSignalLabel(code: string): string {
+  return isKnownCode(cashOutSignalLabels, code)
+    ? cashOutSignalLabels[code]
     : code;
+}
+
+const activityLimitationSentences: Record<
+  AddressActivityResponseCoverageLimitationsItem,
+  string
+> = {
+  RECENT_TRANSACTIONS_ONLY:
+    "Odczytano tylko najnowsze transakcje, więc starsze sygnały mogą nie być widoczne.",
+  LABELLED_COUNTERPARTIES_ONLY:
+    "Sygnały są wykrywane tylko dla serwisów ze znanych list. Brak sygnału nie oznacza, że środków nie wymieniono na waluty tradycyjne.",
+  INTERNAL_TRANSFERS_NOT_COUNTED:
+    "Sumy nie obejmują przelewów wewnętrznych z kontraktów.",
+  TRANSACTIONS_UNAVAILABLE:
+    "Nie udało się odczytać listy transakcji, więc nie sprawdzono sygnałów wyjścia do walut tradycyjnych.",
+};
+
+/** One sentence per coverage limitation; an unknown code is still shown. */
+export function activityLimitationSentence(code: string): string {
+  return isKnownCode(activityLimitationSentences, code)
+    ? activityLimitationSentences[code]
+    : `Dane o aktywności mogą być niepełne (kod: ${code}).`;
 }
 
 export const activityLabels = {
   noData:
     "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności.",
+  notChecked:
+    "Aktywności tego adresu nie sprawdzano w tej analizie, ponieważ nic nie łączy go z badaną osobą.",
   cashOut: "Możliwe wyjście do walut tradycyjnych.",
   unknownVolume: "Nieznany",
+  unknownCount: "Nieznana",
+  synthetic: " (dane testowe)",
 } as const;
 
 // Q44: `Intl` pl-PL. The zone is fixed to Europe/Warsaw so the report reads
@@ -390,6 +418,24 @@ const timeFormat = new Intl.DateTimeFormat("pl-PL", {
 /** "21.11.2026, 14:32" from an ISO instant. */
 export function formatDateTime(isoInstant: string): string {
   return dateTimeFormat.format(new Date(isoInstant));
+}
+
+/**
+ * "21.11.2026, 14:32 · Ręczna · Zakończona": one Analysis as the history
+ * select names it, so other places can name it the same way.
+ */
+export function analysisLabel(analysis: AnalysisResponse): string {
+  return [
+    analysis.startedAt === undefined ? "–" : formatDateTime(analysis.startedAt),
+    analysis.trigger === undefined
+      ? null
+      : analysisTriggerLabels[analysis.trigger],
+    analysis.status === undefined
+      ? null
+      : analysisStatusLabels[analysis.status],
+  ]
+    .filter((part) => part !== null)
+    .join(" · ");
 }
 
 /** "14:32" from an ISO instant. */

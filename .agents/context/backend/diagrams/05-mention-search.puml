@@ -1,5 +1,5 @@
 @startuml 05-mention-search
-title E2: SearchService.search(identifiers): sources, relevance, snippet, detection, Mention identity
+title E2: SearchService.search(identifiers, earlierAnalyses): sources, relevance, snippet, detection, Mention identity
 
 skinparam shadowing false
 autonumber
@@ -12,9 +12,9 @@ participant "AddressCandidateDetector" as DET
 participant "AddressValidator" as VAL
 database "mentions" as DB
 
-ORC -> S : search(identifiers)
+ORC -> S : search(identifiers, earlierAnalyses)
 S -> EX : submit one query per source
-EX -> SRC : findMentions(identifiers)
+EX -> SRC : findMentions(identifiers, earlierAnalyses)\n(only the synthetic source reads it, ADR 0004)
 alt answered within sources.timeout (default 10s)
   SRC --> S : RawMention(url, collectedAt, content)*\nSourceReport(CHECKED, synthetic, checkedAt)
 else threw or timed out

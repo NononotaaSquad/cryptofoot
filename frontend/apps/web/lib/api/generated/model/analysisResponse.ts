@@ -34,4 +34,6 @@ export interface AnalysisResponse {
   attributionCount?: number | null;
   /** @nullable */
   excludedAddressCount?: number | null;
+  /** @nullable */
+  highestConfidenceLevel?: number | null;
 }

@@ -24,6 +24,14 @@ _Avoid_: evidence, reading, hit
 One run of search and scoring for a Case, saved in its history. Has a trigger (manual or scheduled) and a status.
 _Avoid_: run, scan, pass
 
+**Address Activity** (PL: Aktywność adresu):
+What the address of an Attribution did on the blockchain: how much went through it, when, and its cash-out signals in time order. Missing data is never shown as zero activity.
+_Avoid_: indicators, metrics
+
+**Cash-out signal** (PL: Sygnał wyjścia do walut tradycyjnych):
+An on-chain event that may mean an exit to traditional currencies: a transfer to an exchange, P2P platform, payment gateway or crypto card service, or a swap into a stablecoin of at least 1000 units. A lead, not proof of a withdrawal.
+_Avoid_: withdrawal, fiat exit, off-ramp event
+
 **Analysis status** (PL: Status analizy):
 The outcome of an Analysis: running, completed, partial or failed (proposed, see `backend/decisions/task-24/`). No results is not a failure.
 _Avoid_: state, result

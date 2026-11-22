@@ -9,11 +9,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 
-import {
-  analysisStatusLabels,
-  analysisTriggerLabels,
-  formatDateTime,
-} from "@/features/analysis-report/report-labels";
+import { analysisLabel } from "@/features/analysis-report/report-labels";
 import type { AnalysisResponse } from "@/lib/api/generated/model";
 
 interface AnalysisSelectProps {
@@ -27,21 +23,6 @@ interface AnalysisSelectProps {
 const triggerId = "case-details-analysis";
 const hintId = `${triggerId}-hint`;
 
-/** "21.11.2026, 14:32 · Ręczna · Zakończona" */
-function optionLabel(analysis: AnalysisResponse): string {
-  return [
-    analysis.startedAt === undefined ? "–" : formatDateTime(analysis.startedAt),
-    analysis.trigger === undefined
-      ? null
-      : analysisTriggerLabels[analysis.trigger],
-    analysis.status === undefined
-      ? null
-      : analysisStatusLabels[analysis.status],
-  ]
-    .filter((part) => part !== null)
-    .join(" · ");
-}
-
 // History of Analyses of the Case: one option per Analysis. The selection is
 // the `?analysis=` param, written by the caller.
 export function AnalysisSelect({
@@ -52,7 +33,7 @@ export function AnalysisSelect({
   const items = analyses.flatMap((analysis) =>
     analysis.id === undefined
       ? []
-      : [{ value: analysis.id, label: optionLabel(analysis) }]
+      : [{ value: analysis.id, label: analysisLabel(analysis) }]
   );
 
   return (

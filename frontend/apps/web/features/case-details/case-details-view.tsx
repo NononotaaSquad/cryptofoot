@@ -6,16 +6,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { ComparisonSection } from "@/features/analysis-comparison/comparison-section";
+import { previousAnalysisWithResults } from "@/features/analysis-comparison/comparison-view-model";
 import { ReportView } from "@/features/analysis-report/report-view";
 import { toUserMessage } from "@/lib/api/client";
 import {
   useGetCase,
+  useGetSchedule,
   useListAnalyses,
 } from "@/lib/api/generated/case-controller/case-controller";
 import type { AnalysisResponse } from "@/lib/api/generated/model";
+import { env } from "@/lib/env";
 
 import { AnalysisSelect } from "./analysis-select";
 import { CaseHeader } from "./case-header";
+import { toAnalysisOrder } from "./reviewed-mark";
+import { ScheduleButton } from "./schedule-button";
+import { schedulePollInterval } from "./schedule-poll-interval";
+import { ScheduleStateRow } from "./schedule-state-row";
+import { toScheduleView } from "./schedule-view-model";
 import { StartAnalysisButton } from "./start-analysis-button";
 
 interface CaseDetailsViewProps {
@@ -37,7 +46,21 @@ function newestFirst(
 export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
   const router = useRouter();
   const caseQuery = useGetCase(caseId);
-  const analysesQuery = useListAnalyses(caseId);
+  // The Schedule is read apart from the rest: a failed read never hides the
+  // report. While it is enabled, the page checks the server in the background
+  // (a failed poll keeps the last answer and the polling).
+  const scheduleQuery = useGetSchedule(caseId, {
+    query: {
+      refetchInterval: (query) => schedulePollInterval(query.state.data?.data),
+    },
+  });
+  const schedule = scheduleQuery.data?.data;
+  const scheduleView = toScheduleView(schedule, {
+    demoEnabled: env.NEXT_PUBLIC_DEMO_SCHEDULE,
+  });
+  const analysesQuery = useListAnalyses(caseId, {
+    query: { refetchInterval: schedulePollInterval(schedule) },
+  });
   // The `analysis` param for which the history was fetched again (see below).
   const [refetchedFor, setRefetchedFor] = useState<string | null>(null);
 
@@ -50,6 +73,24 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
     analysisId !== undefined &&
     !analyses.some((analysis) => analysis.id === analysisId);
   const { refetch: refetchAnalyses } = analysesQuery;
+
+  // Without an `analysis` param the newest Analysis is shown. Remember the one
+  // first shown, so a Scheduled Analysis that arrives while the page is open
+  // does not replace the report being read (Q7). The pin is dropped when the
+  // address gets its own `analysis` param.
+  const [pin, setPin] = useState<{
+    param: string | undefined;
+    id: string | null;
+  }>({
+    param: analysisId,
+    id: null,
+  });
+  if (pin.param !== analysisId) {
+    setPin({ param: analysisId, id: null });
+  } else if (analysisId === undefined && pin.id === null) {
+    const newest = analyses?.[0]?.id;
+    if (newest !== undefined) setPin({ param: analysisId, id: newest });
+  }
 
   // An Analysis started here opens this same page with its id while the
   // cached history (fresh for a minute) does not hold it yet. Before saying
@@ -103,11 +144,47 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
     return <CaseDetailsSkeleton />;
   }
 
-  const selectedId = missing ? null : (analysisId ?? history[0]?.id ?? null);
+  const pinned =
+    pin.id !== null && history.some((analysis) => analysis.id === pin.id)
+      ? pin.id
+      : null;
+  const selectedId = missing
+    ? null
+    : (analysisId ?? pinned ?? history[0]?.id ?? null);
+  // Manual and Scheduled Analyses alike: the displayed one is compared with
+  // the previous one that has results (E6.3).
+  const previousId =
+    selectedId === null
+      ? undefined
+      : previousAnalysisWithResults(history, selectedId)?.id;
+
+  // Only a terminal Analysis that is shown can be marked as reviewed.
+  const displayed = history.find((analysis) => analysis.id === selectedId);
+  const reviewTarget =
+    displayed === undefined || displayed.status === "RUNNING"
+      ? null
+      : toAnalysisOrder(displayed);
 
   return (
     <div className="flex flex-col gap-10">
-      <CaseHeader caseId={caseId} identifiers={identifiers} showActions />
+      <CaseHeader
+        caseId={caseId}
+        identifiers={identifiers}
+        showActions
+        reviewTarget={reviewTarget}
+        scheduleButton={
+          <ScheduleButton
+            caseId={caseId}
+            view={scheduleView}
+            readError={schedule === undefined ? scheduleQuery.error : null}
+            onRetryRead={() => {
+              void scheduleQuery.refetch();
+            }}
+          />
+        }
+      />
+
+      <ScheduleStateRow row={scheduleView.stateRow} />
 
       <AnalysisSelect
         analyses={history}
@@ -136,6 +213,15 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
           caseId={caseId}
           analysisId={selectedId}
           caseIdentifiers={identifiers}
+          comparison={
+            previousId === undefined ? null : (
+              <ComparisonSection
+                caseId={caseId}
+                earlierAnalysisId={previousId}
+                laterAnalysisId={selectedId}
+              />
+            )
+          }
         />
       )}
     </div>

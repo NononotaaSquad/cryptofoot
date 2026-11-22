@@ -24,10 +24,13 @@ class SearchService(
     private val addressValidator: AddressValidator,
     @Value("\${sources.timeout:10s}") private val sourceTimeout: Duration,
 ) : MentionSearch {
-    override fun search(identifiers: List<CaseIdentifier>): SearchResult {
+    override fun search(
+        identifiers: List<CaseIdentifier>,
+        earlierAnalyses: Int,
+    ): SearchResult {
         val executor = Executors.newVirtualThreadPerTaskExecutor()
         try {
-            val futures = sources.associateWith { executor.submit(Callable { query(it, identifiers) }) }
+            val futures = sources.associateWith { executor.submit(Callable { query(it, identifiers, earlierAnalyses) }) }
             val reports = mutableListOf<SourceReport>()
             val mentions = mutableListOf<FoundMention>()
             val seenIdentities = mutableSetOf<String>()
@@ -49,8 +52,9 @@ class SearchService(
     private fun query(
         source: MentionSource,
         identifiers: List<CaseIdentifier>,
+        earlierAnalyses: Int,
     ): Pair<SourceReport, List<RawMention>> = try {
-        SourceReport(source.sourceName, SourceStatus.CHECKED, source.synthetic, Instant.now()) to source.findMentions(identifiers)
+        SourceReport(source.sourceName, SourceStatus.CHECKED, source.synthetic, Instant.now()) to source.findMentions(identifiers, earlierAnalyses)
     } catch (e: SourceNotCheckedException) {
         logger.info("Source outcome source={} outcome=NOT_CHECKED reason={}", source.sourceName, e.message)
         SourceReport(source.sourceName, SourceStatus.NOT_CHECKED, source.synthetic, null) to emptyList()

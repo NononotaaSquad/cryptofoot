@@ -113,6 +113,8 @@ The script enables the required APIs and creates the Artifact Registry repo `hac
 
 **MongoDB Atlas:** all repos share one Atlas cluster and each gets its own database named after the repo (`MONGODB_DATABASE`, `prod` profile). Atlas Network Access must allow `0.0.0.0/0`, because Cloud Run has no fixed egress IP. To use a separate cluster for one repo, set a repository secret `MONGODB_URI`; it overrides the org secret. The pipeline copies the URI into Secret Manager as `<repo>-mongodb-uri`.
 
+**GitHub token:** set the Actions secret `SOURCES_GITHUB_TOKEN` (org or repository; a token with no scopes is enough, it only reads public profiles). The pipeline copies it into Secret Manager as `<repo>-github-token` and Cloud Run mounts it as `SOURCES_GITHUB_TOKEN`. Without the secret the deploy switches the GitHub source off; production never calls GitHub anonymously. Locally no token is needed.
+
 **URLs:** `https://<repo>-backend-<project-number>.<region>.run.app` and `https://<repo>-frontend-<project-number>.<region>.run.app`. The frontend image is built with `NEXT_PUBLIC_API_URL` set to the backend URL. The backend allows CORS from any origin on `/api/**`.
 
 ## Project Structure

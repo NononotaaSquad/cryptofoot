@@ -140,6 +140,8 @@ function Activity({ figures }: { figures: AddressActivityFigures }) {
         <dd>{figures.transactionCount}</dd>
         <dt className="text-muted-foreground">Okres</dt>
         <dd>{figures.period ?? "—"}</dd>
+        <dt className="text-muted-foreground">Źródło danych</dt>
+        <dd className="break-all">{figures.source}</dd>
       </dl>
       {figures.events.length > 0 ? (
         <ul className="flex flex-col gap-2">
@@ -152,28 +154,43 @@ function Activity({ figures }: { figures: AddressActivityFigures }) {
                 <span className="font-medium">{event.typeLabel}</span>
                 {event.amount !== null ? ` ${event.amount}` : null}
               </span>
-              {event.cashOutNote !== null ? (
-                <span className="flex items-center gap-1.5 text-warning-text">
-                  <TriangleAlert
-                    className="size-4 shrink-0"
-                    aria-hidden="true"
-                  />
-                  {event.cashOutNote}
+              {event.counterparty !== null ? (
+                <span className="break-all text-muted-foreground">
+                  Kontrahent: {event.counterparty}
                 </span>
               ) : null}
+              <span className="break-all text-muted-foreground">
+                Transakcja:{" "}
+                {event.transactionUrl === null ? (
+                  event.transaction
+                ) : (
+                  <a
+                    href={event.transactionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline underline-offset-3"
+                  >
+                    {event.transaction}
+                  </a>
+                )}
+              </span>
+              <span className="flex items-center gap-1.5 text-warning-text">
+                <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
+                {event.cashOutNote}
+              </span>
             </li>
           ))}
         </ul>
       ) : null}
-      {figures.coverageLimitation !== null ? (
-        <p className="flex items-start gap-2 text-warning-text">
+      {figures.coverageLimitations.map((sentence) => (
+        <p key={sentence} className="flex items-start gap-2 text-warning-text">
           <TriangleAlert
             className="mt-0.5 size-4 shrink-0"
             aria-hidden="true"
           />
-          {figures.coverageLimitation}
+          {sentence}
         </p>
-      ) : null}
+      ))}
     </div>
   );
 }

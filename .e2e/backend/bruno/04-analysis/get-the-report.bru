@@ -108,6 +108,32 @@ tests {
       a.scoringRules.forEach((r) => expect(ids).to.include.members(r.premiseIds));
     });
   });
+  test('Address Activity: the demo addresses carry synthetic data with cash-out signals in time order', () => {
+    const btc = byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
+    expect(btc.addressActivityStatus).to.equal('AVAILABLE');
+    expect(btc.addressActivity.synthetic).to.equal(true);
+  expect([btc.addressActivity.rulesVersion, btc.addressActivity.stablecoinSwapThreshold]).to.eql(['activity-1', 1000]);
+    expect([btc.addressActivity.unit, btc.addressActivity.totalReceived, btc.addressActivity.totalSent, btc.addressActivity.transactionCount]).to.eql(['BTC', 0.75, 0.25, 4]);
+    expect(btc.addressActivity.cashOutSignals).to.eql([]);
+    const bech32 = byAddress('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');
+    expect(bech32.addressActivity.cashOutSignals.map((s) => [s.kind, s.occurredAt, s.amount, s.unit])).to.eql([['P2P', '2026-10-05T09:40:00Z', 1.1, 'BTC']]);
+    const eth = byAddress('0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
+    if (eth) {
+      expect(eth.addressActivity.synthetic).to.equal(true);
+      expect([eth.addressActivity.totalReceived, eth.addressActivity.totalSent, eth.addressActivity.transactionCount]).to.eql([10.2, 8.1, 5]);
+      expect(eth.addressActivity.cashOutSignals.map((s) => [s.kind, s.occurredAt, s.amount, s.unit])).to.eql([
+        ['STABLECOIN_SWAP', '2026-08-11T09:05:00Z', 21480, 'USDC'],
+        ['EXCHANGE', '2026-08-12T11:30:00Z', 20000, 'USDC'],
+      ]);
+    }
+  });
+  test('missing Address Activity is unavailable with its limitation, never zero activity', () => {
+    attributions.forEach((a) => expect(a.addressActivityStatus).to.be.oneOf(['AVAILABLE', 'UNAVAILABLE']));
+    attributions.filter((a) => a.addressActivityStatus === 'UNAVAILABLE').forEach((a) => {
+      expect(a.addressActivity).to.equal(null);
+      expect(body.limitations).to.include('BLOCKCHAIN_DATA_UNAVAILABLE');
+    });
+  });
   test('limitations name the unavailable source and the incomplete Analysis', () => {
     expect(body.limitations).to.include.members(['SOURCE_UNAVAILABLE', 'ANALYSIS_INCOMPLETE']);
   });

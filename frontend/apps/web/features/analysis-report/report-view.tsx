@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { Skeleton } from "@workspace/ui/components/skeleton";
-import type { JSX } from "react";
+import type { JSX, ReactNode } from "react";
 import { useEffect, useRef } from "react";
 
 import { nextPollInterval } from "@/lib/analysis-run/poll-interval";
@@ -16,6 +16,7 @@ import {
 import {
   getGetCaseQueryKey,
   getListAnalysesQueryKey,
+  getListCasesQueryKey,
 } from "@/lib/api/generated/case-controller/case-controller";
 import type {
   AnalysisResponseStatus,
@@ -32,6 +33,12 @@ interface ReportViewProps {
   caseId: string;
   analysisId: string;
   caseIdentifiers: PersonIdentifiersResponse;
+  /**
+   * What changed since the previous Analysis. Shown under the summary only
+   * once this Analysis has ended with results (not while it runs, not when it
+   * failed), so the slot mounts, and fetches, only then.
+   */
+  comparison?: ReactNode;
 }
 
 /**
@@ -43,6 +50,7 @@ export function ReportView({
   caseId,
   analysisId,
   caseIdentifiers,
+  comparison = null,
 }: ReportViewProps): JSX.Element {
   const analysis = useGetAnalysis(analysisId, {
     query: {
@@ -102,6 +110,7 @@ export function ReportView({
       {/* A failed Analysis shows only the summary with its grey block. */}
       {view.state === "failed" ? null : (
         <>
+          {comparison}
           <AttributionList
             heading={view.attributionsHeading}
             attributions={view.attributions}
@@ -149,6 +158,8 @@ function useRefreshCaseWhenAnalysisEnds(
       void queryClient.invalidateQueries({
         queryKey: getGetCaseQueryKey(caseId),
       });
+      // The Case list and the header counter read the latest Analysis too.
+      void queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
     }
   }, [queryClient, caseId, analysisId, status]);
 }

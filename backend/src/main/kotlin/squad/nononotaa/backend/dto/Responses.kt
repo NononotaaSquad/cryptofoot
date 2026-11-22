@@ -1,7 +1,8 @@
 package squad.nononotaa.backend.dto
 
 import squad.nononotaa.backend.analysis.IdentifierType
-import squad.nononotaa.backend.model.AddressActivityEventType
+import squad.nononotaa.backend.model.AddressActivityCoverageLimitation
+import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AddressValidationFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
@@ -9,6 +10,7 @@ import squad.nononotaa.backend.model.AssessedBy
 import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AttributionChangeType
 import squad.nononotaa.backend.model.AuthorMatch
+import squad.nononotaa.backend.model.CashOutSignalKind
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation
 import squad.nononotaa.backend.model.DismissalReason
@@ -19,14 +21,11 @@ import squad.nononotaa.backend.model.PremiseKind
 import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.ScheduleAttemptOutcome
+import squad.nononotaa.backend.model.ScheduleIntervalUnit
 import squad.nononotaa.backend.model.SchedulePreset
 import squad.nononotaa.backend.model.SourceStatus
 import java.math.BigDecimal
 import java.time.Instant
-
-data class TestResponse(
-    val message: String,
-)
 
 data class PersonIdentifiersResponse(
     val nickname: String?,
@@ -43,6 +42,7 @@ data class CaseResponse(
     val identifiers: PersonIdentifiersResponse,
     val createdAt: Instant,
     val latestAnalysis: AnalysisResponse?,
+    val latestFinishedAnalysis: AnalysisResponse?,
 )
 
 data class SourceCoverageResponse(
@@ -70,6 +70,7 @@ data class AnalysisResponse(
     val questionSetVersion: String?,
     val attributionCount: Int?,
     val excludedAddressCount: Int?,
+    val highestConfidenceLevel: Int?,
 )
 
 data class DetectedAddressResponse(
@@ -151,20 +152,31 @@ data class PremiseResponse(
     val withdrawn: Boolean,
 )
 
-data class AddressActivityEventResponse(
-    val type: AddressActivityEventType,
+data class CashOutSignalResponse(
+    val kind: CashOutSignalKind,
     val transactionId: String,
+    val transactionUrl: String?,
     val occurredAt: Instant,
-    val amount: BigDecimal?,
-    val unit: String?,
+    val amount: BigDecimal,
+    val unit: String,
+    val counterpartyAddress: String?,
+    val counterpartyLabel: String?,
 )
 
 data class AddressActivityResponse(
+    val sourceName: String,
+    val synthetic: Boolean,
+    val checkedAt: Instant,
+    val rulesVersion: String?,
+    val stablecoinSwapThreshold: BigDecimal?,
+    val unit: String,
     val totalReceived: BigDecimal?,
     val totalSent: BigDecimal?,
-    val unit: String?,
-    val events: List<AddressActivityEventResponse>,
-    val coverageLimitation: String?,
+    val transactionCount: Int?,
+    val firstActivityAt: Instant?,
+    val lastActivityAt: Instant?,
+    val cashOutSignals: List<CashOutSignalResponse>,
+    val coverageLimitations: List<AddressActivityCoverageLimitation>,
 )
 
 data class AttributionResponse(
@@ -175,6 +187,7 @@ data class AttributionResponse(
     val justification: String,
     val mentions: List<MentionResponse>,
     val scoringRules: List<ScoringRuleContributionResponse>,
+    val addressActivityStatus: AddressActivityStatus,
     val addressActivity: AddressActivityResponse?,
     val premises: List<PremiseResponse>,
 )
@@ -225,6 +238,8 @@ data class ScheduleAttemptResponse(
 data class ScheduleResponse(
     val enabled: Boolean,
     val cadence: SchedulePreset?,
+    val intervalValue: Long?,
+    val intervalUnit: ScheduleIntervalUnit?,
     val demo: Boolean,
     val timezone: String,
     val nextExecutionAt: Instant?,

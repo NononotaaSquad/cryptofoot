@@ -164,7 +164,7 @@ Decided by the lead in the grilling of 2026-11-21 against `frontend/apps/web/lib
 - **Start and wait:** "Rozpocznij analizę" calls `POST /cases`, then `POST /cases/{caseId}/analyses` (202, status `RUNNING`). The blocking loader polls `GET /analyses/{analysisId}` every 1.5 s while the status is `RUNNING`, then opens `/cases/{caseId}?analysis={analysisId}`, which reads `GET /analyses/{analysisId}/report`. "Rozpocznij nową analizę" does the same without `POST /cases`.
 - **Justification from rule codes:** *Superseded on 2026-11-21 after #58 (spec Q45–Q47): Uzasadnienie is the backend `justification` text, the Mentions are in `mentions`, and Punktacja has a Polish label for each of the 13 `confidence-1` rule codes (`features/analysis-report/report-labels.ts`).* The backend returns no Justification text (gap G4), only `scoringRules` (`rule`, `contribution`) and the Mentions in `justification`. The frontend maps each known rule code to a Polish sentence (Justification) and a Polish line label (Punktacja). An unknown code is shown as is, with its points. Known codes: `MENTIONED_WITH_IDENTIFIER` (base 40), `INDEPENDENT_SOURCES` (+15).
 - **Case Number hidden:** not in `CaseResponse` yet; issue #56. The Case header shows the label without the number until then.
-- **Reviewed state in the browser:** "Oznacz jako przejrzaną" and "Cofnij oznaczenie" stay; the state is stored in `localStorage` per Case until the backend holds it (V11). Known limit: it is per browser.
+- **Reviewed state in the browser:** "Oznacz jako przejrzaną" and "Cofnij oznaczenie" stay; the state is stored in `localStorage` per Case, per browser, with no endpoint, login or shared flag. *Decision of the user, 2026-11-22 (#84, closes V11):* the mark is a versioned watermark that names the exact reviewed Analysis (id and startedAt); the button marks only the terminal Analysis shown (FAILED too), never one that is running; opening a report or polling writes nothing; marking an older Analysis never moves a newer watermark back; a newer finished Analysis is New Results again; legacy timestamp values name no Analysis and count as not reviewed. Known limit: it is per browser.
 - **Address Activity unavailable:** `addressActivity` is always null today (gap G7); the block shows the existing message "Nie udało się pobrać danych o aktywności tego adresu. Brak danych nie oznacza braku aktywności."
 - **Test data label:** each source in "Sprawdzone źródła" with `synthetic: true` gets the label "Dane testowe".
 - **Unchecked classification:** an Attribution with `classificationStatus: UNAVAILABLE` shows, in its collapsed row, "Nie sprawdzono, czy adres należy do serwisu (np. giełdy)."
@@ -211,6 +211,18 @@ Built in task 03 of `.agents/specs/2026-11-22_confidence-premises-jev/` (the ful
 - **Report limitations:** the new code `MODEL_ASSESSMENT_UNAVAILABLE` gives "Model nie ocenił części lub wszystkich przesłanek; te przesłanki oceniono samymi regułami."
 - **No Pencil frame:** the block is built from the existing patterns of the expanded Attribution, without drawing it first.
 
+## Comparison with the previous Analysis (2026-11-22)
+
+Proposed in [ADR-0014](decisions/0014-analysis-comparison-on-case-details.md); the categories still wait for E6-D2. Where this section and the older text of this file differ (Out of Scope, D2), this section wins.
+
+- **Pair:** the displayed Analysis and the newest earlier Analysis of the Case that ended "Zakończona" or "Częściowa" (a "Nieudana" one is skipped). Manual and Scheduled Analyses are treated the same. No picker: another pair is reached by selecting another Analysis in "Wyświetlana analiza".
+- **When:** only for a displayed Analysis that has ended with results; not while it runs ("W toku"), not when it failed, not for the first Analysis of a Case.
+- **Section "Zmiany od poprzedniej analizy (N)":** in the report, between the summary and "Powiązania", always expanded. Below the heading: "Porównanie z analizą: 21.11.2026, 14:32 · Ręczna · Zakończona." and the link "Pokaż poprzednią analizę".
+- **Limitations:** a warning "Ograniczenia porównania" with one sentence per code (identifiers, sources, networks, scoring rules, partial Analysis).
+- **Rows:** address with the network below it; an icon and a label ("Nowe powiązanie", "Zmieniony stopień pewności", "Zmienione wykluczenie", "Nie znaleziono w tej analizie"); both values as text ("Stopień pewności: wcześniej 55%, teraz 80%."). Order: new, changed level, changed exclusion, not observed.
+- **Not observed:** always "Nie oznacza to, że adres przestał należeć do osoby."; when the backend cannot confirm the absence, a warning says so.
+- **No changes:** a grey block "Nie ma zmian w powiązaniach ani w adresach wykluczonych."
+
 ## Testing Decisions
 
 Deferred. Test seams are decided after the views are laid out in Pencil. The test scope of ADR-0010 applies.
@@ -221,7 +233,7 @@ Deferred. Test seams are decided after the views are laid out in Pencil. The tes
 - Leaving the view during a manual Analysis.
 - Merging two Cases or adding new identifiers to an existing Case.
 - Visual design details (colors, typography, components): see `kas-ui-ux/`.
-- Comparison of two Analyses (E6.3) and the schedule controls (E6.4): later phases, placed in the Case scope of Case details.
+- Comparison of an arbitrary pair of Analyses: only the displayed Analysis and the previous one with results are compared (section "Comparison with the previous Analysis").
 - Print, PDF export and passing the report outside the application (E5-D2).
 - On Case details: the algorithm version. The scoring breakdown is in scope since 2026-11-21 (block "Punktacja").
 - On the Case list: pagination, a sort control, filters by status and server-side search. The demo has a handful of Cases.
@@ -232,8 +244,8 @@ Result of the review of the Pencil views against `../domain/hacknation-2026-task
 
 | # | Deferred | Challenge text | State in the views |
 |---|---|---|---|
-| D1 | Periodic Analyses | §2 "cykliczne wykonywanie analiz" | No schedule view; only the word "Ręczna" in the Analysis select (E6.4). |
-| D2 | Comparing results and detecting a replaced address over time | §2 "porównywanie rezultatów"; §3 optional criterion | Analyses can be switched, but there is no view of differences (E6.3). |
+| D1 | Periodic Analyses | §2 "cykliczne wykonywanie analiz" | No schedule view; only the word "Ręczna" in the Analysis select (E6.4). **Closed 2026-11-22 (#15):** the Schedule view is implemented. |
+| D2 | Comparing results and detecting a replaced address over time | §2 "porównywanie rezultatów"; §3 optional criterion | Analyses can be switched, but there is no view of differences (E6.3). **Closed in part 2026-11-22 (ADR-0014):** "Zmiany od poprzedniej analizy" in the report; detecting a replaced address stays deferred. |
 | D3 | Marking source facts, calculation results and conclusions that need verification | §7; judging criterion 3 | One general sentence, "Powiązania są tropami…"; the blocks are not labelled this way. |
 | D4 | Full name alone as input | §2 lists it as a sufficient identifier | The form rejects it (minimum data rule). |
 | D5 | Category of an Attribution | §3 "kategoryzować znalezione powiązania" | Only the Confidence Level band; the source kind appears in the "Punktacja" line and the Justification, not as a category. |
@@ -264,7 +276,7 @@ Because Cases cannot be edited and duplicates are rejected, the Analyst cannot a
 | V8 | Closed on 2026-11-21: the Case contract accepts the wallet address (`walletAddress`, PR #52); the form takes one value per field (Implementation Decisions, One value per field). | Case owner (Maksym) |
 | V9 | The backend must assign a Case Number in the form year and sequence number (e.g. `2026/0006`) and return it with the Case. Issue #56. | Case owner (Maksym) |
 | V10 | The Case list response must carry, per Case: the status and date of the last Analysis, the number of its Attributions and its highest Confidence Level. Without the last two the column "Najwyższy stopień pewności", the highlight and the order of New Results cannot work. | Case owner (Maksym), Bohdan (Analysis) |
-| V11 | The Reviewed state must be saved on the server (the application has no login, so the browser cannot hold it), with an action to set it and to undo it, and it must reset when the next Analysis of the Case ends. Who owns it: Case or Analysis? | Maksym, Bohdan |
+| V11 | *Closed on 2026-11-22 by user decision (#84):* the Reviewed state stays in the browser (`localStorage`, per browser), as a mark of the exact reviewed Analysis; it resets because a newer finished Analysis is newer than the mark. No server persistence. | User |
 | V12 | Measure the contrast of the tint variables added in Pencil against WCAG 2.1 AA (4.5:1 for text). | Design work |
 | V13 | Closed on 2026-11-21: the backend writes the Justification text, one sentence per scoring rule, without numbers (D9-006, #58). Issue #9. | E3 (Marcin) |
 | V14 | The Analysis response must carry, per Attribution: address, network, Confidence Level, the Justification text and its Mentions (source name, link, collection time, quoted fragment); per Excluded Address: address, network, reason, classification source. | Bohdan (Analysis), Maksym (E3) |

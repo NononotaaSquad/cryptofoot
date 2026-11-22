@@ -1,6 +1,6 @@
 # 03 — Background polling and the demo switch
 
-**Spec:** [../spec.md](../spec.md) · **Blocked by:** 02 (which is blocked by 01) · **Status:** ready-for-agent
+**Spec:** [../spec.md](../spec.md) · **Blocked by:** 02 (which is blocked by 01) · **Status:** implemented in #15 (PR feat/15-case-schedule)
 
 **What to build:** While the Schedule of a Case is enabled, Case details checks the server in the background. A Scheduled Analysis appears in the select "Wyświetlana analiza" by itself, the hint "Liczba analiz: N" follows, and the next term and the last attempt in the state row and in the popover refresh. The report the Analyst is reading and the `analysis` parameter of the address never change. A frontend demo switch (an environment variable) lists the option "Co minutę (tryb demonstracyjny)" in the popover, so that the film can show a Scheduled Analysis within a minute; while the Schedule answers `demo: true`, the page checks the server every 5 seconds instead of every 30.
 

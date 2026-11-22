@@ -8,11 +8,12 @@ IDs are `D61-NNN`. "Proposed" means the implementer's proposal; nothing here is 
 | D61-002 | `NOT_CHECKED` source status (`SourceNotCheckedException`) | proposed, needs the orchestration owner |
 | D61-003 | Relevance by provenance (author / Case profile URL) in `SearchService` | proposed, needs the E2 owner |
 | D61-004 | `author` on RawMention, Mention, FoundMention and `MentionResponse` | proposed |
+| D61-006 | GitHub token from Secret Manager in production, anonymous locally | proposed |
 | D61-005 | Scoring (D9, `confidence-1`) untouched; known gaps below | open, needs a D9 decision |
 
 ## D61-001 Access matrix
 
-The mentors approved GitHub and Bitcointalk (stated by the team, not recorded in #38). **Reddit was rejected by the team and its adapter was removed from this task** (app registration failed with "Max clients have been reached"). Each source is a bean only with `sources.<name>.enabled=true` (default `false`). Enabling is a deliberate switch. A comparison project having a connector is not an approval.
+The mentors approved GitHub and Bitcointalk (stated by the team, not recorded in #38). **Reddit was rejected by the team and its adapter was removed from this task** (app registration failed with "Max clients have been reached"). Each source is a bean only with `sources.<name>.enabled=true`. Since the team asked for it, both are **on by default** (`application.yaml`, `SOURCES_<NAME>_ENABLED=false` switches one off); the `local` profile and the integration specs keep them off. A comparison project having a connector is not an approval.
 
 | Source | Data that leaves the application | Method | Credentials | Status |
 |---|---|---|---|---|
@@ -33,3 +34,7 @@ The content filter needs the identifier in the text. A profile README rarely nam
 - API profile and README of one GitHub account share the host `github.com`, so they are `SAME_SERVICE`, never independent (+15).
 - Several far-apart addresses of one README share one 200-character context; only the first address is centred.
 - A Bitcointalk URL with extra parameters (`;sa=summary`) is not "under" the profile URL for the relevance filter.
+
+## D61-006 GitHub token
+
+See the *GitHub token (prod)* paragraph in `backend-architecture.md`. Names: Actions secret and Cloud Run env var `SOURCES_GITHUB_TOKEN`, Secret Manager secret `<repo>-github-token`, property `sources.github.token`, flag `sources.github.require-token` (true only in `application-prod.yaml`).

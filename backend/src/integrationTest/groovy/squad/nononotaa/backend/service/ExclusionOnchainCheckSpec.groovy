@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
@@ -191,7 +192,7 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
         ]
         def mention = new FoundMention('m1', 'forum', 'https://example.test/m1', Instant.parse('2026-11-21T10:00:00Z'), 'ctx', [])
         MentionSearch search = Stub() {
-            search(_) >> new SearchResult([mention], [
+            search(_, _) >> new SearchResult([mention], [
                 new SourceReport('forum', SourceStatus.CHECKED, true, Instant.parse('2026-11-21T10:00:00Z'))
             ])
         }
@@ -206,7 +207,7 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
         }
         def orchestrator = new AnalysisOrchestrator(search, preparation, classifier, Stub(PremiseAssessment) {
             getMode() >> AssessmentMode.RULES_ONLY
-        }, scoring, recorder)
+        }, scoring, Stub(AddressActivityCollector), recorder)
 
         when:
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))

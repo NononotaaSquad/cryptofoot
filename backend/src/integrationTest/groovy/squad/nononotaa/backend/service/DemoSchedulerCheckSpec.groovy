@@ -6,6 +6,7 @@ import java.util.concurrent.Executor
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.CandidatePreparation
@@ -48,7 +49,7 @@ class DemoSchedulerCheckSpec extends BaseSpec {
     def clock = new MutableClock(Instant.parse('2026-11-21T10:00:20Z'))
     def props = new SchedulerProperties(true, Duration.ofMinutes(2))
     MentionSearch search = Stub() {
-        search(_) >> new SearchResult([], [
+        search(_, _) >> new SearchResult([], [
             new SourceReport('stub-source', SourceStatus.CHECKED, true, Instant.now())
         ])
     }
@@ -65,7 +66,7 @@ class DemoSchedulerCheckSpec extends BaseSpec {
     private ScheduledRunner runner() {
         def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(PremiseAssessment) {
             getMode() >> AssessmentMode.RULES_ONLY
-        }, Stub(ConfidenceScoring), recorder)
+        }, Stub(ConfidenceScoring), Stub(AddressActivityCollector), recorder)
         def rerun = new AnalysisRerunService(orchestrator, analyses, identifiers, history, sync)
         ObjectProvider<AnalysisRerunService> provider = Stub() {
             getIfAvailable() >> rerun

@@ -1,0 +1,103 @@
+{
+  "version": "demo-v1",
+  "synthetic": true,
+  "addresses": [
+    {
+      "network": "ETH",
+      "address": "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+      "transfers": [
+        { "transactionId": "0xa4473ec08fc1969cd74d1a26c9ffc9b564067a9508178ae4260f0b7347b57d1b", "occurredAt": "2026-03-02T10:12:00Z", "direction": "IN", "amount": "4.2", "unit": "ETH", "counterparty": "0xfb6916095ca1df60bb79ce92ce3ea74c37c5d359" },
+        { "transactionId": "0x59e31f77524e012faed56fada8a344711f9d94e59a6a01313bd01b0bcc53972f", "occurredAt": "2026-05-14T16:40:00Z", "direction": "IN", "amount": "6", "unit": "ETH", "counterparty": "0xd1220a0cf47c7b9be7a2e6ba89f429762e7b9adb" },
+        { "transactionId": "0x384ada4f275fbeca96057dc16f17125b8266e4459047732d93e3c95dbae043cc", "occurredAt": "2026-08-11T09:05:00Z", "direction": "OUT", "amount": "8", "unit": "ETH", "counterparty": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d" },
+        { "transactionId": "0x384ada4f275fbeca96057dc16f17125b8266e4459047732d93e3c95dbae043cc", "occurredAt": "2026-08-11T09:05:00Z", "direction": "IN", "amount": "21480", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc" },
+        { "transactionId": "0x52ef3efdafda166bf5b00bcb41045770f66ae79f54950b44f337d5cb9edd7643", "occurredAt": "2026-08-12T11:30:00Z", "direction": "OUT", "amount": "20000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0" },
+        { "transactionId": "0x0d64e21629ad60ce28885f575cd964f8e601f0314112284411e67a2a186e7a24", "occurredAt": "2026-09-30T19:22:00Z", "direction": "OUT", "amount": "0.1", "unit": "ETH", "counterparty": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d" },
+        { "transactionId": "0x0d64e21629ad60ce28885f575cd964f8e601f0314112284411e67a2a186e7a24", "occurredAt": "2026-09-30T19:22:00Z", "direction": "IN", "amount": "260", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+      "transfers": [
+        { "transactionId": "ebd2500e2ff07bedd0a60a9a8ca0cccb11f5c3a56ecb474ae091255b0d8a1ac1", "occurredAt": "2026-01-15T08:00:00Z", "direction": "IN", "amount": "0.3", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" },
+        { "transactionId": "627702602b9fb6d96bf6a4496acccf028a2221a53944562ad4e28b530746630d", "occurredAt": "2026-04-02T12:30:00Z", "direction": "IN", "amount": "0.25", "unit": "BTC", "counterparty": "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq" },
+        { "transactionId": "203f8e45ea9cb1c1f67acf287ae325eea3822e4ad861c2ff6cc7abe1a5d2bc24", "occurredAt": "2026-06-20T18:45:00Z", "direction": "IN", "amount": "0.2", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "019ac69ebec2552b063497a4990b2518c7e3916755f242917c050afd4a5135c8", "occurredAt": "2026-07-07T07:15:00Z", "direction": "OUT", "amount": "0.25", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+      "transfers": [
+        { "transactionId": "498d1cb22b7c103be1fc1dec05b57524706e3edb094476df2eb1933dcbb0d3f2", "occurredAt": "2026-09-01T10:00:00Z", "direction": "IN", "amount": "0.7", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "6a29a90c376f40a916ebd6e1e2443a63813ddafa4a83f6f18c5602b5b8318885", "occurredAt": "2026-09-20T14:10:00Z", "direction": "IN", "amount": "0.5", "unit": "BTC", "counterparty": "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq" },
+        { "transactionId": "a7ca1d22546b8e7e16e3e4282bf584a9290f03d30d87eb0a661e4952a076ab28", "occurredAt": "2026-10-05T09:40:00Z", "direction": "OUT", "amount": "1.1", "unit": "BTC", "counterparty": "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3", "counterpartyLabel": { "kind": "P2P", "name": "P2P marketplace escrow (synthetic)" } }
+      ]
+    },
+    {
+      "network": "ETH",
+      "address": "0xe73a66581205c9585215196c89c5648dea1420c6",
+      "transfers": [
+        { "transactionId": "0x2ca0383c0dc4855e1a5a776090062ac0c801a10e11e60c23b3d757ead30c6b60", "occurredAt": "2026-02-10T09:00:00Z", "direction": "IN", "amount": "5", "unit": "ETH", "counterparty": "0xd1220a0cf47c7b9be7a2e6ba89f429762e7b9adb" },
+        { "transactionId": "0x727d661ad89968e8018715113d0fdf0c945ac7070c2388511df81905d1363b13", "occurredAt": "2026-04-22T15:30:00Z", "direction": "IN", "amount": "7.5", "unit": "ETH", "counterparty": "0xd1220a0cf47c7b9be7a2e6ba89f429762e7b9adb" },
+        { "transactionId": "0x0ef5a97e6a11d051918b12796d13cdafae9ce7c2b4c57412c5433faf95ee46cb", "occurredAt": "2026-06-03T10:15:00Z", "direction": "OUT", "amount": "10", "unit": "ETH", "counterparty": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d" },
+        { "transactionId": "0x0ef5a97e6a11d051918b12796d13cdafae9ce7c2b4c57412c5433faf95ee46cb", "occurredAt": "2026-06-03T10:15:00Z", "direction": "IN", "amount": "30000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc" },
+        { "transactionId": "0xeb74f3eef221b440c5a99b57732991a554e420d195b9d570d72d2d5dd881652b", "occurredAt": "2026-06-05T12:00:00Z", "direction": "OUT", "amount": "12000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0xfb9f7f41319157ac5c5dccae308a63a4337ad5d9" },
+        { "transactionId": "0xa1bfed92b7f42d618a30289c4db1877f2992a58fab50dc4ed17e1c1a5ce2ba02", "occurredAt": "2026-07-14T18:45:00Z", "direction": "OUT", "amount": "1.5", "unit": "ETH", "counterparty": "0x2819c144d5946404c0516b6f817a960db37d4929" },
+        { "transactionId": "0x155229e19eaa91f41d64a04c36e51b3f898a38680163fa04b8f09917740fef73", "occurredAt": "2026-08-01T08:20:00Z", "direction": "OUT", "amount": "15000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qym2cd57yxhzgwyk9g9st5gwu0yzenphmgav703",
+      "transfers": [
+        { "transactionId": "65f25b6f30d3bbd002c8ddf279892825317bac1739a8c92f14db744e5165a46f", "occurredAt": "2026-05-05T11:00:00Z", "direction": "IN", "amount": "0.05", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1q6qq06qyp98pvwckcmqgmnqgjvw2u8r4pp4hzpm",
+      "transfers": [
+        { "transactionId": "4ce27cc863aab89c8a804d175964ec48a810223e4a9d52d25ac17b539410f6c1", "occurredAt": "2026-03-01T10:00:00Z", "direction": "IN", "amount": "1.2", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "df60c84904eeb300023478e9868bc891d94e31c42f790a6e8f8c5e874a14ea8e", "occurredAt": "2026-03-15T17:30:00Z", "direction": "OUT", "amount": "0.8", "unit": "BTC", "counterparty": "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qfjy9mr8n5jtrwevzqrj38axjkstn9tlhupkg28",
+      "transfers": []
+    },
+    {
+      "network": "BTC",
+      "address": "bc1q592ze7z6w4pl5mp4xuaa494cjjt5fq7ksj7d8k",
+      "transfers": [
+        { "transactionId": "597bf8f78fada8f9773d38dfe5440e3e76b35e833f7e06283262294883a795ad", "occurredAt": "2026-01-20T09:00:00Z", "direction": "IN", "amount": "4", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "66f9faa6db0b4ee89157426b6aaebbf7520c316605810ec8e9a9bc11df8944dd", "occurredAt": "2026-02-02T14:00:00Z", "direction": "OUT", "amount": "3.9", "unit": "BTC", "counterparty": "1Bdag2zhDWLUDAbkgw1o6XVnnWaSiNNv4K" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca",
+      "transfers": [
+        { "transactionId": "d2daaa1165247c1b4d01b8a784e3e452f46bba8c6b2bc422e87eab4c97f953d4", "occurredAt": "2026-04-02T09:30:00Z", "direction": "IN", "amount": "0.3", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" },
+        { "transactionId": "c46860ecca46cc9c1dfcbe6c5ce746b50354b4e06121bd12d1cb78b984c6a096", "occurredAt": "2026-09-10T14:00:00Z", "direction": "IN", "amount": "0.25", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy",
+      "transfers": [
+        { "transactionId": "9f6330c80d045c3deb1cdfee2c435e2e33c0e1f3ff6456257e510ebd1160fa20", "occurredAt": "2026-10-01T11:00:00Z", "direction": "IN", "amount": "0.12", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "3e9e0fb53d7bfd3211fbfadb2ead11bb88cd4a0c0ba76a5f4b247e775b44446f", "occurredAt": "2026-10-20T16:45:00Z", "direction": "OUT", "amount": "0.12", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n",
+      "transfers": [
+        { "transactionId": "b87387c915dbe61588e52b1c7c349a6d97c8d76a0398076f2bc1e9f9aa9625c8", "occurredAt": "2026-11-05T10:15:00Z", "direction": "IN", "amount": "0.4", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" },
+        { "transactionId": "610101345e245c857a71596393f5614848d59100211d14daadf0808b78260bfb", "occurredAt": "2026-11-12T18:40:00Z", "direction": "OUT", "amount": "0.35", "unit": "BTC", "counterparty": "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s" }
+      ]
+    }
+  ]
+}

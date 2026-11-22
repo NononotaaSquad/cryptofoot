@@ -28,7 +28,7 @@ Analogy: a detective agency. Boundary rule: **the field agent does not judge, th
 | **M1. Input data** | The client's order | Who do we investigate? | Person data entered by the Analyst | A Case with identifiers |
 | **M2. Information search** | Field agent | What was found and where? | Identifiers from the Case | Mentions with detected addresses, source and time of collection |
 | **M3a. Scoring: whose address** | Desk analyst | Is this the person's address? | Mentions with addresses | Attributions with Confidence Level and Justification; Excluded Addresses |
-| **M3b. Scoring: what the address did** | Forensic accountant | What did this address do? | Attributions | Address Activity. **On hold until we talk to the mentors** |
+| **M3b. Scoring: what the address did** | Forensic accountant | What did this address do? | Attributions | Address Activity. **Owner decisions of 2026-11-21, not yet approved by the mentors** |
 | **M4. Official's view** | The file for the client | What follows from this and how do we know? | Results of M2 and M3 | A report in the application with an expandable list |
 
 ### M1. Input data
@@ -52,7 +52,10 @@ Analogy: a detective agency. Boundary rule: **the field agent does not judge, th
 
 ### M3b. Scoring: what the address did
 
-- The scope (volume, signals of exit to traditional currencies) is not accepted. The decision comes after the talk with the mentors.
+- Decided by the task owner on 2026-11-21, before the talk with the mentors (task #23, decisions D23-001 to D23-009); the mentors may still change it (questions 2, 4, 5).
+- For every Attribution with a Confidence Level above 0: how much went through the address (received, sent, number of transactions, period) and the cash-out signals in time order, with transaction references, amounts and units.
+- A cash-out signal: a transfer to an exchange, P2P platform, payment gateway or crypto card service at any amount, or a swap into a stablecoin from 1000.
+- The demo uses synthetic chain data; real explorers can be switched on separately. Missing data is shown as unavailable, never as zero activity.
 
 ### M4. Official's view
 
@@ -81,7 +84,7 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 | [E1. Creating a Case](epics/E1-creating-a-case.md) | Accepted | M1 |
 | [E2. Finding Mentions](epics/E2-finding-mentions.md) | Accepted | M2 |
 | [E3. Scoring Attributions](epics/E3-scoring-attributions.md) | Accepted with a change | M3a |
-| [E4. Address Activity](epics/E4-address-activity.md) | **On hold** until we talk to the mentors; a required stage of the demo (see Risks) | M3b |
+| [E4. Address Activity](epics/E4-address-activity.md) | Implemented with owner decisions (D23-*) on 2026-11-21; mentor questions 2, 4, 5 still open | M3b |
 | [E5. Report for the official](epics/E5-report-for-the-official.md) | Accepted; form confirmed: expandable list in the application | M4 |
 | [E6. Returning to a Case](epics/E6-returning-to-a-case.md) | Accepted; manual and periodic runs are required, the cadence is open | M4 |
 | [E7. Demo scenario](epics/E7-demo-scenario.md) | Accepted, starts in parallel with E1; synthetic demo plus a separate check on real sources | all |
@@ -101,7 +104,7 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 - For every Confidence Level I have a reference to the Mention.
 - I do not get addresses of exchanges, smart contracts, mixers and fundraisers as Attributions.
 
-**E4. Address Activity** (on hold)
+**E4. Address Activity** (owner decisions, mentors pending)
 - I see how much money went through the address.
 - I see signals of withdrawal to traditional currencies in time order.
 
@@ -144,9 +147,9 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 ### Open questions for the mentors
 
 1. Should we show Excluded Addresses to the official, and how: hidden, a collapsed section, or a full list? The team prefers to hide noise; the demo scenario has a required stage "rejecting wrong attributions" (Z p.5, Z p.6). *Proposal in [E5.3](epics/E5-report-for-the-official.md#e53-inspect-exclusions): a separate collapsed section with the number of exclusions, not confirmed.*
-2. Should we show Address Activity, in what scope, and for which Attributions: all, above a threshold, or on request? The acceptance of E4 depends on this answer.
+2. Should we show Address Activity, in what scope, and for which Attributions: all, above a threshold, or on request? The acceptance of E4 depends on this answer. *Owner proposal (D23-001, D23-002, D23-004): every Attribution above 0%, inside the Analysis; totals plus cash-out signals in time order. Not confirmed by the mentors.*
 4. Which external sources and services are "approved", given the ban on sending data outside (Z p.4 item 7)? (also E5-D4, E7-D4)
-5. What value counts as "significant" for signals of withdrawal to traditional currencies?
+5. What value counts as "significant" for signals of withdrawal to traditional currencies? *Owner proposal (D23-006): a transfer to an off-ramp at any amount; a swap into a stablecoin from 1000. Not confirmed by the mentors.*
 6. Is a Confidence Level with a reference to the Mention enough as "pointing to sources, premises and scoring rules" (Z p.9), or is a short description of the rule needed? *Proposal in [E5.2](epics/E5-report-for-the-official.md#e52-verify-one-attribution): show the applied scoring rules, their contributions and the algorithm version, without a text description. Not confirmed; it conflicts with the current definition of Justification.* *Resolved on 2026-11-21: a template text Justification (D9-006) plus the Scoring breakdown (Punktacja) with rules and points; the algorithm version is not shown.*
 11. Do the mentors accept the synthetic demo plus a separate check on real sources as the required presentation? (E7-D1)
 
@@ -160,4 +163,4 @@ The full user stories of each epic are in the [epics/](epics/) directory. Format
 
 ### Risks to decide on knowingly
 
-- **E4 on hold**: analysis of blockchain indicators is one of the required stages of the demo (Z p.5) and an acceptance test (Z p.3). The stages are not scored one by one: the criterion "fit to the challenge and correct scenario" (25%) covers all of them. Without E4 this stage is an unmet requirement and the score in this criterion is lower.
+- **E4 decided without the mentors**: analysis of blockchain indicators is one of the required stages of the demo (Z p.5) and an acceptance test (Z p.3). It is implemented with owner decisions (D23-*); if the mentors answer questions 2, 4 or 5 differently, the rules change. With the default bytecode check the demo ETH address is excluded, so the demo shows only the BTC activity and the P2P signal (D23-009 A1).

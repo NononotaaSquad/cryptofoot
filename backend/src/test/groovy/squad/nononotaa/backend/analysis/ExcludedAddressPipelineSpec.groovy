@@ -44,7 +44,7 @@ class ExcludedAddressPipelineSpec extends Specification {
     def labels = new ExclusionLabelDirectory([
         (new CanonicalAddress(Network.ETH, EXCHANGE)): new ExclusionLabel(ExclusionReason.EXCHANGE, 'Kraken 4 [kraken]', 'Etherscan labels')
     ])
-    def orchestrator = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [rpc]), rulesOnly, scoring, recorder)
+    def orchestrator = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [rpc]), rulesOnly, scoring, Stub(AddressActivityCollector), recorder)
 
     def exchange = new Candidate('ETH', EXCHANGE, ['m1'])
     def contract = new Candidate('ETH', CONTRACT_ADDRESS, ['m1'])
@@ -60,7 +60,7 @@ class ExcludedAddressPipelineSpec extends Specification {
 
     def setup() {
         def mention = new FoundMention('m1', 'forum', 'https://example.test/m1', Instant.parse('2026-11-21T10:00:00Z'), 'ctx', [])
-        search.search(_) >> new SearchResult([mention], [
+        search.search(_, _) >> new SearchResult([mention], [
             new SourceReport('forum', SourceStatus.CHECKED, true, Instant.parse('2026-11-21T10:00:00Z'))
         ])
         preparation.prepare(_) >> { new PreparedCandidates(candidates, []) }
@@ -122,7 +122,7 @@ class ExcludedAddressPipelineSpec extends Specification {
 
     def "with the on-chain check switched off only listed addresses are excluded and every other ETH Attribution is flagged"() {
         given:
-        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), rulesOnly, scoring, recorder)
+        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), rulesOnly, scoring, Stub(AddressActivityCollector), recorder)
         candidates = [exchange, person]
 
         when:
@@ -150,7 +150,7 @@ class ExcludedAddressPipelineSpec extends Specification {
             getSourceName() >> 'broken'
             check(_) >> { throw new IllegalStateException('bug') }
         }
-        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), rulesOnly, scoring, recorder)
+        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), rulesOnly, scoring, Stub(AddressActivityCollector), recorder)
         candidates = [exchange, person]
 
         when:

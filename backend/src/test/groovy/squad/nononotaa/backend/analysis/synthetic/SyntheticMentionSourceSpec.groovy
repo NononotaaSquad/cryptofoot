@@ -39,9 +39,10 @@ class SyntheticMentionSourceSpec extends Specification {
         source.synthetic
     }
 
-    def "source returns all fixture mentions as raw mentions"() {
+    def "the first Analysis of a Case gets every fixture mention except the even-only ones as raw mentions"() {
         expect:
-        source.findMentions([])*.url == [FORUM_URL, X_URL, P2P_URL]
+        source.findMentions([]).take(3)*.url == [FORUM_URL, X_URL, P2P_URL]
+        source.findMentions([]).size() == 21
         source.findMentions([]).every {
             !it.content.isEmpty() && it.collectedAt != null
         }
@@ -68,6 +69,37 @@ class SyntheticMentionSourceSpec extends Specification {
         expect:
         p2p.contains(MALFORMED)
         detector.detect('m', p2p).every { it.rawAddress != MALFORMED }
+    }
+
+    def "scenario S11 flips between two states of the web: odd Analyses of a Case see one, even Analyses the other"() {
+        given:
+        def urls = { int earlier ->
+            source.findMentions([], earlier)*.url.findAll {
+                it.contains('oliwer_zmienny') || it.contains('konsola-retro') || it.contains('portfele-sprzetowe')
+            }
+        }
+
+        expect:
+        urls(0) == [
+            'https://forum.example/t/portfele-sprzetowe/412',
+            'https://market.example/oferta/konsola-retro-118'
+        ]
+        urls(1) == [
+            'https://forum.example/t/portfele-sprzetowe/412',
+            'https://social.example/oliwer_zmienny',
+            'https://social.example/oliwer_zmienny/posty/2'
+        ]
+        urls(2) == urls(0)
+        urls(3) == urls(1)
+        // the single-argument form is the first Analysis
+        source.findMentions([])*.url == source.findMentions([], 0)*.url
+    }
+
+    def "every other fixture mention is seen by every Analysis"() {
+        expect:
+        source.fixture.mentions.count { it.visibleIn != null } == 3
+        source.findMentions([], 0).size() == 21
+        source.findMentions([], 1).size() == 22
     }
 
     def "failing synthetic source simulates a source failure"() {

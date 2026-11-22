@@ -20,7 +20,14 @@ class SyntheticMentionSource(
 
     override val synthetic = true
 
-    override fun findMentions(identifiers: List<CaseIdentifier>): List<RawMention> = fixture.mentions.map { RawMention(it.url, Instant.parse(it.collectedAt), it.content) }
+    override fun findMentions(identifiers: List<CaseIdentifier>): List<RawMention> = findMentions(identifiers, 0)
+
+    override fun findMentions(
+        identifiers: List<CaseIdentifier>,
+        earlierAnalyses: Int,
+    ): List<RawMention> = fixture.mentions
+        .filter { it.visibleIn?.covers(earlierAnalyses) ?: true }
+        .map { RawMention(it.url, Instant.parse(it.collectedAt), it.content) }
 
     companion object {
         const val FIXTURE_RESOURCE = "fixtures/demo-v1.json"

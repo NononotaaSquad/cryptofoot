@@ -73,54 +73,6 @@
                 }
             }
         },
-        "/api/1/test": {
-            "get": {
-                "tags": [
-                    "test-controller"
-                ],
-                "operationId": "hello",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TestResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "test-controller"
-                ],
-                "operationId": "greet",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TestRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TestResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/1/cases": {
             "get": {
                 "tags": [
@@ -420,7 +372,26 @@
                             "DAILY",
                             "EVERY_6_HOURS",
                             "WEEKLY",
-                            "DEMO_EVERY_MINUTE"
+                            "DEMO_EVERY_MINUTE",
+                            "CUSTOM_INTERVAL"
+                        ]
+                    },
+                    "intervalValue": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "intervalUnit": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "MINUTES",
+                            "HOURS",
+                            "DAYS"
                         ]
                     }
                 }
@@ -464,7 +435,26 @@
                             "DAILY",
                             "EVERY_6_HOURS",
                             "WEEKLY",
-                            "DEMO_EVERY_MINUTE"
+                            "DEMO_EVERY_MINUTE",
+                            "CUSTOM_INTERVAL"
+                        ]
+                    },
+                    "intervalValue": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "intervalUnit": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "MINUTES",
+                            "HOURS",
+                            "DAYS"
                         ]
                     },
                     "demo": {
@@ -489,26 +479,6 @@
                                 "type": "null"
                             }
                         ]
-                    }
-                }
-            },
-            "TestRequest": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "required": [
-                    "name"
-                ]
-            },
-            "TestResponse": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string"
                     }
                 }
             },
@@ -656,6 +626,13 @@
                             "null"
                         ],
                         "format": "int32"
+                    },
+                    "highestConfidenceLevel": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
                     }
                 }
             },
@@ -673,6 +650,16 @@
                         "format": "date-time"
                     },
                     "latestAnalysis": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AnalysisResponse"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "latestFinishedAnalysis": {
                         "oneOf": [
                             {
                                 "$ref": "#/components/schemas/AnalysisResponse"
@@ -875,42 +862,34 @@
                     }
                 }
             },
-            "AddressActivityEventResponse": {
+            "AddressActivityResponse": {
                 "type": "object",
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "RECEIVED",
-                            "SENT",
-                            "SWAP",
-                            "CASH_OUT_SIGNAL"
-                        ]
-                    },
-                    "transactionId": {
+                    "sourceName": {
                         "type": "string"
                     },
-                    "occurredAt": {
+                    "synthetic": {
+                        "type": "boolean"
+                    },
+                    "checkedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "amount": {
+                    "rulesVersion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "stablecoinSwapThreshold": {
                         "type": [
                             "number",
                             "null"
                         ]
                     },
                     "unit": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                }
-            },
-            "AddressActivityResponse": {
-                "type": "object",
-                "properties": {
+                        "type": "string"
+                    },
                     "totalReceived": {
                         "type": [
                             "number",
@@ -923,23 +902,44 @@
                             "null"
                         ]
                     },
-                    "unit": {
+                    "transactionCount": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "firstActivityAt": {
                         "type": [
                             "string",
                             "null"
-                        ]
+                        ],
+                        "format": "date-time"
                     },
-                    "events": {
+                    "lastActivityAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "cashOutSignals": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/AddressActivityEventResponse"
+                            "$ref": "#/components/schemas/CashOutSignalResponse"
                         }
                     },
-                    "coverageLimitation": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                    "coverageLimitations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "RECENT_TRANSACTIONS_ONLY",
+                                "LABELLED_COUNTERPARTIES_ONLY",
+                                "INTERNAL_TRANSFERS_NOT_COUNTED",
+                                "TRANSACTIONS_UNAVAILABLE"
+                            ]
+                        }
                     }
                 }
             },
@@ -982,6 +982,14 @@
                             "$ref": "#/components/schemas/ScoringRuleContributionResponse"
                         }
                     },
+                    "addressActivityStatus": {
+                        "type": "string",
+                        "enum": [
+                            "AVAILABLE",
+                            "UNAVAILABLE",
+                            "NOT_CHECKED"
+                        ]
+                    },
                     "addressActivity": {
                         "oneOf": [
                             {
@@ -997,6 +1005,52 @@
                         "items": {
                             "$ref": "#/components/schemas/PremiseResponse"
                         }
+                    }
+                }
+            },
+            "CashOutSignalResponse": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": [
+                            "EXCHANGE",
+                            "P2P",
+                            "PAYMENT_GATEWAY",
+                            "CRYPTO_CARD",
+                            "STABLECOIN_SWAP"
+                        ]
+                    },
+                    "transactionId": {
+                        "type": "string"
+                    },
+                    "transactionUrl": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "occurredAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "amount": {
+                        "type": "number"
+                    },
+                    "unit": {
+                        "type": "string"
+                    },
+                    "counterpartyAddress": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "counterpartyLabel": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 }
             },

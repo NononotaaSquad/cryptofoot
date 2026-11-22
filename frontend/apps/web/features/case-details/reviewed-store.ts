@@ -1,7 +1,16 @@
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
-// Reviewed state of a Case, kept only in this browser's `localStorage`, one
-// key per Case id; no backend call (Q4). The only module that touches the key.
+import {
+  markAfterReview,
+  parseMark,
+  serializeMark,
+  type AnalysisOrder,
+  type ReviewedMark,
+} from "./reviewed-mark";
+
+// Reviewed mark of a Case, kept only in this browser's `localStorage`, one key
+// per Case id; no backend call (Q4, user decision 2026-11-22). The only module
+// that touches the key. Details, the list and the badge share it.
 
 const keyPrefix = "olcys.case-reviewed.";
 
@@ -22,45 +31,97 @@ function subscribe(onChange: () => void): () => void {
   };
 }
 
-function readReviewed(caseId: string): boolean {
-  try {
-    return window.localStorage.getItem(keyOf(caseId)) !== null;
-  } catch {
-    // Storage blocked by the browser: the Case reads as not Reviewed.
-    return false;
-  }
-}
-
-function writeReviewed(caseId: string, reviewed: boolean): void {
-  try {
-    if (reviewed) {
-      window.localStorage.setItem(keyOf(caseId), new Date().toISOString());
-    } else {
-      window.localStorage.removeItem(keyOf(caseId));
-    }
-  } catch {
-    // Storage blocked or full: the mark is not kept; nothing else to do.
-  }
+function notify(): void {
   for (const listener of listeners) listener();
 }
 
+// The raw string is the snapshot: a primitive, so it is stable between reads.
+function readRaw(caseId: string): string | null {
+  try {
+    return window.localStorage.getItem(keyOf(caseId));
+  } catch {
+    // Storage blocked by the browser: the Case reads as not reviewed.
+    return null;
+  }
+}
+
+/** The valid mark of the Case, or null (none, legacy, malformed, blocked). */
+export function readMark(caseId: string): ReviewedMark | null {
+  return parseMark(readRaw(caseId));
+}
+
 /**
- * Whether the Analyst marked the Case as Reviewed, and a setter. The server
- * render and the first client render read `false`, then the stored value, so
- * the HTML never mismatches on hydration.
+ * Marks `target` as reviewed. Reads the stored mark again at write time, so a
+ * mark of another tab or a newer one is never moved back. Returns whether the
+ * Analysis is covered after the call: false when the storage did not keep it.
  */
-export function useCaseReviewed(
-  caseId: string
-): [reviewed: boolean, setReviewed: (reviewed: boolean) => void] {
-  const reviewed = useSyncExternalStore(
-    subscribe,
-    () => readReviewed(caseId),
-    () => false
+export function markReviewed(caseId: string, target: AnalysisOrder): boolean {
+  const next = markAfterReview(
+    readMark(caseId),
+    target,
+    new Date().toISOString()
   );
-  return [
-    reviewed,
-    (next) => {
-      writeReviewed(caseId, next);
-    },
-  ];
+  if (next === null) return true;
+  try {
+    window.localStorage.setItem(keyOf(caseId), serializeMark(next));
+  } catch {
+    // Storage blocked or full: the mark is not kept.
+    return false;
+  }
+  notify();
+  return readMark(caseId)?.id === next.id;
+}
+
+/** Removes the mark of this Case only. Returns false when it stayed. */
+export function unmarkReviewed(caseId: string): boolean {
+  try {
+    window.localStorage.removeItem(keyOf(caseId));
+  } catch {
+    return false;
+  }
+  notify();
+  return readRaw(caseId) === null;
+}
+
+/**
+ * The valid marks of many Cases at once (the Case list and the header
+ * counter), from the same store. Cases without a valid mark are not in the
+ * map. The snapshot is one string, so it stays stable until a mark changes.
+ */
+export function useReviewedMarks(
+  caseIds: readonly string[]
+): ReadonlyMap<string, ReviewedMark> {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => JSON.stringify(caseIds.map(readRaw)),
+    () => JSON.stringify(caseIds.map(() => null))
+  );
+  const idsKey = JSON.stringify(caseIds);
+  return useMemo(() => {
+    const ids: unknown = JSON.parse(idsKey);
+    const raws: unknown = JSON.parse(raw);
+    const marks = new Map<string, ReviewedMark>();
+    if (!Array.isArray(ids) || !Array.isArray(raws)) return marks;
+    ids.forEach((id: unknown, index) => {
+      const stored: unknown = raws[index];
+      if (typeof id !== "string") return;
+      const mark = parseMark(typeof stored === "string" ? stored : null);
+      if (mark !== null) marks.set(id, mark);
+    });
+    return marks;
+  }, [raw, idsKey]);
+}
+
+/**
+ * The Case's valid Reviewed mark. The server render and the first client
+ * render read `null`, then the stored value, so the HTML never mismatches on
+ * hydration.
+ */
+export function useReviewedMark(caseId: string): ReviewedMark | null {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => readRaw(caseId),
+    () => null
+  );
+  return useMemo(() => parseMark(raw), [raw]);
 }

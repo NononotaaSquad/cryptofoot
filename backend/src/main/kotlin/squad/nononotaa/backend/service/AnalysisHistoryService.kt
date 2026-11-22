@@ -58,6 +58,7 @@ class AnalysisHistoryService(
             questionSetVersion = result?.questionSetVersion,
             attributionCount = result?.attributions?.size,
             excludedAddressCount = result?.excluded?.size,
+            highestConfidenceLevel = result?.attributions?.maxOfOrNull { it.confidenceLevel },
         )
     }
 

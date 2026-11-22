@@ -2,7 +2,8 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { CheckIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import type { PersonIdentifiersResponse } from "@/lib/api/generated/model";
 import {
@@ -11,7 +12,12 @@ import {
   presentNarrowingIdentifiers,
 } from "@/lib/identifiers/identifier-kinds";
 
-import { useCaseReviewed } from "./reviewed-store";
+import { isCovered, type AnalysisOrder } from "./reviewed-mark";
+import {
+  markReviewed,
+  unmarkReviewed,
+  useReviewedMark,
+} from "./reviewed-store";
 import { StartAnalysisButton } from "./start-analysis-button";
 
 const collapsedIdentifierCount = 2;
@@ -23,6 +29,11 @@ interface CaseHeaderProps {
   // False for a Case without any Analysis: the empty state carries the only
   // start button, and there is nothing to review yet.
   showActions: boolean;
+  // The terminal Analysis shown below, the only one the Reviewed button marks.
+  // Null while it runs or when none is shown: no Reviewed control then.
+  reviewTarget?: AnalysisOrder | null;
+  // The clock button of the Schedule, right of "Rozpocznij nową analizę".
+  scheduleButton?: ReactNode;
 }
 
 // Case scope on top of Case details: label, identifiers, Reviewed control and
@@ -31,6 +42,8 @@ export function CaseHeader({
   caseId,
   identifiers,
   showActions,
+  reviewTarget = null,
+  scheduleButton,
 }: CaseHeaderProps) {
   const [expanded, setExpanded] = useState(false);
   const present = presentNarrowingIdentifiers(identifiers);
@@ -86,16 +99,31 @@ export function CaseHeader({
 
       {showActions ? (
         <div className="flex flex-wrap items-center gap-6">
-          <ReviewedControl caseId={caseId} />
-          <StartAnalysisButton caseId={caseId} />
+          {reviewTarget === null ? null : (
+            <ReviewedControl caseId={caseId} target={reviewTarget} />
+          )}
+          <div className="flex items-center gap-3">
+            <StartAnalysisButton caseId={caseId} />
+            {scheduleButton}
+          </div>
         </div>
       ) : null}
     </div>
   );
 }
 
-function ReviewedControl({ caseId }: { caseId: string }) {
-  const [reviewed, setReviewed] = useCaseReviewed(caseId);
+const storageFailure =
+  "Nie udało się zapisać oznaczenia w przeglądarce. Sprawdź, czy przeglądarka pozwala zapisywać dane.";
+
+function ReviewedControl({
+  caseId,
+  target,
+}: {
+  caseId: string;
+  target: AnalysisOrder;
+}) {
+  const mark = useReviewedMark(caseId);
+  const reviewed = isCovered(mark, target);
   // The pressed button is replaced by the other one; focus follows it, so a
   // keyboard user does not land on the page body.
   const focusNext = useRef(false);
@@ -107,7 +135,13 @@ function ReviewedControl({ caseId }: { caseId: string }) {
   };
   const toggle = (next: boolean) => {
     focusNext.current = true;
-    setReviewed(next);
+    // The target is the Analysis shown when the button was drawn, so a newer
+    // one that ends meanwhile stays new. A failed save shows no success.
+    const kept = next ? markReviewed(caseId, target) : unmarkReviewed(caseId);
+    if (!kept) {
+      focusNext.current = false;
+      toast.error(storageFailure);
+    }
   };
 
   if (!reviewed) {

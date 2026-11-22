@@ -1,5 +1,6 @@
 package squad.nononotaa.backend.analysis
 
+import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.ClassificationStatus
@@ -13,6 +14,7 @@ class AnalysisOrchestrator(
     private val exclusions: ExclusionClassifier,
     private val assessment: PremiseAssessment,
     private val scoring: ConfidenceScoring,
+    private val activity: AddressActivityCollector,
     private val recorder: AnalysisRecorder,
 ) {
     fun start(request: AnalysisRequest): String {
@@ -35,7 +37,7 @@ class AnalysisOrchestrator(
 
     private fun collect(request: AnalysisRequest): AnalysisResult {
         val found =
-            guarded(AnalysisStage.SEARCH) { search.search(request.identifiers) }
+            guarded(AnalysisStage.SEARCH) { search.search(request.identifiers, request.earlierAnalyses) }
                 ?: return failed(AnalysisStage.SEARCH, "MODULE_ERROR")
         val unavailable = found.sources.filter { it.status == SourceStatus.UNAVAILABLE }
         if (found.sources.none { it.status == SourceStatus.CHECKED }) {
@@ -74,7 +76,8 @@ class AnalysisOrchestrator(
                 )
             }
                 ?: return failed(AnalysisStage.SCORING, "MODULE_ERROR", found, allFailures, prepared, classified)
-        return completedOrPartial(allFailures, found, prepared, classified, flagUnclassified(scored, classified.unclassified))
+        val (withActivity, activityFailures) = withAddressActivity(flagUnclassified(scored, classified.unclassified))
+        return completedOrPartial(allFailures + activityFailures, found, prepared, classified, withActivity)
             .copy(
                 assessmentMode = assessed.mode,
                 modelVersion = assessed.modelVersion,
@@ -82,6 +85,24 @@ class AnalysisOrchestrator(
                 // kept by withLimitations; the result has no other place to carry "some Premise fell back"
                 limitations = listOfNotNull(ReportLimitation.MODEL_ASSESSMENT_UNAVAILABLE.takeIf { assessed.fellBack }),
             )
+    }
+
+    // Address Activity is supplementary: its failure makes the Analysis partial, never failed (D23-005)
+    private fun withAddressActivity(scored: ScoringResult): Pair<ScoringResult, List<StageFailure>> {
+        val outcomes = guarded(AnalysisStage.ADDRESS_ACTIVITY) { activity.collect(scored.attributions) }
+        val attributions =
+            scored.attributions.map {
+                it.copy(addressActivity = if (outcomes == null) AddressActivityOutcome(AddressActivityStatus.UNAVAILABLE) else outcomes[it.candidate])
+            }
+        val failures =
+            if (outcomes == null) {
+                listOf(StageFailure(AnalysisStage.ADDRESS_ACTIVITY, "MODULE_ERROR"))
+            } else {
+                attributions
+                    .filter { it.addressActivity?.status == AddressActivityStatus.UNAVAILABLE }
+                    .map { StageFailure(AnalysisStage.ADDRESS_ACTIVITY, "ADDRESS_ACTIVITY_UNAVAILABLE:${it.candidate.address}") }
+            }
+        return scored.copy(attributions = attributions) to failures
     }
 
     // only Premises of accepted and unclassified addresses are sent; Rejected and Excluded Addresses never (P18)
@@ -165,6 +186,9 @@ class AnalysisOrchestrator(
             ReportLimitation.SOURCE_UNAVAILABLE.takeIf { result.sources.any { it.status == SourceStatus.UNAVAILABLE } },
             ReportLimitation.CLASSIFICATION_UNAVAILABLE.takeIf { result.unclassified.isNotEmpty() },
             ReportLimitation.MODEL_ASSESSMENT_UNAVAILABLE.takeIf { it in result.limitations },
+            ReportLimitation.BLOCKCHAIN_DATA_UNAVAILABLE.takeIf {
+                result.attributions.any { it.addressActivity?.status == AddressActivityStatus.UNAVAILABLE }
+            },
             ReportLimitation.ANALYSIS_INCOMPLETE.takeIf { result.status != AnalysisStatus.COMPLETED },
         ),
     )

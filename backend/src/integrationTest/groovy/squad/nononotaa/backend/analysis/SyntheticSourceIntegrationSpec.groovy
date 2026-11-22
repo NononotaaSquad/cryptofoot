@@ -23,7 +23,7 @@ class SyntheticSourceIntegrationSpec extends BaseSpec {
         when:
         def result = searchService.search([
             new CaseIdentifier(IdentifierType.NICKNAME, 'zenek_fx')
-        ])
+        ], 0)
 
         then:
         result.sources.size() == 2
@@ -73,7 +73,7 @@ class SyntheticSourceIntegrationSpec extends BaseSpec {
         when:
         def result = searchService.search([
             new CaseIdentifier(IdentifierType.EMAIL, 'zenon.fikcyjny@example.com')
-        ])
+        ], 0)
 
         then:
         result.mentions.size() == 1
@@ -86,10 +86,10 @@ class SyntheticSourceIntegrationSpec extends BaseSpec {
         def nickname = [
             new CaseIdentifier(IdentifierType.NICKNAME, 'zenek_fx')
         ]
-        def first = searchService.search(nickname)
+        def first = searchService.search(nickname, 0)
 
         when:
-        def second = searchService.search(nickname)
+        def second = searchService.search(nickname, 0)
 
         then:
         repository.findAll().size() == 3

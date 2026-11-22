@@ -1,10 +1,10 @@
 @startuml 04-analysis-pipeline
-title AnalysisOrchestrator.execute: stages and status derivation (D24-001, D24-002, D24-006)
+title AnalysisOrchestrator.execute: stages and status derivation (D24-001, D24-002, D24-006, D23-005)
 
 skinparam shadowing false
 
 start
-:SEARCH: MentionSearch.search(identifiers);
+:SEARCH: MentionSearch.search(identifiers, earlierAnalyses);
 if (module threw?) then (yes)
   :FAILED
   failure SEARCH:MODULE_ERROR; <<#pink>>
@@ -62,12 +62,23 @@ if (module threw?) then (yes)
 endif
 :flag Attributions of unclassified candidates
 classificationStatus = UNAVAILABLE (D24-006);
+:ADDRESS_ACTIVITY: AddressActivityCollector.collect(attributions)
+only Confidence Level > 0 is checked (D23-002), the outcome is stored on the Attribution;
+if (module threw?) then (yes)
+  :every Attribution UNAVAILABLE
+  failure ADDRESS_ACTIVITY:MODULE_ERROR
+  (never FAILED, D23-005);
+else (no)
+  :each UNAVAILABLE outcome adds
+  ADDRESS_ACTIVITY:ADDRESS_ACTIVITY_UNAVAILABLE:<address>;
+endif
 :COMPLETED when no failures, else PARTIAL; <<#palegreen>>
 
 note right
   After every outcome the limitations are added:
   * SOURCE_UNAVAILABLE when a source was unavailable
   * CLASSIFICATION_UNAVAILABLE when a candidate is unclassified
+  * BLOCKCHAIN_DATA_UNAVAILABLE when an Attribution's activity is UNAVAILABLE
   * ANALYSIS_INCOMPLETE when the status is not COMPLETED
   then AnalysisRecorder.finish(analysisId, result)
 end note

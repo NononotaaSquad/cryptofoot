@@ -6,6 +6,7 @@ import java.util.concurrent.Executor
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressActivityCollector
 import squad.nononotaa.backend.analysis.AnalysisOrchestrator
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
@@ -53,7 +54,7 @@ class ScheduledRunnerSpec extends BaseSpec {
     def clock = new MutableClock(T0)
     def known = [] as Set
     MentionSearch search = Stub() {
-        search(_) >> new SearchResult([], [
+        search(_, _) >> new SearchResult([], [
             new SourceReport('forum', SourceStatus.CHECKED, true, T0)
         ])
     }
@@ -74,7 +75,7 @@ class ScheduledRunnerSpec extends BaseSpec {
     private ScheduledRunner runner(boolean wired = true) {
         def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(PremiseAssessment) {
             getMode() >> AssessmentMode.RULES_ONLY
-        }, Stub(ConfidenceScoring), recorder)
+        }, Stub(ConfidenceScoring), Stub(AddressActivityCollector), recorder)
         def rerun = new AnalysisRerunService(orchestrator, analyses, identifiers, history, sync)
         ObjectProvider<AnalysisRerunService> provider = Stub() {
             getIfAvailable() >> (wired ? rerun : null)

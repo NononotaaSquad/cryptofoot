@@ -7,7 +7,14 @@ import squad.nononotaa.backend.model.AnalysisStatus
 interface AnalysisRepository : MongoRepository<AnalysisRecord, String> {
     fun findByCaseIdOrderByStartedAtDescIdDesc(caseId: String): List<AnalysisRecord>
 
+    fun countByCaseId(caseId: String): Long
+
     fun findFirstByCaseIdOrderByStartedAtDescIdDesc(caseId: String): AnalysisRecord?
+
+    fun findFirstByCaseIdAndStatusInOrderByStartedAtDescIdDesc(
+        caseId: String,
+        statuses: Collection<AnalysisStatus>,
+    ): AnalysisRecord?
 
     fun existsByCaseIdAndStatus(
         caseId: String,

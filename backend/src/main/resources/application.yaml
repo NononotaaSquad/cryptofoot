@@ -39,6 +39,18 @@ app:
       timeout: 5s
       # only the variable name lives here, never a value; enabled without a key falls back to rules only
       api-key: ${ASSESSMENT_MODEL_API_KEY:}
+  address-activity:
+    # Keyless live explorers (mempool.space, Blockscout); false keeps every Attribution address inside the app (D23-003)
+    live-enabled: ${ADDRESS_ACTIVITY_LIVE_ENABLED:false}
+sources:
+  # Real Web2 sources (task #61): on by default, switch off with SOURCES_<NAME>_ENABLED=false
+  github:
+    enabled: ${SOURCES_GITHUB_ENABLED:true}
+  bitcointalk:
+    enabled: ${SOURCES_BITCOINTALK_ENABLED:true}
+  synthetic-broken:
+    # the always-unavailable demo source (scene "source unavailable"); the production deploy switches it off (ADR 0003)
+    enabled: ${SOURCES_SYNTHETIC_BROKEN_ENABLED:true}
 logging:
   level:
     # SystemOneDecisionModel logs the full request (the state) at TRACE: never below INFO

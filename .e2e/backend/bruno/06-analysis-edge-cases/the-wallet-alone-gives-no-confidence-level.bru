@@ -57,4 +57,10 @@ tests {
     }
   }
   });
+  test('an Attribution at 0% is not checked for Address Activity', () => {
+    body.attributions.forEach((a) => {
+      expect(a.addressActivityStatus).to.equal('NOT_CHECKED');
+      expect(a.addressActivity).to.equal(null);
+    });
+  });
 }

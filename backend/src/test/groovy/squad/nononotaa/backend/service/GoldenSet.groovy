@@ -81,7 +81,7 @@ class GoldenSet {
             new SearchServiceSpec.FakeSource(name as String, mentions*.mention as List<RawMention>)
         }
         def search = new SearchService(sources, new AddressCandidateDetector(), repository, VALIDATOR, Duration.ofSeconds(10))
-        List<FoundMention> mentions = search.search(identifiers).mentions
+        List<FoundMention> mentions = search.search(identifiers, 0).mentions
         List<Candidate> valid = new CandidatePreparationService(new AddressCandidateService(VALIDATOR)).prepare(mentions).valid
 
         Map<String, Map> classification = (item.classification as Map<String, String>).collectEntries { key, status ->
