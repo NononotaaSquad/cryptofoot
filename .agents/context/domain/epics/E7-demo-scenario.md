@@ -47,6 +47,8 @@ As a jury member, I want to follow the Analysis from input to report, so that I 
 
 ### E7.3. Verify adverse cases
 
+*Synthetic scenarios S1–S10 for these cases (fictional people, frozen by `DemoScenariosSpec`): [demo-scenarios.md](../demo-scenarios.md).*
+
 As a team, we want cases that can defeat naive matching, so that the demonstration is supported by meaningful validation.
 
 | Case | Expected behaviour |
