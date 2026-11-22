@@ -1,6 +1,6 @@
 # 02 — Clock button and the popover "Harmonogram"
 
-**Spec:** [../spec.md](../spec.md) · **Blocked by:** 01 (uses its read of the Schedule, `toScheduleView`, `schedule-labels.ts` and the state row) · **Status:** ready-for-agent
+**Spec:** [../spec.md](../spec.md) · **Blocked by:** 01 (uses its read of the Schedule, `toScheduleView`, `schedule-labels.ts` and the state row) · **Status:** implemented in #15 (PR feat/15-case-schedule)
 
 **What to build:** On Case details the Analyst sees a square clock button right of "Rozpocznij nową analizę". It opens the popover "Harmonogram" under the button. There the Analyst picks "Wyłączony" or a Frequency and confirms with "Zapisz". After a successful save the popover closes and the state row of task 01 shows the new state. The popover also shows the next term and the last attempt. Background polling and the demo switch are task 03.
 

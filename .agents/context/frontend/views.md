@@ -217,7 +217,7 @@ Result of the review of the Pencil views against `../domain/hacknation-2026-task
 
 | # | Deferred | Challenge text | State in the views |
 |---|---|---|---|
-| D1 | Periodic Analyses | §2 "cykliczne wykonywanie analiz" | No schedule view; only the word "Ręczna" in the Analysis select (E6.4). |
+| D1 | Periodic Analyses | §2 "cykliczne wykonywanie analiz" | No schedule view; only the word "Ręczna" in the Analysis select (E6.4). **Closed 2026-11-22 (#15):** the Schedule view is implemented. |
 | D2 | Comparing results and detecting a replaced address over time | §2 "porównywanie rezultatów"; §3 optional criterion | Analyses can be switched, but there is no view of differences (E6.3). |
 | D3 | Marking source facts, calculation results and conclusions that need verification | §7; judging criterion 3 | One general sentence, "Powiązania są tropami…"; the blocks are not labelled this way. |
 | D4 | Full name alone as input | §2 lists it as a sufficient identifier | The form rejects it (minimum data rule). |

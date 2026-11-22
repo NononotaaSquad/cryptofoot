@@ -2,7 +2,7 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { CheckIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import type { PersonIdentifiersResponse } from "@/lib/api/generated/model";
 import {
@@ -23,6 +23,8 @@ interface CaseHeaderProps {
   // False for a Case without any Analysis: the empty state carries the only
   // start button, and there is nothing to review yet.
   showActions: boolean;
+  // The clock button of the Schedule, right of "Rozpocznij nową analizę".
+  scheduleButton?: ReactNode;
 }
 
 // Case scope on top of Case details: label, identifiers, Reviewed control and
@@ -31,6 +33,7 @@ export function CaseHeader({
   caseId,
   identifiers,
   showActions,
+  scheduleButton,
 }: CaseHeaderProps) {
   const [expanded, setExpanded] = useState(false);
   const present = presentNarrowingIdentifiers(identifiers);
@@ -87,7 +90,10 @@ export function CaseHeader({
       {showActions ? (
         <div className="flex flex-wrap items-center gap-6">
           <ReviewedControl caseId={caseId} />
-          <StartAnalysisButton caseId={caseId} />
+          <div className="flex items-center gap-3">
+            <StartAnalysisButton caseId={caseId} />
+            {scheduleButton}
+          </div>
         </div>
       ) : null}
     </div>

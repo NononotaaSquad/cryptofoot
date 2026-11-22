@@ -13,18 +13,29 @@ const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z
     .url({ protocol: /^https?$/ })
     .transform((url) => url.replace(/\/+$/, "")),
+  // Lists the labelled demo Frequency in the Schedule popover. Only "true" is accepted.
+  NEXT_PUBLIC_DEMO_SCHEDULE: z
+    .literal("true")
+    .optional()
+    .transform((value) => value === "true"),
 });
 
 // Next.js inlines only literal `process.env.NEXT_PUBLIC_*` references.
 const parsed = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? developmentDefault,
+  NEXT_PUBLIC_DEMO_SCHEDULE:
+    process.env.NEXT_PUBLIC_DEMO_SCHEDULE === ""
+      ? undefined
+      : process.env.NEXT_PUBLIC_DEMO_SCHEDULE,
 });
 
 if (!parsed.success) {
+  const failed = parsed.error.issues.map((issue) => String(issue.path[0]));
   throw new Error(
-    `Invalid or missing NEXT_PUBLIC_API_URL (got: ${String(process.env.NEXT_PUBLIC_API_URL)}). ` +
-      "Set it to the backend base URL, e.g. http://localhost:8080 - see apps/web/.env.example. " +
-      "It is inlined at build time, so pass it to `next build` / `docker build --build-arg`."
+    `Invalid environment variable(s): ${failed.join(", ")}. ` +
+      `NEXT_PUBLIC_API_URL must be the backend base URL, e.g. http://localhost:8080 (got: ${String(process.env.NEXT_PUBLIC_API_URL)}); ` +
+      `NEXT_PUBLIC_DEMO_SCHEDULE is optional and accepts only "true" (got: ${String(process.env.NEXT_PUBLIC_DEMO_SCHEDULE)}). ` +
+      "See apps/web/.env.example. They are inlined at build time, so pass them to `next build` / `docker build --build-arg`."
   );
 }
 
