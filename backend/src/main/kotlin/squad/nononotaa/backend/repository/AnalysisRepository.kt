@@ -11,6 +11,11 @@ interface AnalysisRepository : MongoRepository<AnalysisRecord, String> {
 
     fun findFirstByCaseIdOrderByStartedAtDescIdDesc(caseId: String): AnalysisRecord?
 
+    fun findFirstByCaseIdAndStatusInOrderByStartedAtDescIdDesc(
+        caseId: String,
+        statuses: Collection<AnalysisStatus>,
+    ): AnalysisRecord?
+
     fun existsByCaseIdAndStatus(
         caseId: String,
         status: AnalysisStatus,
