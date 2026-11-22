@@ -30,6 +30,8 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.bouncycastle.bcprov)
     implementation(libs.jsoup)
+    implementation(platform(libs.spring.ai.bom))
+    implementation(libs.spring.ai.starter.model.systemone)
 }
 
 testing {

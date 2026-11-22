@@ -13,6 +13,10 @@ spring:
   web:
     locale: pl
     locale-resolver: fixed
+  ai:
+    model:
+      # no decision model beans without a configured key: the app starts keyless and calls no model endpoint
+      decision: none
 management:
   endpoints:
     web:
