@@ -20,6 +20,7 @@ import { env } from "@/lib/env";
 
 import { AnalysisSelect } from "./analysis-select";
 import { CaseHeader } from "./case-header";
+import { toAnalysisOrder } from "./reviewed-mark";
 import { ScheduleButton } from "./schedule-button";
 import { schedulePollInterval } from "./schedule-poll-interval";
 import { ScheduleStateRow } from "./schedule-state-row";
@@ -157,12 +158,20 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
       ? undefined
       : previousAnalysisWithResults(history, selectedId)?.id;
 
+  // Only a terminal Analysis that is shown can be marked as reviewed.
+  const displayed = history.find((analysis) => analysis.id === selectedId);
+  const reviewTarget =
+    displayed === undefined || displayed.status === "RUNNING"
+      ? null
+      : toAnalysisOrder(displayed);
+
   return (
     <div className="flex flex-col gap-10">
       <CaseHeader
         caseId={caseId}
         identifiers={identifiers}
         showActions
+        reviewTarget={reviewTarget}
         scheduleButton={
           <ScheduleButton
             caseId={caseId}
