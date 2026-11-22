@@ -965,6 +965,12 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "premises": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PremiseResponse"
+                        }
                     }
                 }
             },
@@ -1070,6 +1076,142 @@
                     }
                 }
             },
+            "PremiseFactsResponse": {
+                "type": "object",
+                "properties": {
+                    "authorIsPerson": {
+                        "type": "string",
+                        "enum": [
+                            "YES",
+                            "NO",
+                            "UNKNOWN"
+                        ]
+                    },
+                    "underProfile": {
+                        "type": "boolean"
+                    },
+                    "identifierTypes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "NICKNAME",
+                                "LOGIN",
+                                "EMAIL",
+                                "MESSENGER_ID",
+                                "PROFILE_URL",
+                                "WALLET_ADDRESS",
+                                "FULL_NAME"
+                            ]
+                        }
+                    },
+                    "identifierDistance": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
+                    },
+                    "conflictingEmail": {
+                        "type": "boolean"
+                    },
+                    "addressCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "host": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "PremiseResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "mentionId": {
+                        "type": "string"
+                    },
+                    "sourceName": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "author": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "collectedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "text": {
+                        "type": "string"
+                    },
+                    "addressStart": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "addressLength": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "COUNTED",
+                            "DISMISSED",
+                            "FOR_REVIEW"
+                        ]
+                    },
+                    "kind": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "OWN_PROFILE",
+                            "OWN_DECLARATION",
+                            "SALE_OR_SETTLEMENT",
+                            "DISCUSSION",
+                            "MASS_COMMENT"
+                        ]
+                    },
+                    "points": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "dismissalReason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "WARNING",
+                            "DECLARED_BY_ANOTHER_PERSON",
+                            "NO_PERSON_LINK",
+                            "CONFLICTING_EMAIL"
+                        ]
+                    },
+                    "assessedBy": {
+                        "type": "string",
+                        "enum": [
+                            "RULE",
+                            "MODEL"
+                        ]
+                    },
+                    "facts": {
+                        "$ref": "#/components/schemas/PremiseFactsResponse"
+                    }
+                }
+            },
             "ReportResponse": {
                 "type": "object",
                 "properties": {
@@ -1111,6 +1253,12 @@
                     "contribution": {
                         "type": "integer",
                         "format": "int32"
+                    },
+                    "premiseIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             }

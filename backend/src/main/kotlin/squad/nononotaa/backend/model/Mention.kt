@@ -24,6 +24,9 @@ data class Mention @JvmOverloads constructor(
     fun toFoundMention(): FoundMention = FoundMention(checkNotNull(id), sourceName, url, collectedAt, context, detectedAddresses, author, addressWindows)
 
     companion object {
+        // Bump when the hashed input changes: stored Mentions without address windows must not be reused
+        private const val IDENTITY_VERSION = "mention-identity-2"
+
         // the full content is hashed but never stored (P3)
         @JvmStatic
         fun computeIdentity(
@@ -31,7 +34,7 @@ data class Mention @JvmOverloads constructor(
             url: String,
             content: String,
         ): String {
-            val input = "$sourceName\n$url\n$content"
+            val input = "$IDENTITY_VERSION\n$sourceName\n$url\n$content"
             val digest = MessageDigest.getInstance("SHA-256").digest(input.toByteArray(Charsets.UTF_8))
             return digest.joinToString("") { "%02x".format(it) }
         }

@@ -42,12 +42,13 @@ Per aggregate: its root, the entities and value objects inside it, and the invar
 - Order: offline label lists (exchange, mixer, fundraiser) -> ETH bytecode via keyless public services (code = smart contract; an EIP-7702 delegated account is still a private account) -> unclassified when no check could be made. An unlisted BTC address is accepted.
 - An Excluded Address never reaches the Confidence Level algorithm; an unclassified candidate is scored but flagged `UNAVAILABLE` (D24-006).
 
-### Attribution scoring, algorithm `confidence-1` (see decisions `D9-001` to `D9-008`)
+### Attribution scoring, algorithm `confidence-2` (decisions `D9-001` to `D9-008` as amended by spec `2026-11-22_confidence-premises-jev`)
 
-- Every accepted or unclassified candidate becomes one Attribution with a Confidence Level 0–100, the applied scoring rules with their contributions, and a Justification: a short Polish text built from one template sentence per applied rule, with no numbers. The Mentions it rests on are listed next to it.
-- A Mention supports an address only if it names the person by a non-wallet narrowing identifier (the full name and the Analyst's wallet never count), does not quote the address in a warning, and holds no other person's e-mail. No supporting Mention gives 0%.
-- Base = strongest supporting source kind: own profile 80, sale or settlement 60, discussion 40, mass comment 10. +15 once when two supporting Mentions differ in origin (host) and in the sentence that holds the address; repeats on one service and copies give nothing.
-- Invariant: the same input (candidates, Mentions, identifiers) always gives the same Confidence Level, rules and text; the version is stored with the Analysis.
+- Every accepted or unclassified candidate becomes one Attribution with a Confidence Level 0–100, the applied scoring rules with their contributions, and a Justification: a short Polish text built from one template sentence per applied rule, with no numbers. Its Mentions and its Premises are listed next to it.
+- A Premise is one valid address in one Mention, with the text window around it, the facts code computed and its assessment: status (`COUNTED`, `DISMISSED`, `FOR_REVIEW`), kind, points, dismissal reason, assessed by. Dismissed Premises stay in the report with their reason. A Mention with two addresses gives two Premises.
+- Rules per Premise, in order: no link to the person (author, profile URL, or a narrowing identifier as a whole word within 200 characters; never the full name or the Analyst's wallet) dismisses it (`NO_PERSON_LINK`); another person's e-mail dismisses it (`CONFLICTING_EMAIL`); a warning puts it for review with 0 points (`WARNING`); otherwise its kind sets its points: own profile 80, sale or settlement 60, discussion 40, mass comment 10.
+- Per Attribution: base = strongest counted kind. +15 once only for two counted Premises of at least discussion on different services with different address sentences; mass comments, repeats on one service and copies give nothing. An unclassified address is capped at 59 (`CLASSIFICATION_CAP`). Each rule names the Premises that made it apply.
+- Invariant: the same input (candidates, Mentions, identifiers) always gives the same Confidence Level, Premises, rules and text; the version is stored with the Analysis. `confidence-1` Analyses keep their result and have no Premises.
 
 ## Lifecycles
 

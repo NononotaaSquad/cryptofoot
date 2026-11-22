@@ -26,6 +26,13 @@ fun premiseFacts(
 private val TEXT_TYPES = IdentifierType.entries - IdentifierType.WALLET_ADDRESS
 private val EMAIL = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
 private val DIACRITICS = Regex("\\p{M}+")
+private val WHITESPACE = Regex("\\s+")
+
+/** Lower case, no diacritics, `ł` as `l`, one space for a run of white space; the folding of the keyword lists. */
+internal fun fold(text: String) = Normalizer
+    .normalize(text.lowercase().replace('ł', 'l'), Normalizer.Form.NFD)
+    .replace(DIACRITICS, "")
+    .replace(WHITESPACE, " ")
 
 // the window names someone else's e-mail and not the person's (D9-004)
 private fun conflictingEmail(
@@ -105,7 +112,7 @@ private class FoldedText(
                 if (char.isWhitespace()) {
                     if (index > 0 && original[index - 1].isWhitespace()) "" else " "
                 } else {
-                    fold(char)
+                    fold(char.toString())
                 }
             folded.append(piece)
             repeat(piece.length) { indices.add(index) }
@@ -128,10 +135,6 @@ private class FoldedText(
     }
 
     private fun isWordChar(char: Char?) = char != null && (char.isLetterOrDigit() || char == '_')
-
-    private fun fold(char: Char) = Normalizer
-        .normalize(char.lowercase().replace('ł', 'l'), Normalizer.Form.NFD)
-        .replace(DIACRITICS, "")
 }
 
 private fun underProfile(
@@ -147,7 +150,7 @@ private fun under(
     prefix: String,
 ) = url == prefix || listOf('/', '?', '#').any { url.startsWith("$prefix$it") }
 
-private fun bareUrl(url: String) = url
+internal fun bareUrl(url: String) = url
     .trim()
     .lowercase()
     .removePrefix("https://")

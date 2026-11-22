@@ -1,14 +1,20 @@
 package squad.nononotaa.backend.dto
 
+import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.model.AddressActivityEventType
 import squad.nononotaa.backend.model.AddressValidationFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessedBy
 import squad.nononotaa.backend.model.AttributionChangeType
+import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation
+import squad.nononotaa.backend.model.DismissalReason
 import squad.nononotaa.backend.model.ExclusionReason
 import squad.nononotaa.backend.model.Network
+import squad.nononotaa.backend.model.PremiseKind
+import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.ScheduleAttemptOutcome
 import squad.nononotaa.backend.model.SchedulePreset
@@ -80,6 +86,37 @@ data class MentionResponse(
 data class ScoringRuleContributionResponse(
     val rule: String,
     val contribution: Int,
+    val premiseIds: List<String>,
+)
+
+/** Facts code computed about one Premise; [identifierTypes] holds types only, never the identifier values. */
+data class PremiseFactsResponse(
+    val authorIsPerson: AuthorMatch,
+    val underProfile: Boolean,
+    val identifierTypes: List<IdentifierType>,
+    val identifierDistance: Int?,
+    val conflictingEmail: Boolean,
+    val addressCount: Int,
+    val host: String?,
+)
+
+/** One address in one Mention; [text] is the window, the address is at [addressStart] (UTF-16 code units). */
+data class PremiseResponse(
+    val id: String,
+    val mentionId: String,
+    val sourceName: String,
+    val url: String,
+    val author: String?,
+    val collectedAt: Instant,
+    val text: String,
+    val addressStart: Int,
+    val addressLength: Int,
+    val status: PremiseStatus,
+    val kind: PremiseKind?,
+    val points: Int,
+    val dismissalReason: DismissalReason?,
+    val assessedBy: AssessedBy,
+    val facts: PremiseFactsResponse,
 )
 
 data class AddressActivityEventResponse(
@@ -107,6 +144,7 @@ data class AttributionResponse(
     val mentions: List<MentionResponse>,
     val scoringRules: List<ScoringRuleContributionResponse>,
     val addressActivity: AddressActivityResponse?,
+    val premises: List<PremiseResponse>,
 )
 
 data class ExcludedAddressResponse(

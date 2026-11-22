@@ -3,7 +3,12 @@ package squad.nononotaa.backend.controller
 import groovy.json.JsonSlurper
 import java.time.Instant
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import squad.nononotaa.backend.BaseSpec
+import squad.nononotaa.backend.analysis.AddressWindow
 import squad.nononotaa.backend.analysis.AnalysisRecorder
 import squad.nononotaa.backend.analysis.AnalysisRequest
 import squad.nononotaa.backend.analysis.AnalysisResult
@@ -14,14 +19,21 @@ import squad.nononotaa.backend.analysis.CaseIdentifier
 import squad.nononotaa.backend.analysis.ExcludedCandidate
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.IdentifierType
+import squad.nononotaa.backend.analysis.Premise
+import squad.nononotaa.backend.analysis.PremiseFacts
 import squad.nononotaa.backend.analysis.RejectedCandidate
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.analysis.SourceReport
 import squad.nononotaa.backend.analysis.StageFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessedBy
+import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.ClassificationStatus
+import squad.nononotaa.backend.model.DismissalReason
 import squad.nononotaa.backend.model.ExclusionReason
+import squad.nononotaa.backend.model.PremiseKind
+import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.SourceStatus
 import squad.nononotaa.backend.repository.AnalysisRepository
@@ -44,10 +56,16 @@ class AnalysisReportSpec extends BaseSpec {
     @Autowired
     AnalysisRepository repository
 
+    @Autowired
+    MongoTemplate mongo
+
     String caseId = "case-${UUID.randomUUID()}"
 
     def forum = new FoundMention('m-forum', 'synthetic', 'https://forum.example/t/1', AT, 'zenek_fx: my ETH ' + ETH_EIP55, [ETH_EIP55, ETH_BAD_CHECKSUM])
     def market = new FoundMention('m-market', 'synthetic', 'https://p2p.example/ad/2', AT.plusSeconds(60), 'zenek_fx pays to ' + KRAKEN + ' and ' + BTC, [KRAKEN, BTC])
+    def sale = new FoundMention('m-sale', 'synthetic', 'https://p2p.example/ad/3', AT.plusSeconds(120), 'zenek_fx sprzedam, płatność na ' + ETH_EIP55, [ETH_EIP55], 'zenek_fx')
+    def saleFacts = new PremiseFacts(AuthorMatch.YES, false, [IdentifierType.NICKNAME], 0, false, 1, 'p2p.example', 'synthetic')
+    def forumFacts = new PremiseFacts(AuthorMatch.UNKNOWN, true, [], null, true, 2, null, 'synthetic')
 
     private String begin() {
         recorder.begin(new AnalysisRequest(caseId, AnalysisTrigger.MANUAL, [
@@ -119,10 +137,102 @@ class AnalysisReportSpec extends BaseSpec {
         report.attributions[0].mentions[0].collectedAt == '2026-11-21T10:00:00Z'
         report.attributions[0].mentions[0].context.contains('zenek_fx')
         report.attributions[0].scoringRules == [
-            [rule: 'SALE_OR_SETTLEMENT', contribution: 60],
-            [rule: 'INDEPENDENT_SOURCES', contribution: 15]
+            [rule: 'SALE_OR_SETTLEMENT', contribution: 60, premiseIds: []],
+            [rule: 'INDEPENDENT_SOURCES', contribution: 15, premiseIds: []]
         ]
         report.attributions*.addressActivity == [null, null]
+    }
+
+    def "a confidence-1 Analysis stored before Premises reads back with no Premises and no Premise ids"() {
+        given: 'the stored document has no Premise fields, as one written before confidence-2'
+        def id = partial()
+        mongo.updateFirst(Query.query(Criteria.where('_id').is(id)), new Update()
+                .unset('result.attributions.$[].premises')
+                .unset('result.attributions.$[].appliedRules.$[].premiseIds'), 'analyses')
+        def stored = mongo.findById(id, Map, 'analyses')
+
+        expect:
+        stored.result.attributions.every {
+            !it.containsKey('premises') && it.appliedRules.every { rule ->
+                !rule.containsKey('premiseIds')
+            }
+        }
+
+        when:
+        def report = json("/api/1/analyses/${id}/report")
+
+        then:
+        report.attributions*.premises == [[], []]
+        report.attributions*.scoringRules*.premiseIds.flatten().isEmpty()
+        report.attributions*.scoringRules.flatten().size() == 4
+    }
+
+    private static Premise premise(FoundMention mention, PremiseStatus status, PremiseKind kind, int points, DismissalReason reason, PremiseFacts facts) {
+        def text = mention.context
+        def start = text.indexOf(ETH_EIP55)
+        new Premise(Premise.idOf(mention.id, ETH), mention.id, ETH, new AddressWindow(ETH_EIP55, ETH, text, start, ETH_EIP55.length()),
+                facts, status, kind, points, reason, AssessedBy.RULE)
+    }
+
+    private String withPremises(List<Premise> premises, List<AppliedRule> rules) {
+        def id = begin()
+        recorder.finish(id, new AnalysisResult(AnalysisStatus.COMPLETED, [], [], [
+            new SourceReport('synthetic', SourceStatus.CHECKED, true, AT)
+        ], [forum, sale], [], [], [], [
+            new ScoredAttribution(new Candidate('ETH', ETH, ['m-forum', 'm-sale']), 60, rules, SALE, ClassificationStatus.NOT_EXCLUDED, premises)
+        ], 'confidence-2'))
+        id
+    }
+
+    def "each Attribution lists its Premises with the Mention, the window, the assessment and the facts, and each rule names its Premises"() {
+        given:
+        def counted = premise(sale, PremiseStatus.COUNTED, PremiseKind.SALE_OR_SETTLEMENT, 60, null, saleFacts)
+        def dismissed = premise(forum, PremiseStatus.DISMISSED, null, 0, DismissalReason.CONFLICTING_EMAIL, forumFacts)
+        def id = withPremises([counted, dismissed], [
+            new AppliedRule('SALE_OR_SETTLEMENT', 60, [counted.id]),
+            new AppliedRule('CONFLICTING_EMAIL', 0, [dismissed.id]),
+        ])
+
+        when:
+        def attribution = json("/api/1/analyses/${id}/report").attributions[0]
+
+        then:
+        attribution.premises == [
+            [id: 'm-sale:' + ETH, mentionId: 'm-sale', sourceName: 'synthetic', url: 'https://p2p.example/ad/3', author: 'zenek_fx',
+                collectedAt: '2026-11-21T10:02:00Z', text: sale.context, addressStart: sale.context.indexOf(ETH_EIP55), addressLength: 42,
+                status: 'COUNTED', kind: 'SALE_OR_SETTLEMENT', points: 60, dismissalReason: null, assessedBy: 'RULE',
+                facts: [authorIsPerson: 'YES', underProfile: false, identifierTypes: ['NICKNAME'], identifierDistance: 0, conflictingEmail: false, addressCount: 1, host: 'p2p.example']],
+            [id: 'm-forum:' + ETH, mentionId: 'm-forum', sourceName: 'synthetic', url: 'https://forum.example/t/1', author: null,
+                collectedAt: '2026-11-21T10:00:00Z', text: forum.context, addressStart: forum.context.indexOf(ETH_EIP55), addressLength: 42,
+                status: 'DISMISSED', kind: null, points: 0, dismissalReason: 'CONFLICTING_EMAIL', assessedBy: 'RULE',
+                facts: [authorIsPerson: 'UNKNOWN', underProfile: true, identifierTypes: [], identifierDistance: null, conflictingEmail: true, addressCount: 2, host: null]],
+        ]
+        attribution.scoringRules == [
+            [rule: 'SALE_OR_SETTLEMENT', contribution: 60, premiseIds: ['m-sale:' + ETH]],
+            [rule: 'CONFLICTING_EMAIL', contribution: 0, premiseIds: ['m-forum:' + ETH]],
+        ]
+        attribution.scoringRules*.premiseIds.flatten().every {
+            it in attribution.premises*.id
+        }
+        attribution.mentions*.id == ['m-forum', 'm-sale']
+    }
+
+    def "a Premise whose Mention is missing from the snapshot is left out of the report rather than shown without its source"() {
+        given:
+        def orphan = new FoundMention('m-gone', 'synthetic', 'https://gone.example/1', AT, forum.context, [ETH_EIP55])
+        def kept = premise(sale, PremiseStatus.COUNTED, PremiseKind.SALE_OR_SETTLEMENT, 60, null, saleFacts)
+        def id = withPremises([
+            kept,
+            premise(orphan, PremiseStatus.COUNTED, PremiseKind.DISCUSSION, 40, null, forumFacts)
+        ], [
+            new AppliedRule('SALE_OR_SETTLEMENT', 60, [kept.id])
+        ])
+
+        when:
+        def attribution = json("/api/1/analyses/${id}/report").attributions[0]
+
+        then:
+        attribution.premises*.id == ['m-sale:' + ETH]
     }
 
     def "an Attribution whose classification was unavailable is flagged, not shown as confirmed private"() {

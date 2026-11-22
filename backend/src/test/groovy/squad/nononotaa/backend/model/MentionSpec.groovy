@@ -7,10 +7,20 @@ import squad.nononotaa.backend.analysis.FoundMention
 
 class MentionSpec extends Specification {
 
-    def "identity is the sha256 of source name, url and full content"() {
+    def "identity is the sha256 of version marker, source name, url and full content"() {
         expect:
         Mention.computeIdentity('forum', 'https://forum.example/t/1', 'hello') ==
-                '65864a6a3fbb7a84ed4663212b275dd99038040947e30d67984edaf8133f72fd'
+                'f9f1315e33e52a7b825f62bd814e6e21d2ae353468dcdfed42af65a58bbd879e'
+    }
+
+    def "identity differs from the hash the earlier formula gave, so Mentions stored without address windows are not reused"() {
+        given:
+        def earlier = java.security.MessageDigest.getInstance('SHA-256')
+                .digest('forum\nhttps://forum.example/t/1\nhello'.getBytes('UTF-8'))
+                .collect { String.format('%02x', it) }.join()
+
+        expect:
+        Mention.computeIdentity('forum', 'https://forum.example/t/1', 'hello') != earlier
     }
 
     def "identity is deterministic and changes with any input"() {

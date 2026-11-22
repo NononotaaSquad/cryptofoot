@@ -24,6 +24,12 @@ tests {
   test('BTC 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa found next to the wallet gets no Confidence Level', () => {
     expect(byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').scoringRules.map((r) => r.rule)).to.eql(['NO_PERSON_LINK']);
   });
+  test('NO_PERSON_LINK lists the dismissed Premises', () => {
+    const btc = byAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
+    const rule = btc.scoringRules.find((r) => r.rule === 'NO_PERSON_LINK');
+    expect(rule.premiseIds).to.not.be.empty;
+    expect(rule.premiseIds.slice().sort()).to.eql(btc.premises.filter((p) => p.dismissalReason === 'NO_PERSON_LINK').map((p) => p.id).sort());
+  });
   test("the Analyst's own wallet is marked as entered, not as evidence (unless excluded)", () => {
   {
     const attributed = body.attributions.filter((a) => a.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');

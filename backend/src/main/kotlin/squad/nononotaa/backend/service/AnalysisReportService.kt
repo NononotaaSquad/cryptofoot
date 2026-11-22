@@ -2,11 +2,14 @@ package squad.nononotaa.backend.service
 
 import org.springframework.stereotype.Service
 import squad.nononotaa.backend.analysis.FoundMention
+import squad.nononotaa.backend.analysis.Premise
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.dto.AttributionResponse
 import squad.nononotaa.backend.dto.DetectedAddressResponse
 import squad.nononotaa.backend.dto.ExcludedAddressResponse
 import squad.nononotaa.backend.dto.MentionResponse
+import squad.nononotaa.backend.dto.PremiseFactsResponse
+import squad.nononotaa.backend.dto.PremiseResponse
 import squad.nononotaa.backend.dto.ReportResponse
 import squad.nononotaa.backend.dto.ScoringRuleContributionResponse
 import squad.nononotaa.backend.exception.ConflictException
@@ -33,7 +36,8 @@ class AnalysisReportService(
     fun report(analysisId: String): ReportResponse {
         val record = finished(analysisId)
         val result = record.result
-        val mentions = result?.mentions.orEmpty().associate { it.id to toResponse(it) }
+        val foundMentions = result?.mentions.orEmpty().associateBy { it.id }
+        val mentions = foundMentions.mapValues { toResponse(it.value) }
         val attributions =
             result
                 ?.attributions
@@ -50,8 +54,9 @@ class AnalysisReportService(
                         classificationStatus = it.classificationStatus,
                         justification = it.justification,
                         mentions = it.candidate.mentionIds.mapNotNull(mentions::get),
-                        scoringRules = it.appliedRules.map { rule -> ScoringRuleContributionResponse(rule.rule, rule.contribution) },
+                        scoringRules = it.appliedRules.map { rule -> ScoringRuleContributionResponse(rule.rule, rule.contribution, rule.premiseIds) },
                         addressActivity = null,
+                        premises = it.premises.mapNotNull { premise -> toResponse(analysisId, premise, foundMentions[premise.mentionId]) },
                     )
                 }
         val excluded =
@@ -91,6 +96,45 @@ class AnalysisReportService(
         detectedAddresses = mention.detectedAddresses.map(::detected),
         author = mention.author,
     )
+
+    // the Premise and its Mention come from one snapshot; a missing Mention is a broken record, so the Premise is left out
+    private fun toResponse(
+        analysisId: String,
+        premise: Premise,
+        mention: FoundMention?,
+    ): PremiseResponse? {
+        if (mention == null) {
+            logger.warn("Premise without its Mention analysis={} premise={}", analysisId, premise.id)
+            return null
+        }
+        val facts = premise.facts
+        return PremiseResponse(
+            id = premise.id,
+            mentionId = premise.mentionId,
+            sourceName = mention.sourceName,
+            url = mention.url,
+            author = mention.author,
+            collectedAt = mention.collectedAt,
+            text = premise.window.text,
+            addressStart = premise.window.addressStart,
+            addressLength = premise.window.addressLength,
+            status = premise.status,
+            kind = premise.kind,
+            points = premise.points,
+            dismissalReason = premise.dismissalReason,
+            assessedBy = premise.assessedBy,
+            facts =
+            PremiseFactsResponse(
+                authorIsPerson = facts.authorIsPerson,
+                underProfile = facts.underProfile,
+                identifierTypes = facts.identifierTypes,
+                identifierDistance = facts.identifierDistance,
+                conflictingEmail = facts.conflictingEmail,
+                addressCount = facts.addressCount,
+                host = facts.host,
+            ),
+        )
+    }
 
     private fun detected(rawAddress: String) = when (val validation = addressValidator.validate(rawAddress)) {
         is AddressValidation.Valid -> DetectedAddressResponse(rawAddress, validation.canonicalAddress.network, true, null)

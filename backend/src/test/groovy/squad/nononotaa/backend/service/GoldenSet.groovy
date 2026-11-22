@@ -49,14 +49,20 @@ class GoldenSet {
         new Mention(id, m.sourceName, m.url, m.collectedAt, m.context, m.detectedAddresses, m.identity, m.author, m.addressWindows)
     }
 
-    /** Scores one item and returns its Attributions as [address: placeholder, level, rules], sorted by placeholder. */
+    /**
+     * Scores one item and returns its Attributions as [address, level, premises, rules], sorted by placeholder.
+     * A Premise reads as "{mention key}:{placeholder}", so the fixture does not depend on generated Mention ids.
+     */
     static List<Map> score(Map item, MentionRepository repository, ConfidenceScoringService scoring) {
         Map<String, String> addresses = item.addresses as Map<String, String>
         def identifiers = (item.identifiers as List<Map>).collect {
             new CaseIdentifier(IdentifierType.valueOf(it.type as String), fill(it.value as String, addresses))
         }
         def raw = item.fixture ? fixtureMentions(item.fixture as String) : (item.mentions as List<Map>).collect {
-            [sourceName: it.sourceName, mention: new RawMention(fill(it.url as String, addresses), AT, fill(it.content as String, addresses), it.author as String)]
+            [key: it.key, sourceName: it.sourceName, mention: new RawMention(fill(it.url as String, addresses), AT, fill(it.content as String, addresses), it.author as String)]
+        }
+        Map<String, String> keyByUrl = raw.collectEntries {
+            [(it.mention.url): it.key]
         }
         def sources = raw.groupBy { it.sourceName }.collect { name, mentions ->
             new SearchServiceSpec.FakeSource(name as String, mentions*.mention as List<RawMention>)
@@ -78,8 +84,28 @@ class GoldenSet {
             classification[it.address].status == 'UNCLASSIFIED'
         }
 
-        scoring.score(new ScoringInput(accepted, unclassified, mentions, identifiers)).attributions.collect {
-            [address: classification[it.candidate.address].placeholder, level: it.confidenceLevel, rules: it.appliedRules*.rule]
+        Map<String, String> keyById = mentions.collectEntries {
+            [(it.id): keyByUrl[it.url]]
+        }
+        scoring.score(new ScoringInput(accepted, unclassified, mentions, identifiers)).attributions.collect { attribution ->
+            Map<String, String> label = attribution.premises.collectEntries {
+                [(it.id): "${keyById[it.mentionId]}:${classification[it.address].placeholder}" as String]
+            }
+            [
+                address : classification[attribution.candidate.address].placeholder,
+                level   : attribution.confidenceLevel,
+                premises: attribution.premises.collect {
+                    [id: label[it.id], status: it.status.name(), reason: it.dismissalReason?.name()]
+                }.sort { it.id },
+                rules   : attribution.appliedRules.collect { rule ->
+                    rule.premiseIds.each {
+                        assert label.containsKey(it): "item ${item.id}: rule ${rule.rule} names ${it}, not a Premise of its Attribution"
+                    }
+                    [rule: rule.rule, contribution: rule.contribution, premiseIds: rule.premiseIds.collect {
+                            label[it]
+                        }.sort()]
+                }
+            ]
         }.sort { it.address }
     }
 
@@ -100,8 +126,8 @@ class GoldenSet {
 
     // the demo fixture is read, not copied, so the golden set and demo-v1 do not drift; SyntheticMentionSource has no author
     private static List<Map> fixtureMentions(String name) {
-        (read("/fixtures/${name}.json").mentions as List<Map>).collect {
-            [sourceName: 'synthetic', mention: new RawMention(it.url as String, Instant.parse(it.collectedAt as String), it.content as String)]
+        (read("/fixtures/${name}.json").mentions as List<Map>).withIndex().collect { Map it, int index ->
+            [key: "m${index + 1}" as String, sourceName: 'synthetic', mention: new RawMention(it.url as String, Instant.parse(it.collectedAt as String), it.content as String)]
         }
     }
 
