@@ -111,20 +111,23 @@ class MempoolActivitySource(
         val transactionCount = stats?.path("tx_count")?.longOrNull()
         val received = stats?.path("funded_txo_sum")?.longOrNull()
         val sent = stats?.path("spent_txo_sum")?.longOrNull()
-        val txs = if (transactionCount != null && received != null && sent != null) get("/api/address/${address.address}/txs") else null
-        if (transactionCount == null || received == null || sent == null || txs == null || !txs.isArray) {
+        if (transactionCount == null || received == null || sent == null) {
             logger.warn("Address Activity source {} gave no usable result", sourceName)
             return null
         }
-        val confirmed = txs.values().filter { it.path("status").path("confirmed").booleanValue(false) }
+        // the list of a busy address can take longer than the timeout; the totals above are still exact (D23-013)
+        val txs = get("/api/address/${address.address}/txs")?.takeIf { it.isArray }
+        if (txs == null) logger.warn("Address Activity source {} gave totals without the transaction list", sourceName)
+        val confirmed = txs?.values()?.filter { it.path("status").path("confirmed").booleanValue(false) }.orEmpty()
         return ChainActivity(
             unit = "BTC",
             transfers = confirmed.flatMap { transfersOf(it, address) },
-            complete = confirmed.size >= transactionCount,
+            complete = txs != null && confirmed.size >= transactionCount,
             totalReceived = btc(received),
             totalSent = btc(sent),
             transactionCount = transactionCount.toInt(),
             transactionUrlPrefix = transactionUrlPrefix,
+            limitations = listOfNotNull(AddressActivityCoverageLimitation.TRANSACTIONS_UNAVAILABLE.takeIf { txs == null }),
         )
     }
 
@@ -175,22 +178,29 @@ class BlockscoutActivitySource(
     override fun fetch(address: CanonicalAddress): ChainActivity? {
         val base = "/api/v2/addresses/${address.address}"
         val transactionCount = get("$base/counters")?.path("transactions_count")?.longOrNull()
-        val transactions = transactionCount?.let { get("$base/transactions") }
-        val tokenTransfers = transactions?.let { get("$base/token-transfers?type=ERC-20") }
-        if (transactionCount == null || transactions == null || tokenTransfers == null) {
+        if (transactionCount == null) {
             logger.warn("Address Activity source {} gave no usable result", sourceName)
             return null
         }
+        // token transfers of a busy address can take longer than the timeout; keep what did answer (D23-013)
+        val transactions = get("$base/transactions")
+        val tokenTransfers = get("$base/token-transfers?type=ERC-20")
+        val missing = transactions == null || tokenTransfers == null
+        if (missing) logger.warn("Address Activity source {} gave the count without every transfer list", sourceName)
         val owner = address.address
         return ChainActivity(
             unit = "ETH",
             transfers =
-            transactions.path("items").values().mapNotNull { coinTransfer(it, owner) } +
-                tokenTransfers.path("items").values().mapNotNull { tokenTransfer(it, owner) },
-            complete = isLastPage(transactions) && isLastPage(tokenTransfers),
+            transactions?.path("items")?.values().orEmpty().mapNotNull { coinTransfer(it, owner) } +
+                tokenTransfers?.path("items")?.values().orEmpty().mapNotNull { tokenTransfer(it, owner) },
+            complete = transactions != null && tokenTransfers != null && isLastPage(transactions) && isLastPage(tokenTransfers),
             transactionCount = transactionCount.toInt(),
             transactionUrlPrefix = transactionUrlPrefix,
-            limitations = listOf(AddressActivityCoverageLimitation.INTERNAL_TRANSFERS_NOT_COUNTED),
+            limitations =
+            listOfNotNull(
+                AddressActivityCoverageLimitation.INTERNAL_TRANSFERS_NOT_COUNTED,
+                AddressActivityCoverageLimitation.TRANSACTIONS_UNAVAILABLE.takeIf { missing },
+            ),
         )
     }
 

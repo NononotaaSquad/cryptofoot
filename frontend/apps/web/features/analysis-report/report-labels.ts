@@ -200,6 +200,8 @@ const activityLimitationSentences: Record<
     "Sygnały są wykrywane tylko dla serwisów ze znanych list. Brak sygnału nie oznacza, że środków nie wymieniono na waluty tradycyjne.",
   INTERNAL_TRANSFERS_NOT_COUNTED:
     "Sumy nie obejmują przelewów wewnętrznych z kontraktów.",
+  TRANSACTIONS_UNAVAILABLE:
+    "Nie udało się odczytać listy transakcji, więc nie sprawdzono sygnałów wyjścia do walut tradycyjnych.",
 };
 
 /** One sentence per coverage limitation; an unknown code is still shown. */

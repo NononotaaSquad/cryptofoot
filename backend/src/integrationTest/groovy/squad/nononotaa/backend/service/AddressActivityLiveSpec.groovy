@@ -238,6 +238,54 @@ class AddressActivityLiveSpec extends BaseSpec {
         }
     }
 
+    def "mempool.space: a transaction list slower than the timeout keeps the exact totals and count, without signals"() {
+        given:
+        CHAIN.explorer("/api/address/$BTC", """{"chain_stats":{"funded_txo_sum":23643446701,"spent_txo_sum":23643445519,"tx_count":5448}}""")
+        CHAIN.explorer("/api/address/$BTC/txs", '[]', 2500)
+
+        when:
+        def outcome = collect(attribution('BTC', BTC))
+
+        then:
+        outcome.status == AddressActivityStatus.AVAILABLE
+        with(outcome.activity) {
+            totalReceived == 236.43446701
+            totalSent == 236.43445519
+            transactionCount == 5448
+            firstActivityAt == null
+            lastActivityAt == null
+            cashOutSignals.isEmpty()
+            coverageLimitations == [
+                AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY,
+                AddressActivityCoverageLimitation.TRANSACTIONS_UNAVAILABLE
+            ]
+        }
+    }
+
+    def "Blockscout: token transfers that do not answer keep the count and the coin transfers"() {
+        given:
+        blockscout()
+        CHAIN.explorer("/api/v2/addresses/$ETH/token-transfers?type=ERC-20", '{"items":[],"next_page_params":null}', 2500)
+
+        when:
+        def outcome = collect(attribution('ETH', ETH))
+
+        then:
+        outcome.status == AddressActivityStatus.AVAILABLE
+        with(outcome.activity) {
+            transactionCount == 3
+            totalReceived == null
+            totalSent == null
+            lastActivityAt.toString() == '2026-02-01T10:00:00Z'
+            cashOutSignals.isEmpty()
+            coverageLimitations == [
+                AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY,
+                AddressActivityCoverageLimitation.INTERNAL_TRANSFERS_NOT_COUNTED,
+                AddressActivityCoverageLimitation.TRANSACTIONS_UNAVAILABLE
+            ]
+        }
+    }
+
     def "an explorer that does not answer gives unavailable activity after its first request"() {
         when:
         def outcome = collect(attribution(network, address))

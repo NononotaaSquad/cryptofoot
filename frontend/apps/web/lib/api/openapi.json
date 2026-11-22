@@ -855,7 +855,8 @@
                             "enum": [
                                 "RECENT_TRANSACTIONS_ONLY",
                                 "LABELLED_COUNTERPARTIES_ONLY",
-                                "INTERNAL_TRANSFERS_NOT_COUNTED"
+                                "INTERNAL_TRANSFERS_NOT_COUNTED",
+                                "TRANSACTIONS_UNAVAILABLE"
                             ]
                         }
                     }
