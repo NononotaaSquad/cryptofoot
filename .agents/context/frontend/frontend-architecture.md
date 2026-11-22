@@ -97,3 +97,4 @@ Each decision is a separate ADR in `.agents/context/frontend/decisions/`, named 
 - [ADR-0011: Direct Backend URL](decisions/0011-direct-backend-url.md) - Open (owner: Maksym, team lead)
 - [ADR-0012: Node and npm](decisions/0012-node-and-npm.md) - Accepted
 - [ADR-0013: Motion Animations](decisions/0013-motion-animations.md) - Accepted
+- [ADR-0014: Comparison with the previous Analysis on Case details](decisions/0014-analysis-comparison-on-case-details.md) - Proposed

@@ -1,5 +1,6 @@
 import type {
   AddressActivityResponseCoverageLimitationsItem,
+  AnalysisResponse,
   AnalysisResponseStatus,
   AnalysisResponseTrigger,
   CashOutSignalResponseKind,
@@ -242,6 +243,24 @@ const timeFormat = new Intl.DateTimeFormat("pl-PL", {
 /** "21.11.2026, 14:32" from an ISO instant. */
 export function formatDateTime(isoInstant: string): string {
   return dateTimeFormat.format(new Date(isoInstant));
+}
+
+/**
+ * "21.11.2026, 14:32 · Ręczna · Zakończona": one Analysis as the history
+ * select names it, so other places can name it the same way.
+ */
+export function analysisLabel(analysis: AnalysisResponse): string {
+  return [
+    analysis.startedAt === undefined ? "–" : formatDateTime(analysis.startedAt),
+    analysis.trigger === undefined
+      ? null
+      : analysisTriggerLabels[analysis.trigger],
+    analysis.status === undefined
+      ? null
+      : analysisStatusLabels[analysis.status],
+  ]
+    .filter((part) => part !== null)
+    .join(" · ");
 }
 
 /** "14:32" from an ISO instant. */

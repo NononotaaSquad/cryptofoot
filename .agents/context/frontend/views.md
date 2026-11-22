@@ -196,6 +196,18 @@ Decided by the lead in the grilling of 2026-11-21 (Q1–Q18); the full record is
 - **Polling:** every 30 s while the Schedule is enabled, every 5 s with `demo: true`. A Scheduled Analysis appears in the select; the displayed report does not change.
 - **Time:** Schedule dates and hours are always shown in Polish time.
 
+## Comparison with the previous Analysis (2026-11-22)
+
+Proposed in [ADR-0014](decisions/0014-analysis-comparison-on-case-details.md); the categories still wait for E6-D2. Where this section and the older text of this file differ (Out of Scope, D2), this section wins.
+
+- **Pair:** the displayed Analysis and the newest earlier Analysis of the Case that ended "Zakończona" or "Częściowa" (a "Nieudana" one is skipped). Manual and Scheduled Analyses are treated the same. No picker: another pair is reached by selecting another Analysis in "Wyświetlana analiza".
+- **When:** only for a displayed Analysis that has ended with results; not while it runs ("W toku"), not when it failed, not for the first Analysis of a Case.
+- **Section "Zmiany od poprzedniej analizy (N)":** in the report, between the summary and "Powiązania", always expanded. Below the heading: "Porównanie z analizą: 21.11.2026, 14:32 · Ręczna · Zakończona." and the link "Pokaż poprzednią analizę".
+- **Limitations:** a warning "Ograniczenia porównania" with one sentence per code (identifiers, sources, networks, scoring rules, partial Analysis).
+- **Rows:** address with the network below it; an icon and a label ("Nowe powiązanie", "Zmieniony stopień pewności", "Zmienione wykluczenie", "Nie znaleziono w tej analizie"); both values as text ("Stopień pewności: wcześniej 55%, teraz 80%."). Order: new, changed level, changed exclusion, not observed.
+- **Not observed:** always "Nie oznacza to, że adres przestał należeć do osoby."; when the backend cannot confirm the absence, a warning says so.
+- **No changes:** a grey block "Nie ma zmian w powiązaniach ani w adresach wykluczonych."
+
 ## Testing Decisions
 
 Deferred. Test seams are decided after the views are laid out in Pencil. The test scope of ADR-0010 applies.
@@ -206,7 +218,7 @@ Deferred. Test seams are decided after the views are laid out in Pencil. The tes
 - Leaving the view during a manual Analysis.
 - Merging two Cases or adding new identifiers to an existing Case.
 - Visual design details (colors, typography, components): see `kas-ui-ux/`.
-- Comparison of two Analyses (E6.3) and the schedule controls (E6.4): later phases, placed in the Case scope of Case details.
+- Comparison of an arbitrary pair of Analyses: only the displayed Analysis and the previous one with results are compared (section "Comparison with the previous Analysis").
 - Print, PDF export and passing the report outside the application (E5-D2).
 - On Case details: the algorithm version. The scoring breakdown is in scope since 2026-11-21 (block "Punktacja").
 - On the Case list: pagination, a sort control, filters by status and server-side search. The demo has a handful of Cases.
@@ -218,7 +230,7 @@ Result of the review of the Pencil views against `../domain/hacknation-2026-task
 | # | Deferred | Challenge text | State in the views |
 |---|---|---|---|
 | D1 | Periodic Analyses | §2 "cykliczne wykonywanie analiz" | No schedule view; only the word "Ręczna" in the Analysis select (E6.4). **Closed 2026-11-22 (#15):** the Schedule view is implemented. |
-| D2 | Comparing results and detecting a replaced address over time | §2 "porównywanie rezultatów"; §3 optional criterion | Analyses can be switched, but there is no view of differences (E6.3). |
+| D2 | Comparing results and detecting a replaced address over time | §2 "porównywanie rezultatów"; §3 optional criterion | Analyses can be switched, but there is no view of differences (E6.3). **Closed in part 2026-11-22 (ADR-0014):** "Zmiany od poprzedniej analizy" in the report; detecting a replaced address stays deferred. |
 | D3 | Marking source facts, calculation results and conclusions that need verification | §7; judging criterion 3 | One general sentence, "Powiązania są tropami…"; the blocks are not labelled this way. |
 | D4 | Full name alone as input | §2 lists it as a sufficient identifier | The form rejects it (minimum data rule). |
 | D5 | Category of an Attribution | §3 "kategoryzować znalezione powiązania" | Only the Confidence Level band; the source kind appears in the "Punktacja" line and the Justification, not as a category. |
