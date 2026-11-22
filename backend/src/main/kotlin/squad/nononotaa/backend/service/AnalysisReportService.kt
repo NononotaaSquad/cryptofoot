@@ -3,15 +3,20 @@ package squad.nononotaa.backend.service
 import org.springframework.stereotype.Service
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.Premise
+import squad.nononotaa.backend.analysis.PremiseAnswers
 import squad.nononotaa.backend.analysis.ScoredAttribution
+import squad.nononotaa.backend.analysis.YesNoProbabilities
 import squad.nononotaa.backend.dto.AttributionResponse
 import squad.nononotaa.backend.dto.DetectedAddressResponse
 import squad.nononotaa.backend.dto.ExcludedAddressResponse
+import squad.nononotaa.backend.dto.KindProbabilitiesResponse
 import squad.nononotaa.backend.dto.MentionResponse
+import squad.nononotaa.backend.dto.PremiseAnswersResponse
 import squad.nononotaa.backend.dto.PremiseFactsResponse
 import squad.nononotaa.backend.dto.PremiseResponse
 import squad.nononotaa.backend.dto.ReportResponse
 import squad.nononotaa.backend.dto.ScoringRuleContributionResponse
+import squad.nononotaa.backend.dto.YesNoProbabilitiesResponse
 import squad.nononotaa.backend.exception.ConflictException
 import squad.nononotaa.backend.exception.NotFoundException
 import squad.nononotaa.backend.model.AddressValidation
@@ -133,8 +138,23 @@ class AnalysisReportService(
                 addressCount = facts.addressCount,
                 host = facts.host,
             ),
+            answers = premise.answers?.let(::toResponse),
+            undetermined = premise.undetermined,
+            withdrawn = premise.withdrawn,
         )
     }
+
+    private fun toResponse(answers: PremiseAnswers) = PremiseAnswersResponse(
+        kind =
+        with(answers.kind) {
+            KindProbabilitiesResponse(ownDeclaration, saleOrSettlement, discussion, massComment)
+        },
+        declaration = toResponse(answers.declaration),
+        warning = toResponse(answers.warning),
+        requestId = answers.requestId,
+    )
+
+    private fun toResponse(probabilities: YesNoProbabilities) = YesNoProbabilitiesResponse(probabilities.yes, probabilities.no)
 
     private fun detected(rawAddress: String) = when (val validation = addressValidator.validate(rawAddress)) {
         is AddressValidation.Valid -> DetectedAddressResponse(rawAddress, validation.canonicalAddress.network, true, null)

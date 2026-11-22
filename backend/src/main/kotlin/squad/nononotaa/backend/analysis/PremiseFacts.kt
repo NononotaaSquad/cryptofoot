@@ -22,6 +22,17 @@ fun premiseFacts(
     )
 }
 
+/** The Mentions and windows that hold [candidate]'s address, one per Mention, ordered by Premise id. */
+fun premiseWindows(
+    candidate: Candidate,
+    mentions: Map<String, FoundMention>,
+): List<Pair<FoundMention, AddressWindow>> = candidate.mentionIds
+    .distinct()
+    .mapNotNull(mentions::get)
+    // a Mention without a window for the address (stored before confidence-2) gives no Premise
+    .mapNotNull { mention -> mention.addressWindows.firstOrNull { it.address == candidate.address }?.let { mention to it } }
+    .sortedBy { (mention, _) -> Premise.idOf(mention.id, candidate.address) }
+
 // the wallet address is the Analyst's own entry, not a trace of the person in the text (D9-004)
 private val TEXT_TYPES = IdentifierType.entries - IdentifierType.WALLET_ADDRESS
 private val EMAIL = Regex("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")

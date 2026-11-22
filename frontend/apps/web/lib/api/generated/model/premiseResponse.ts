@@ -4,11 +4,13 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { PremiseAnswersResponse } from "./premiseAnswersResponse";
 import type { PremiseFactsResponse } from "./premiseFactsResponse";
 import type { PremiseResponseAssessedBy } from "./premiseResponseAssessedBy";
 import type { PremiseResponseDismissalReason } from "./premiseResponseDismissalReason";
 import type { PremiseResponseKind } from "./premiseResponseKind";
 import type { PremiseResponseStatus } from "./premiseResponseStatus";
+import type { PremiseResponseUndeterminedItem } from "./premiseResponseUndeterminedItem";
 
 export interface PremiseResponse {
   id?: string;
@@ -29,4 +31,7 @@ export interface PremiseResponse {
   dismissalReason?: PremiseResponseDismissalReason;
   assessedBy?: PremiseResponseAssessedBy;
   facts?: PremiseFactsResponse;
+  answers?: PremiseAnswersResponse | null;
+  undetermined?: PremiseResponseUndeterminedItem[];
+  withdrawn?: boolean;
 }

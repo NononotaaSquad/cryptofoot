@@ -14,12 +14,14 @@ import squad.nononotaa.backend.analysis.ConfidenceScoring
 import squad.nononotaa.backend.analysis.ExclusionClassifier
 import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.analysis.MentionSearch
+import squad.nononotaa.backend.analysis.PremiseAssessment
 import squad.nononotaa.backend.analysis.SearchResult
 import squad.nononotaa.backend.analysis.SourceReport
 import squad.nononotaa.backend.config.SchedulerProperties
 import squad.nononotaa.backend.dto.UpdateScheduleRequest
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.ScheduleAttemptOutcome
 import squad.nononotaa.backend.model.SchedulePreset
 import squad.nononotaa.backend.model.SourceStatus
@@ -61,7 +63,9 @@ class DemoSchedulerCheckSpec extends BaseSpec {
     } as CaseIdentifierSource
 
     private ScheduledRunner runner() {
-        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(ConfidenceScoring), recorder)
+        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(PremiseAssessment) {
+            getMode() >> AssessmentMode.RULES_ONLY
+        }, Stub(ConfidenceScoring), recorder)
         def rerun = new AnalysisRerunService(orchestrator, analyses, identifiers, history, sync)
         ObjectProvider<AnalysisRerunService> provider = Stub() {
             getIfAvailable() >> rerun

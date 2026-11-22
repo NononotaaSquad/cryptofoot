@@ -621,6 +621,28 @@
                             "null"
                         ]
                     },
+                    "assessmentMode": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "RULES_ONLY",
+                            "WITH_MODEL"
+                        ]
+                    },
+                    "modelVersion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "questionSetVersion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "attributionCount": {
                         "type": [
                             "integer",
@@ -763,6 +785,7 @@
                                 "SOURCE_COVERAGE_DIFFERS",
                                 "NETWORKS_DIFFER",
                                 "ALGORITHM_VERSION_DIFFERS",
+                                "MODEL_VERSION_DIFFERS",
                                 "PARTIAL_ANALYSIS"
                             ]
                         }
@@ -846,6 +869,9 @@
                             "boolean",
                             "null"
                         ]
+                    },
+                    "modelAssessmentChanged": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -1040,6 +1066,27 @@
                     }
                 }
             },
+            "KindProbabilitiesResponse": {
+                "type": "object",
+                "properties": {
+                    "ownDeclaration": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "saleOrSettlement": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "discussion": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "massComment": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                }
+            },
             "MentionResponse": {
                 "type": "object",
                 "properties": {
@@ -1069,6 +1116,26 @@
                         }
                     },
                     "author": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                }
+            },
+            "PremiseAnswersResponse": {
+                "type": "object",
+                "properties": {
+                    "kind": {
+                        "$ref": "#/components/schemas/KindProbabilitiesResponse"
+                    },
+                    "declaration": {
+                        "$ref": "#/components/schemas/YesNoProbabilitiesResponse"
+                    },
+                    "warning": {
+                        "$ref": "#/components/schemas/YesNoProbabilitiesResponse"
+                    },
+                    "requestId": {
                         "type": [
                             "string",
                             "null"
@@ -1209,6 +1276,30 @@
                     },
                     "facts": {
                         "$ref": "#/components/schemas/PremiseFactsResponse"
+                    },
+                    "answers": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/PremiseAnswersResponse"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "undetermined": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "KIND",
+                                "DECLARATION",
+                                "WARNING"
+                            ]
+                        }
+                    },
+                    "withdrawn": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -1238,6 +1329,7 @@
                                 "SOURCE_UNAVAILABLE",
                                 "BLOCKCHAIN_DATA_UNAVAILABLE",
                                 "CLASSIFICATION_UNAVAILABLE",
+                                "MODEL_ASSESSMENT_UNAVAILABLE",
                                 "ANALYSIS_INCOMPLETE"
                             ]
                         }
@@ -1259,6 +1351,19 @@
                         "items": {
                             "type": "string"
                         }
+                    }
+                }
+            },
+            "YesNoProbabilitiesResponse": {
+                "type": "object",
+                "properties": {
+                    "yes": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "no": {
+                        "type": "number",
+                        "format": "double"
                     }
                 }
             }

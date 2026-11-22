@@ -13,6 +13,7 @@ import squad.nononotaa.backend.analysis.SourceReport
 import squad.nononotaa.backend.model.AnalysisRecord
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AttributionChangeType as Type
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation as Limit
@@ -42,7 +43,8 @@ class AnalysisComparerSpec extends Specification {
         args.get('mentions', [
             new FoundMention('m1', 'forum', 'https://example.test/m1', T0, null, [ADDR])
         ]),
-        [], args.get('excluded', []), [], args.get('attributions', []), args.get('version', 'v1'))
+        [], args.get('excluded', []), [], args.get('attributions', []), args.get('version', 'v1'),
+        args.get('mode', AssessmentMode.RULES_ONLY), args.get('modelVersion', null), null)
         new AnalysisRecord('id', 0L, 'case-1', AnalysisTrigger.MANUAL, result.status, T0, T0,
                 args.get('identifiers', [
                     new CaseIdentifier(IdentifierType.NICKNAME, 'nick')
@@ -78,6 +80,33 @@ class AnalysisComparerSpec extends Specification {
         changes[0].laterConfidenceLevel == 65
         changes[0].earlierMentionIds == ['m1']
         changes[0].laterMentionIds == ['m1', 'm2']
+    }
+
+    def "a changed Confidence Level is flagged as a changed model assessment only with the same Mentions and the model on one side"() {
+        when:
+        def changes = comparer.changes(
+                record(mode: earlierMode, attributions: [
+                    attribution('ETH', ADDR, 50, ['m1', 'm2'])
+                ]),
+                record(mode: laterMode, attributions: [
+                    attribution('ETH', ADDR, 65, laterMentions)
+                ]))
+
+        then:
+        changes*.change == [Type.CONFIDENCE_LEVEL_CHANGED]
+        changes[0].modelAssessmentChanged == flagged
+
+        where:
+        earlierMode                | laterMode                  | laterMentions        | flagged
+        AssessmentMode.RULES_ONLY  | AssessmentMode.WITH_MODEL  | ['m2', 'm1']         | true
+        AssessmentMode.WITH_MODEL  | AssessmentMode.WITH_MODEL  | ['m1', 'm2', 'm3']   | false
+        AssessmentMode.RULES_ONLY  | AssessmentMode.RULES_ONLY  | ['m1', 'm2']         | false
+    }
+
+    def "a new Attribution is never flagged as a changed model assessment"() {
+        expect:
+        !comparer.changes(record(mode: AssessmentMode.WITH_MODEL),
+        record(mode: AssessmentMode.WITH_MODEL, attributions: [attribution('ETH', ADDR, 70)]))[0].modelAssessmentChanged
     }
 
     def "an extra copy of a Mention with the same Confidence Level is not a change"() {
@@ -206,6 +235,11 @@ class AnalysisComparerSpec extends Specification {
             Limit.ALGORITHM_VERSION_DIFFERS
         ]
         comparer.limitations(record(), record(status: AnalysisStatus.PARTIAL)) == [Limit.PARTIAL_ANALYSIS]
+        comparer.limitations(record(mode: AssessmentMode.WITH_MODEL, modelVersion: 'jev-1'),
+        record(mode: AssessmentMode.WITH_MODEL, modelVersion: 'jev-2')) == [Limit.MODEL_VERSION_DIFFERS]
+        comparer.limitations(record(), record(mode: AssessmentMode.WITH_MODEL, modelVersion: 'jev-1')) == [Limit.MODEL_VERSION_DIFFERS]
+        comparer.limitations(record(mode: AssessmentMode.WITH_MODEL, modelVersion: 'jev-1'),
+        record(mode: AssessmentMode.WITH_MODEL, modelVersion: 'jev-1')) == []
         comparer.limitations(record(status: AnalysisStatus.FAILED), record()) == [Limit.PARTIAL_ANALYSIS]
     }
 }

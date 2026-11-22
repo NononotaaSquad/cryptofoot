@@ -8,6 +8,7 @@ import java.time.Instant
 import spock.lang.Specification
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.CanonicalAddress
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ExclusionLabel
@@ -30,6 +31,9 @@ class ExcludedAddressPipelineSpec extends Specification {
     MentionSearch search = Stub()
     CandidatePreparation preparation = Stub()
     ConfidenceScoring scoring = Mock()
+    PremiseAssessment rulesOnly = Stub(PremiseAssessment) {
+        getMode() >> AssessmentMode.RULES_ONLY
+    }
     AnalysisRecorder recorder = Mock()
     ContractCodeSource rpc = Stub() {
         getSourceName() >> 'rpc'
@@ -40,7 +44,7 @@ class ExcludedAddressPipelineSpec extends Specification {
     def labels = new ExclusionLabelDirectory([
         (new CanonicalAddress(Network.ETH, EXCHANGE)): new ExclusionLabel(ExclusionReason.EXCHANGE, 'Kraken 4 [kraken]', 'Etherscan labels')
     ])
-    def orchestrator = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [rpc]), scoring, recorder)
+    def orchestrator = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [rpc]), rulesOnly, scoring, recorder)
 
     def exchange = new Candidate('ETH', EXCHANGE, ['m1'])
     def contract = new Candidate('ETH', CONTRACT_ADDRESS, ['m1'])
@@ -118,7 +122,7 @@ class ExcludedAddressPipelineSpec extends Specification {
 
     def "with the on-chain check switched off only listed addresses are excluded and every other ETH Attribution is flagged"() {
         given:
-        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), scoring, recorder)
+        def offline = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, []), rulesOnly, scoring, recorder)
         candidates = [exchange, person]
 
         when:
@@ -146,7 +150,7 @@ class ExcludedAddressPipelineSpec extends Specification {
             getSourceName() >> 'broken'
             check(_) >> { throw new IllegalStateException('bug') }
         }
-        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), scoring, recorder)
+        def crashing = new AnalysisOrchestrator(search, preparation, new ExclusionClassifierService(labels, [broken]), rulesOnly, scoring, recorder)
         candidates = [exchange, person]
 
         when:

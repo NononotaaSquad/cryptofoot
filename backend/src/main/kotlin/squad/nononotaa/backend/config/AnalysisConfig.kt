@@ -9,6 +9,7 @@ import squad.nononotaa.backend.analysis.CandidatePreparation
 import squad.nononotaa.backend.analysis.ConfidenceScoring
 import squad.nononotaa.backend.analysis.ExclusionClassifier
 import squad.nononotaa.backend.analysis.MentionSearch
+import squad.nononotaa.backend.analysis.PremiseAssessment
 import squad.nononotaa.backend.repository.AnalysisRepository
 import squad.nononotaa.backend.service.AnalysisHistoryService
 import squad.nononotaa.backend.service.AnalysisRerunService
@@ -26,17 +27,19 @@ class AnalysisConfig {
         search: MentionSearch,
         preparation: CandidatePreparation,
         exclusions: ExclusionClassifier,
+        assessment: PremiseAssessment,
         scoring: ConfidenceScoring,
         recorder: AnalysisRecorder,
     ): AnalysisOrchestrator {
         logger.info(
-            "Analysis flow wired: search={}, preparation={}, exclusions={}, scoring={}",
+            "Analysis flow wired: search={}, preparation={}, exclusions={}, assessment={}, scoring={}",
             search.javaClass.simpleName,
             preparation.javaClass.simpleName,
             exclusions.javaClass.simpleName,
+            assessment.javaClass.simpleName,
             scoring.javaClass.simpleName,
         )
-        return AnalysisOrchestrator(search, preparation, exclusions, scoring, recorder)
+        return AnalysisOrchestrator(search, preparation, exclusions, assessment, scoring, recorder)
     }
 
     @Bean

@@ -19,6 +19,7 @@ import squad.nononotaa.backend.analysis.ExclusionClassifier
 import squad.nononotaa.backend.analysis.ExclusionResult
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.MentionSearch
+import squad.nononotaa.backend.analysis.PremiseAssessment
 import squad.nononotaa.backend.analysis.PreparedCandidates
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.analysis.ScoringInput
@@ -28,6 +29,7 @@ import squad.nononotaa.backend.analysis.SourceReport
 import squad.nononotaa.backend.config.ExclusionProperties
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ExclusionReason
 import squad.nononotaa.backend.model.SourceStatus
@@ -202,7 +204,9 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
             begin(_) >> 'a-1'
             finish('a-1', _) >> { id, result -> finished = result }
         }
-        def orchestrator = new AnalysisOrchestrator(search, preparation, classifier, scoring, recorder)
+        def orchestrator = new AnalysisOrchestrator(search, preparation, classifier, Stub(PremiseAssessment) {
+            getMode() >> AssessmentMode.RULES_ONLY
+        }, scoring, recorder)
 
         when:
         orchestrator.run(new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, []))

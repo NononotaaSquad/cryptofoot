@@ -10,14 +10,19 @@ import squad.nononotaa.backend.analysis.Candidate
 import squad.nononotaa.backend.analysis.CaseIdentifier
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.IdentifierType
+import squad.nononotaa.backend.analysis.KindProbabilities
+import squad.nononotaa.backend.analysis.PremiseAnswers
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.analysis.ScoringInput
+import squad.nononotaa.backend.analysis.YesNoProbabilities
 import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.AssessedBy
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.DismissalReason
 import squad.nononotaa.backend.model.Mention
+import squad.nononotaa.backend.model.ModelQuestion
 import squad.nononotaa.backend.model.PremiseKind
 import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.repository.MentionRepository
@@ -629,6 +634,96 @@ class ConfidenceScoringServiceSpec extends Specification {
         where:
         item << GoldenSet.items()
         id = item.id
+    }
+
+    def "golden set #id scores as expected for confidence-3 with canned model answers"() {
+        given:
+        def saved = new AtomicInteger()
+        def repository = Stub(MentionRepository) {
+            findByIdentity(_) >> []
+            save(_) >> { Mention m ->
+                GoldenSet.withId(m, "${id}-${saved.incrementAndGet()}")
+            }
+        }
+        def expected = item.expected['confidence-3'].attributions as List<Map>
+
+        when:
+        def result = GoldenSet.run(item, repository, scoring, AssessmentMode.WITH_MODEL)
+
+        then:
+        result.algorithmVersion == 'confidence-3'
+        GoldenSet.banded(result.attributions as List<Map>, expected) == expected
+
+        where:
+        item << GoldenSet.items()
+        id = item.id
+    }
+
+    def "the model's #question at #value is read as #reading"() {
+        given:
+        def m = mention('m1', 'https://forum.example/t/1', "zenek_fx pisze: mój adres to ${BTC}.", author)
+        def kind = question == 'rodzaj_wpisu' ? new KindProbabilities(0.1, value, 0.8 - value, 0.1) : new KindProbabilities(0.05, 0.05, 0.85, 0.05)
+        def answers = new PremiseAnswers(kind, yesNo(question == 'deklaracja' ? value : 0), yesNo(question == 'ostrzezenie' ? value : 0))
+
+        when:
+        def premise = scoreWithModel([m], [(id('m1')): answers]).premises[0]
+
+        then:
+        premise.assessedBy == AssessedBy.MODEL
+        premise.status == status
+        premise.dismissalReason == reason
+        premise.undetermined == undetermined
+        premise.points == points
+
+        where:
+        question      | value | author || reading        | status                   | reason                                     | undetermined                   | points
+        'deklaracja'  | 0.7   | 'janek99' || 'yes'          | PremiseStatus.DISMISSED  | DismissalReason.DECLARED_BY_ANOTHER_PERSON | []                             | 0
+        'deklaracja'  | 0.69  | 'janek99' || 'undetermined' | PremiseStatus.FOR_REVIEW | null                                       | [ModelQuestion.DECLARATION]    | 40
+        'deklaracja'  | 0.31  | 'janek99' || 'undetermined' | PremiseStatus.FOR_REVIEW | null                                       | [ModelQuestion.DECLARATION]    | 40
+        'deklaracja'  | 0.3   | 'janek99' || 'no'           | PremiseStatus.COUNTED    | null                                       | []                             | 40
+        'ostrzezenie' | 0.7   | 'zenek_fx' || 'yes'          | PremiseStatus.DISMISSED  | DismissalReason.WARNING                    | []                             | 0
+        'ostrzezenie' | 0.69  | 'zenek_fx' || 'undetermined' | PremiseStatus.FOR_REVIEW | null                                       | [ModelQuestion.WARNING]        | 40
+        'ostrzezenie' | 0.31  | 'zenek_fx' || 'undetermined' | PremiseStatus.FOR_REVIEW | null                                       | [ModelQuestion.WARNING]        | 40
+        'ostrzezenie' | 0.3   | 'zenek_fx' || 'no'           | PremiseStatus.COUNTED    | null                                       | []                             | 40
+        'rodzaj_wpisu'| 0.5   | 'zenek_fx' || 'sale'         | PremiseStatus.COUNTED    | null                                       | []                             | 60
+        'rodzaj_wpisu'| 0.49  | 'zenek_fx' || 'undetermined' | PremiseStatus.FOR_REVIEW | null                                       | [ModelQuestion.KIND]           | 40
+    }
+
+    def "with the model on, a Premise without an answer falls back to the rules and the others keep the model"() {
+        given:
+        def mentions = [
+            mention('m1', 'https://forum.example/t/1', "zenek_fx pisze: mój adres to ${BTC}."),
+            mention('m2', 'https://social.example/p/2', "Adres zenek_fx: ${BTC}")
+        ]
+        def answers = new PremiseAnswers(new KindProbabilities(0.8, 0.1, 0.05, 0.05), yesNo(0.9), yesNo(0.05))
+
+        when:
+        def result = scoring.score(new ScoringInput([
+            new Candidate('BTC', BTC, ['m1', 'm2'])
+        ], [], mentions, [NICKNAME], [(id('m1')): answers], AssessmentMode.WITH_MODEL))
+        def premises = result.attributions[0].premises
+
+        then:
+        result.algorithmVersion == 'confidence-3'
+        premises*.id == [id('m1'), id('m2')]
+        premises*.assessedBy == [
+            AssessedBy.MODEL,
+            AssessedBy.RULE
+        ]
+        premises*.answers == [answers, null]
+        result.attributions[0].appliedRules.find {
+            it.rule == 'MODEL_ASSISTED'
+        }.premiseIds == [id('m1')]
+    }
+
+    private ScoredAttribution scoreWithModel(List<FoundMention> mentions, Map<String, PremiseAnswers> answers) {
+        scoring.score(new ScoringInput([
+            new Candidate('BTC', BTC, mentions*.id)
+        ], [], mentions, [NICKNAME], answers, AssessmentMode.WITH_MODEL)).attributions[0]
+    }
+
+    private static YesNoProbabilities yesNo(Number yes) {
+        new YesNoProbabilities(yes as double, 1 - (yes as double))
     }
 
     def "golden set #id address #placeholder is a valid address"() {

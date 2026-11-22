@@ -6,12 +6,14 @@ import squad.nononotaa.backend.model.AddressValidationFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
 import squad.nononotaa.backend.model.AssessedBy
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AttributionChangeType
 import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation
 import squad.nononotaa.backend.model.DismissalReason
 import squad.nononotaa.backend.model.ExclusionReason
+import squad.nononotaa.backend.model.ModelQuestion
 import squad.nononotaa.backend.model.Network
 import squad.nononotaa.backend.model.PremiseKind
 import squad.nononotaa.backend.model.PremiseStatus
@@ -62,6 +64,10 @@ data class AnalysisResponse(
     val sources: List<SourceCoverageResponse>,
     val networks: List<Network>,
     val algorithmVersion: String?,
+    // null for Analyses stored before algorithm confidence-3; the versions are null in RULES_ONLY
+    val assessmentMode: AssessmentMode?,
+    val modelVersion: String?,
+    val questionSetVersion: String?,
     val attributionCount: Int?,
     val excludedAddressCount: Int?,
 )
@@ -100,6 +106,28 @@ data class PremiseFactsResponse(
     val host: String?,
 )
 
+/** Raw probabilities of a yes/no question; the words and percentages are made by the frontend (P28). */
+data class YesNoProbabilitiesResponse(
+    val yes: Double,
+    val no: Double,
+)
+
+/** Raw probability of every option of `rodzaj_wpisu`. */
+data class KindProbabilitiesResponse(
+    val ownDeclaration: Double,
+    val saleOrSettlement: Double,
+    val discussion: Double,
+    val massComment: Double,
+)
+
+/** The three answers of the decision model for one Premise, kept per question; [requestId] when the server returned one. */
+data class PremiseAnswersResponse(
+    val kind: KindProbabilitiesResponse,
+    val declaration: YesNoProbabilitiesResponse,
+    val warning: YesNoProbabilitiesResponse,
+    val requestId: String?,
+)
+
 /** One address in one Mention; [text] is the window, the address is at [addressStart] (UTF-16 code units). */
 data class PremiseResponse(
     val id: String,
@@ -117,6 +145,10 @@ data class PremiseResponse(
     val dismissalReason: DismissalReason?,
     val assessedBy: AssessedBy,
     val facts: PremiseFactsResponse,
+    // null when the model was off or gave no answer for this Premise, and for old Analyses
+    val answers: PremiseAnswersResponse?,
+    val undetermined: List<ModelQuestion>,
+    val withdrawn: Boolean,
 )
 
 data class AddressActivityEventResponse(
@@ -173,6 +205,8 @@ data class AttributionChangeResponse(
     val earlierMentionIds: List<String>,
     val laterMentionIds: List<String>,
     val absenceVerifiable: Boolean?,
+    // CONFIDENCE_LEVEL_CHANGED with the same Mentions while at least one Analysis used the model (P23)
+    val modelAssessmentChanged: Boolean,
 )
 
 data class AnalysisComparisonResponse(

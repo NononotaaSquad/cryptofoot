@@ -7,11 +7,15 @@ import squad.nononotaa.backend.analysis.Candidate
 import squad.nononotaa.backend.analysis.CaseIdentifier
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.IdentifierType
+import squad.nononotaa.backend.analysis.KindProbabilities
+import squad.nononotaa.backend.analysis.PremiseAnswers
 import squad.nononotaa.backend.analysis.RawMention
 import squad.nononotaa.backend.analysis.ScoringInput
 import squad.nononotaa.backend.analysis.SearchService
 import squad.nononotaa.backend.analysis.SearchServiceSpec
+import squad.nononotaa.backend.analysis.YesNoProbabilities
 import squad.nononotaa.backend.model.AddressValidation
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.Mention
 import squad.nononotaa.backend.repository.MentionRepository
 import tools.jackson.databind.ObjectMapper
@@ -54,6 +58,15 @@ class GoldenSet {
      * A Premise reads as "{mention key}:{placeholder}", so the fixture does not depend on generated Mention ids.
      */
     static List<Map> score(Map item, MentionRepository repository, ConfidenceScoringService scoring) {
+        run(item, repository, scoring, AssessmentMode.RULES_ONLY).attributions as List<Map>
+    }
+
+    /**
+     * Scores one item in [mode] and returns [algorithmVersion, attributions]. With the model on, the item's
+     * `cannedAnswers` ("{mention key}:{placeholder}" -> kind probabilities, declaration and warning yes-probability)
+     * go into the scoring input; `modelUnavailable: true` means the model gave no answer at all (fallback).
+     */
+    static Map run(Map item, MentionRepository repository, ConfidenceScoringService scoring, AssessmentMode mode) {
         Map<String, String> addresses = item.addresses as Map<String, String>
         def identifiers = (item.identifiers as List<Map>).collect {
             new CaseIdentifier(IdentifierType.valueOf(it.type as String), fill(it.value as String, addresses))
@@ -87,7 +100,17 @@ class GoldenSet {
         Map<String, String> keyById = mentions.collectEntries {
             [(it.id): keyByUrl[it.url]]
         }
-        scoring.score(new ScoringInput(accepted, unclassified, mentions, identifiers)).attributions.collect { attribution ->
+        Map<String, String> idByKey = keyById.collectEntries { id, key ->
+            [(key): id]
+        }
+        Map<String, PremiseAnswers> answers = mode == AssessmentMode.WITH_MODEL && !item.modelUnavailable ?
+                (item.cannedAnswers as Map<String, Map>).collectEntries { String label, Map canned ->
+                    def (key, placeholder) = label.split(':', 2) as List<String>
+                    assert idByKey.containsKey(key): "item ${item.id}: canned answer ${label} names no Mention"
+                    [(idByKey[key] + ':' + canonical(fill(placeholder, addresses))): answersOf(canned)]
+                } : [:]
+        def result = scoring.score(new ScoringInput(accepted, unclassified, mentions, identifiers, answers, mode))
+        def attributions = result.attributions.collect { attribution ->
             Map<String, String> label = attribution.premises.collectEntries {
                 [(it.id): "${keyById[it.mentionId]}:${classification[it.address].placeholder}" as String]
             }
@@ -107,6 +130,38 @@ class GoldenSet {
                 }
             ]
         }.sort { it.address }
+        [algorithmVersion: result.algorithmVersion, attributions: attributions]
+    }
+
+    /**
+     * [actual] in the shape of [expected]: an expected Attribution with a `band` [low, high] takes the band in place
+     * of the level when the level is inside it, and its rules are compared by name and Premise ids only.
+     */
+    static List<Map> banded(List<Map> actual, List<Map> expected) {
+        [actual, expected].transpose().collect { Map got, Map wanted ->
+            if (!wanted.band) return got
+            def (low, high) = wanted.band as List<Integer>
+            [
+                address : got.address,
+                band    : got.level in low..high ? wanted.band : [got.level, got.level],
+                premises: got.premises,
+                rules   : got.rules.collect {
+                    [rule: it.rule, premiseIds: it.premiseIds]
+                }
+            ]
+        } + (actual.size() > expected.size() ? actual.drop(expected.size()) : [])
+    }
+
+    private static PremiseAnswers answersOf(Map canned) {
+        Map kind = canned.kind as Map
+        new PremiseAnswers(
+                new KindProbabilities(kind.ownDeclaration as double, kind.saleOrSettlement as double, kind.discussion as double, kind.massComment as double),
+                yesNo(canned.declaration as double),
+                yesNo(canned.warning as double))
+    }
+
+    private static YesNoProbabilities yesNo(double yes) {
+        new YesNoProbabilities(yes, 1 - yes)
     }
 
     static String fill(String text, Map<String, String> addresses) {

@@ -8,17 +8,23 @@ import squad.nononotaa.backend.analysis.CaseIdentifier
 import squad.nononotaa.backend.analysis.ConfidenceScoring
 import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.IdentifierType
+import squad.nononotaa.backend.analysis.KindProbabilities
 import squad.nononotaa.backend.analysis.Premise
+import squad.nononotaa.backend.analysis.PremiseAnswers
 import squad.nononotaa.backend.analysis.PremiseFacts
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.analysis.ScoringInput
 import squad.nononotaa.backend.analysis.ScoringResult
+import squad.nononotaa.backend.analysis.YesNoProbabilities
 import squad.nononotaa.backend.analysis.bareUrl
 import squad.nononotaa.backend.analysis.fold
 import squad.nononotaa.backend.analysis.premiseFacts
+import squad.nononotaa.backend.analysis.premiseWindows
 import squad.nononotaa.backend.model.AssessedBy
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.DismissalReason
+import squad.nononotaa.backend.model.ModelQuestion
 import squad.nononotaa.backend.model.PremiseKind
 import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.util.logger
@@ -30,24 +36,36 @@ enum class ScoringRule(
 ) {
     ENTERED_BY_ANALYST(0, "Adres został wpisany przez analityka jako dane sprawy; samo wpisanie nie jest dowodem."),
     OWN_PROFILE(80, "Adres został opublikowany na profilu badanej osoby ({hosts})."),
+    OWN_DECLARATION(80, "Autor wpisu przedstawił ten adres jako własny ({hosts})."),
     SALE_OR_SETTLEMENT(60, "Adres podano w ogłoszeniu sprzedaży lub w kontekście rozliczenia ({hosts})."),
     DISCUSSION(40, "Adres pojawił się w dyskusji ({hosts}); taki ślad wymaga potwierdzenia drugim źródłem."),
     MASS_COMMENT(10, "Adres pojawił się we wpisie konkursowym, promocyjnym lub typu giveaway ({hosts}), co jest słabą przesłanką."),
     NO_PERSON_LINK(0, "Żadna wzmianka nie łączy tego adresu z danymi badanej osoby."),
+    DECLARED_BY_ANOTHER_PERSON(0, "Wzmianki, w których ten adres jako własny podaje inna osoba, nie zostały uznane za potwierdzenie."),
     INDEPENDENT_SOURCES(15, "Niezależne źródła różnego pochodzenia ({hosts}) wskazują na ten sam adres."),
     SAME_SERVICE(0, "Kolejne wzmianki z tego samego serwisu nie są dodatkowym potwierdzeniem."),
     COPIED_TEXT(0, "Wzmianka w innym serwisie powtarza tę samą treść, więc nie jest niezależnym potwierdzeniem."),
     NICKNAME_ONLY(0, "Adres łączy z badaną osobą tylko nick lub login, które mogą należeć do innej osoby."),
+    WITHDRAWN_ADDRESS(0, "Autor wpisu podał, że ten adres był jego, ale już go nie używa."),
+    FOR_REVIEW(
+        0,
+        "Części wzmianek nie dało się ocenić jednoznacznie, więc wymagają weryfikacji i liczą się co najwyżej jak dyskusja.",
+    ),
     WARNING_CONTEXT(
         0,
         "Wzmianki, w których adres występuje w ostrzeżeniu lub z prośbą, by go nie używać, wymagają weryfikacji, " +
             "więc nie zostały uznane za potwierdzenie.",
+    ),
+    WARNING_DISMISSED(
+        0,
+        "Wzmianki, w których adres występuje w ostrzeżeniu lub z prośbą, by go nie używać, nie zostały uznane za potwierdzenie.",
     ),
     CONFLICTING_EMAIL(0, "Wzmianki zawierające adres e-mail innej osoby nie zostały uznane za potwierdzenie."),
     CLASSIFICATION_UNAVAILABLE(0, "Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi."),
 
     // its contribution is negative and computed per Attribution: the amount cut to reach the cap (P9)
     CLASSIFICATION_CAP(0, "Z tego powodu stopień pewności ograniczono, tak aby nie wskazywał wysokiego prawdopodobieństwa."),
+    MODEL_ASSISTED(0, "Rodzaj wpisu i ostrzeżenia oceniono z pomocą modelu; punkty przyznały stałe reguły."),
     ;
 
     fun sentence(hosts: List<String>) = template.replace("{hosts}", hosts.joinToString(", "))
@@ -58,22 +76,28 @@ class ConfidenceScoringService : ConfidenceScoring {
     override fun score(input: ScoringInput): ScoringResult {
         val mentions = input.mentions.associateBy { it.id }
         val wallets = input.identifiers.filter { it.type == IdentifierType.WALLET_ADDRESS }.map { it.value.trim() }.toSet()
+        // the model is on: confidence-3, also when it answered for no Premise (P22); with the model off answers are ignored
+        val withModel = input.mode == AssessmentMode.WITH_MODEL
+        val version = if (withModel) MODEL_ALGORITHM_VERSION else ALGORITHM_VERSION
+        val answers = if (withModel) input.answers else emptyMap()
         val attributions =
             (input.accepted + input.unclassified).map { candidate ->
                 score(
                     candidate = candidate,
-                    premises = premises(candidate, mentions, input.identifiers),
+                    premises = premises(candidate, mentions, input.identifiers, answers),
                     entered = candidate.address in wallets,
                     unclassified = candidate in input.unclassified,
                 )
             }
+        val premises = attributions.flatMap { it.premises }
         logger.info(
-            "Scored {} candidates from {} Premises with algorithm {}",
+            "Scored {} candidates from {} Premises ({} assessed with the model) with algorithm {}",
             attributions.size,
-            attributions.sumOf { it.premises.size },
-            ALGORITHM_VERSION,
+            premises.size,
+            premises.count { it.assessedBy == AssessedBy.MODEL },
+            version,
         )
-        return ScoringResult(attributions, ALGORITHM_VERSION)
+        return ScoringResult(attributions, version)
     }
 
     /** The `confidence-2` assessment of one Premise by rule; task 02 calls it per Premise as the fallback. */
@@ -114,17 +138,103 @@ class ConfidenceScoringService : ConfidenceScoring {
         )
     }
 
-    // a Mention without a window for the address (stored before confidence-2) gives no Premise
+    /**
+     * The `confidence-3` assessment of one Premise from the model's [answers] (D9, P13). Code keeps the link, the e-mail
+     * and the points; the model only reads the kind, the declaration and the warning, and never makes a link (D6).
+     */
+    private fun assessPremise(
+        mention: FoundMention,
+        window: AddressWindow,
+        identifiers: List<CaseIdentifier>,
+        answers: PremiseAnswers,
+    ): Premise {
+        val facts = premiseFacts(mention, window, identifiers)
+        val assessment = assessByModel(mention.url, identifiers, facts, answers)
+        val address = window.address ?: window.rawAddress
+        return Premise(
+            id = Premise.idOf(mention.id, address),
+            mentionId = mention.id,
+            address = address,
+            window = window,
+            facts = facts,
+            status = assessment.status,
+            kind = assessment.kind,
+            points = assessment.kind?.let { KIND_RULES.getValue(it).contribution } ?: 0,
+            dismissalReason = assessment.reason,
+            assessedBy = AssessedBy.MODEL,
+            answers = answers,
+            undetermined = assessment.undetermined,
+            withdrawn = assessment.withdrawn,
+        )
+    }
+
+    // the confidence-3 rule table, steps 1 to 7 in the order of P13
+    private fun assessByModel(
+        url: String,
+        identifiers: List<CaseIdentifier>,
+        facts: PremiseFacts,
+        answers: PremiseAnswers,
+    ): ModelAssessment {
+        val declaration = yesNo(answers.declaration)
+        val warning = yesNo(answers.warning)
+        val author = facts.authorIsPerson
+        // 1. the model never makes the link (D6); a profile page with a known other author is a link fact here (P7)
+        if (!linked(facts)) {
+            return when {
+                facts.underProfile && author == AuthorMatch.NO && declaration == Answer.YES ->
+                    ModelAssessment.dismissed(DismissalReason.DECLARED_BY_ANOTHER_PERSON)
+
+                declaration == Answer.YES -> ModelAssessment(PremiseStatus.FOR_REVIEW, null, DismissalReason.NO_PERSON_LINK)
+
+                else -> ModelAssessment.dismissed(DismissalReason.NO_PERSON_LINK)
+            }
+        }
+        // 2.-5. the e-mail (code only), the dismissals on determined answers, the withdrawn own address (D10)
+        when {
+            facts.conflictingEmail -> return ModelAssessment.dismissed(DismissalReason.CONFLICTING_EMAIL)
+
+            warning == Answer.YES && declaration != Answer.YES -> return ModelAssessment.dismissed(DismissalReason.WARNING)
+
+            declaration == Answer.YES && author == AuthorMatch.NO ->
+                return ModelAssessment.dismissed(DismissalReason.DECLARED_BY_ANOTHER_PERSON)
+
+            declaration == Answer.YES && warning == Answer.YES && author == AuthorMatch.YES ->
+                return ModelAssessment(PremiseStatus.COUNTED, PremiseKind.OWN_DECLARATION, null, withdrawn = true)
+        }
+        // 6. the own profile is code; otherwise the model's kind, which a declaration alone does not raise
+        val ownProfile = ownProfile(url, identifiers, facts)
+        val modelKind = kindOf(answers.kind)
+        val kind =
+            when {
+                ownProfile -> PremiseKind.OWN_PROFILE
+                modelKind != null -> modelKind
+                topKind(answers.kind) == PremiseKind.MASS_COMMENT -> PremiseKind.MASS_COMMENT
+                else -> PremiseKind.DISCUSSION
+            }
+        // 7. an undetermined answer that could still change the status (P13)
+        val declarationMatters = author == AuthorMatch.NO || (author == AuthorMatch.YES && warning == Answer.UNDETERMINED)
+        val undetermined =
+            buildList {
+                if (!ownProfile && modelKind == null) add(ModelQuestion.KIND)
+                if (declaration == Answer.UNDETERMINED && declarationMatters) add(ModelQuestion.DECLARATION)
+                if (warning == Answer.UNDETERMINED) add(ModelQuestion.WARNING)
+            }
+        if (undetermined.isEmpty()) return ModelAssessment(PremiseStatus.COUNTED, kind, null)
+        // at most a discussion; a mass comment stays a mass comment
+        val capped = if (KIND_RULES.getValue(kind).contribution > ScoringRule.DISCUSSION.contribution) PremiseKind.DISCUSSION else kind
+        return ModelAssessment(PremiseStatus.FOR_REVIEW, capped, null, undetermined)
+    }
+
+    // a Premise without an answer is assessed by the confidence-2 rules (fallback, D13)
     private fun premises(
         candidate: Candidate,
         mentions: Map<String, FoundMention>,
         identifiers: List<CaseIdentifier>,
-    ): List<Premise> = candidate.mentionIds
-        .distinct()
-        .mapNotNull(mentions::get)
-        .mapNotNull { mention ->
-            mention.addressWindows.firstOrNull { it.address == candidate.address }?.let { assessPremise(mention, it, identifiers) }
-        }.sortedBy { it.id }
+        answers: Map<String, PremiseAnswers>,
+    ): List<Premise> = premiseWindows(candidate, mentions).map { (mention, window) ->
+        answers[Premise.idOf(mention.id, candidate.address)]?.let { assessPremise(mention, window, identifiers, it) }
+            ?: assessPremise(mention, window, identifiers)
+    }
 
     private fun score(
         candidate: Candidate,
@@ -134,13 +244,18 @@ class ConfidenceScoringService : ConfidenceScoring {
     ): ScoredAttribution {
         val applied = sortedMapOf<ScoringRule, List<Premise>>()
         if (entered) applied[ScoringRule.ENTERED_BY_ANALYST] = emptyList()
-        val counted = premises.filter { it.status == PremiseStatus.COUNTED }
+        // a Premise for review that still gives points counts at its capped kind (P8)
+        val counted = premises.filter { it.status == PremiseStatus.COUNTED || (it.status == PremiseStatus.FOR_REVIEW && it.points > 0) }
         if (counted.isEmpty()) {
             // Premises put aside for a warning or another e-mail have their own notes, so they are not "no link" (L2)
             val unlinked = premises.filter { it.dismissalReason == DismissalReason.NO_PERSON_LINK }
             if (premises.isEmpty() || unlinked.isNotEmpty()) applied[ScoringRule.NO_PERSON_LINK] = unlinked
         } else {
-            val strongest = KIND_RULES.getValue(counted.maxBy { it.points }.kind!!)
+            // of two kinds with the same points, the one declared first (own profile before own declaration)
+            val strongest =
+                counted
+                    .map { KIND_RULES.getValue(it.kind!!) }
+                    .maxWith(compareBy<ScoringRule> { it.contribution }.thenByDescending { it.ordinal })
             applied[strongest] = counted.filter { KIND_RULES[it.kind] == strongest }
             // a mass comment is too weak to confirm another source (D9-002)
             val confirming = counted.filter { it.points >= ScoringRule.DISCUSSION.contribution }
@@ -154,7 +269,17 @@ class ConfidenceScoringService : ConfidenceScoring {
             }
             if (counted.none(::strongLink)) applied[ScoringRule.NICKNAME_ONLY] = counted
         }
-        premises.filter { it.dismissalReason == DismissalReason.WARNING }.ifNotEmpty { applied[ScoringRule.WARNING_CONTEXT] = it }
+        premises
+            .filter { it.dismissalReason == DismissalReason.DECLARED_BY_ANOTHER_PERSON }
+            .ifNotEmpty { applied[ScoringRule.DECLARED_BY_ANOTHER_PERSON] = it }
+        premises.filter { it.withdrawn }.ifNotEmpty { applied[ScoringRule.WITHDRAWN_ADDRESS] = it }
+        // a keyword warning on a linked Premise is for review with its own note (L2); the other Premises for review share one
+        val (warned, forReview) = premises.filter { it.status == PremiseStatus.FOR_REVIEW }.partition { it.dismissalReason == DismissalReason.WARNING }
+        forReview.ifNotEmpty { applied[ScoringRule.FOR_REVIEW] = it }
+        warned.ifNotEmpty { applied[ScoringRule.WARNING_CONTEXT] = it }
+        premises
+            .filter { it.status == PremiseStatus.DISMISSED && it.dismissalReason == DismissalReason.WARNING }
+            .ifNotEmpty { applied[ScoringRule.WARNING_DISMISSED] = it }
         premises.filter { it.dismissalReason == DismissalReason.CONFLICTING_EMAIL }.ifNotEmpty { applied[ScoringRule.CONFLICTING_EMAIL] = it }
         if (unclassified) applied[ScoringRule.CLASSIFICATION_UNAVAILABLE] = emptyList()
 
@@ -162,6 +287,7 @@ class ConfidenceScoringService : ConfidenceScoring {
         // an address that may belong to an exchange or a contract never reads as a high probability (P9)
         val cut = if (unclassified && uncapped > UNCLASSIFIED_CAP) UNCLASSIFIED_CAP - uncapped else 0
         if (cut < 0) applied[ScoringRule.CLASSIFICATION_CAP] = emptyList()
+        premises.filter { it.assessedBy == AssessedBy.MODEL }.ifNotEmpty { applied[ScoringRule.MODEL_ASSISTED] = it }
         val level = uncapped + cut
         logger.debug(
             "Scored candidate network={} level={} rules={} premises={} counted={}",
@@ -230,6 +356,25 @@ class ConfidenceScoringService : ConfidenceScoring {
         return nicknamePage && facts.identifierTypes.any { it in SECOND_IDENTIFIERS }
     }
 
+    // the thresholds of D9 and P12; the word follows the threshold, not a rounded number (P28)
+    private fun yesNo(probabilities: YesNoProbabilities) = when {
+        probabilities.yes >= YES_THRESHOLD -> Answer.YES
+        probabilities.yes <= NO_THRESHOLD -> Answer.NO
+        else -> Answer.UNDETERMINED
+    }
+
+    // on a tie the option asked first wins, so the result depends on the answers alone
+    private fun topOption(probabilities: KindProbabilities) = listOf(
+        PremiseKind.OWN_DECLARATION to probabilities.ownDeclaration,
+        PremiseKind.SALE_OR_SETTLEMENT to probabilities.saleOrSettlement,
+        PremiseKind.DISCUSSION to probabilities.discussion,
+        PremiseKind.MASS_COMMENT to probabilities.massComment,
+    ).maxBy { it.second }
+
+    private fun topKind(probabilities: KindProbabilities) = topOption(probabilities).first
+
+    private fun kindOf(probabilities: KindProbabilities) = topOption(probabilities).takeIf { it.second >= KIND_THRESHOLD }?.first
+
     private fun sentenceOf(window: AddressWindow): String {
         val text = window.text
         val addressEnd = window.addressStart + window.addressLength
@@ -251,6 +396,20 @@ class ConfidenceScoringService : ConfidenceScoring {
         if (isNotEmpty()) action(this)
     }
 
+    private enum class Answer { YES, NO, UNDETERMINED }
+
+    private data class ModelAssessment(
+        val status: PremiseStatus,
+        val kind: PremiseKind?,
+        val reason: DismissalReason?,
+        val undetermined: List<ModelQuestion> = emptyList(),
+        val withdrawn: Boolean = false,
+    ) {
+        companion object {
+            fun dismissed(reason: DismissalReason) = ModelAssessment(PremiseStatus.DISMISSED, null, reason)
+        }
+    }
+
     private class Words(
         vararg words: String,
     ) {
@@ -261,12 +420,17 @@ class ConfidenceScoringService : ConfidenceScoring {
 
     companion object {
         const val ALGORITHM_VERSION = "confidence-2"
+        const val MODEL_ALGORITHM_VERSION = "confidence-3"
+        private const val YES_THRESHOLD = 0.7
+        private const val NO_THRESHOLD = 0.3
+        private const val KIND_THRESHOLD = 0.5
         private const val MAX = 100
         private const val UNCLASSIFIED_CAP = 59
         private const val LINK_DISTANCE = 200
         private val KIND_RULES =
             mapOf(
                 PremiseKind.OWN_PROFILE to ScoringRule.OWN_PROFILE,
+                PremiseKind.OWN_DECLARATION to ScoringRule.OWN_DECLARATION,
                 PremiseKind.SALE_OR_SETTLEMENT to ScoringRule.SALE_OR_SETTLEMENT,
                 PremiseKind.DISCUSSION to ScoringRule.DISCUSSION,
                 PremiseKind.MASS_COMMENT to ScoringRule.MASS_COMMENT,

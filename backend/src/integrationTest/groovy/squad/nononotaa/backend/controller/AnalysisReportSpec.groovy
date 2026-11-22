@@ -201,11 +201,13 @@ class AnalysisReportSpec extends BaseSpec {
             [id: 'm-sale:' + ETH, mentionId: 'm-sale', sourceName: 'synthetic', url: 'https://p2p.example/ad/3', author: 'zenek_fx',
                 collectedAt: '2026-11-21T10:02:00Z', text: sale.context, addressStart: sale.context.indexOf(ETH_EIP55), addressLength: 42,
                 status: 'COUNTED', kind: 'SALE_OR_SETTLEMENT', points: 60, dismissalReason: null, assessedBy: 'RULE',
-                facts: [authorIsPerson: 'YES', underProfile: false, identifierTypes: ['NICKNAME'], identifierDistance: 0, conflictingEmail: false, addressCount: 1, host: 'p2p.example']],
+                facts: [authorIsPerson: 'YES', underProfile: false, identifierTypes: ['NICKNAME'], identifierDistance: 0, conflictingEmail: false, addressCount: 1, host: 'p2p.example'],
+                answers: null, undetermined: [], withdrawn: false],
             [id: 'm-forum:' + ETH, mentionId: 'm-forum', sourceName: 'synthetic', url: 'https://forum.example/t/1', author: null,
                 collectedAt: '2026-11-21T10:00:00Z', text: forum.context, addressStart: forum.context.indexOf(ETH_EIP55), addressLength: 42,
                 status: 'DISMISSED', kind: null, points: 0, dismissalReason: 'CONFLICTING_EMAIL', assessedBy: 'RULE',
-                facts: [authorIsPerson: 'UNKNOWN', underProfile: true, identifierTypes: [], identifierDistance: null, conflictingEmail: true, addressCount: 2, host: null]],
+                facts: [authorIsPerson: 'UNKNOWN', underProfile: true, identifierTypes: [], identifierDistance: null, conflictingEmail: true, addressCount: 2, host: null],
+                answers: null, undetermined: [], withdrawn: false],
         ]
         attribution.scoringRules == [
             [rule: 'SALE_OR_SETTLEMENT', contribution: 60, premiseIds: ['m-sale:' + ETH]],

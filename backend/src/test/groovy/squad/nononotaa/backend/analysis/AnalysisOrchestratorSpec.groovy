@@ -4,6 +4,7 @@ import java.time.Instant
 import spock.lang.Specification
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ExclusionReason
 import squad.nononotaa.backend.model.ReportLimitation
@@ -14,9 +15,11 @@ class AnalysisOrchestratorSpec extends Specification {
     MentionSearch search = Mock()
     CandidatePreparation preparation = Mock()
     ExclusionClassifier exclusions = Mock()
+    PremiseAssessment assessment = Mock()
     ConfidenceScoring scoring = Mock()
     AnalysisRecorder recorder = Mock()
-    AnalysisOrchestrator orchestrator = new AnalysisOrchestrator(search, preparation, exclusions, scoring, recorder)
+    AnalysisOrchestrator orchestrator = new AnalysisOrchestrator(search, preparation, exclusions, assessment, scoring, recorder)
+    AssessmentMode mode = AssessmentMode.RULES_ONLY
 
     def request = new AnalysisRequest('case-1', AnalysisTrigger.MANUAL, [
         new CaseIdentifier(IdentifierType.NICKNAME, 'nick')
@@ -35,6 +38,109 @@ class AnalysisOrchestratorSpec extends Specification {
     def setup() {
         recorder.begin(request) >> 'a-1'
         recorder.finish('a-1', _) >> { id, result -> finished = result }
+        assessment.getMode() >> { mode }
+    }
+
+    static window(String address) {
+        new AddressWindow(address, address, "pay to $address", 7, address.length())
+    }
+
+    def unclassifiedCandidate = new Candidate('ETHEREUM', '0xfff', ['m1'])
+    def windowed = new FoundMention('m1', 'forum', 'https://example.test/m1', Instant.parse('2026-11-21T10:00:00Z'), 'ctx',
+    ['0xabc', '0xdef', '0xfff'], 'nick', [
+        window('0xabc'),
+        window('0xdef'),
+        window('0xfff')
+    ])
+    def answers = new PremiseAnswers(new KindProbabilities(0.8d, 0.1d, 0.05d, 0.05d), new YesNoProbabilities(0.9d, 0.1d),
+    new YesNoProbabilities(0.1d, 0.9d), 'req-1')
+
+    def "with the model the port is asked once, only for Premises of accepted and unclassified addresses, and its answers reach scoring"() {
+        given:
+        mode = AssessmentMode.WITH_MODEL
+        search.search(_) >> new SearchResult([windowed], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([
+            candidate,
+            excludedCandidate,
+            unclassifiedCandidate
+        ], [
+            new RejectedCandidate('m1', 'bad', 'INVALID_ADDRESS')
+        ])
+        exclusions.classify(_) >> new ExclusionResult([candidate], [
+            new ExcludedCandidate(excludedCandidate, ExclusionReason.EXCHANGE, 'own-list')
+        ], [unclassifiedCandidate])
+        def answered = ['m1:0xabc': answers, 'm1:0xfff': answers]
+
+        when:
+        orchestrator.run(request)
+
+        then:
+        1 * assessment.assess({ List<PremiseToAssess> premises ->
+            premises*.premiseId == ['m1:0xabc', 'm1:0xfff'] &&
+            premises*.address == ['0xabc', '0xfff'] &&
+            premises*.text == [
+                'pay to 0xabc',
+                'pay to 0xfff'
+            ] &&
+            premises[0].facts == PremiseFactsKt.premiseFacts(windowed, window('0xabc'), request.identifiers)
+        }, request.identifiers) >> new PremiseAssessments(answered, 'jev-1')
+        1 * scoring.score({ ScoringInput input ->
+            input.answers == answered && input.mode == AssessmentMode.WITH_MODEL
+        }) >>
+        new ScoringResult([attribution], 'confidence-3')
+        finished.assessmentMode == AssessmentMode.WITH_MODEL
+        finished.modelVersion == 'jev-1'
+        finished.questionSetVersion == 'premise-questions-1'
+        !(ReportLimitation.MODEL_ASSESSMENT_UNAVAILABLE in finished.limitations)
+    }
+
+    def "a Premise without an answer adds the Report Limitation once and keeps the status: #variant"() {
+        given:
+        mode = AssessmentMode.WITH_MODEL
+        def other = new Candidate('ETHEREUM', '0xdef', ['m1'])
+        search.search(_) >> new SearchResult([windowed], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([candidate, other], [])
+        exclusions.classify(_) >> new ExclusionResult([candidate, other], [], [])
+        assessment.assess(_, _) >> {
+            if (portThrows) throw new IllegalStateException('boom')
+            new PremiseAssessments(['m1:0xabc': answers], 'jev-1')
+        }
+        scoring.score(_) >> new ScoringResult([attribution], 'confidence-3')
+
+        when:
+        def run = orchestrator.run(request)
+
+        then:
+        run.status == AnalysisStatus.COMPLETED
+        finished.status == AnalysisStatus.COMPLETED
+        finished.failures.isEmpty()
+        finished.limitations == [
+            ReportLimitation.MODEL_ASSESSMENT_UNAVAILABLE
+        ]
+        finished.assessmentMode == AssessmentMode.WITH_MODEL
+
+        where:
+        variant              | portThrows
+        'one answer missing' | false
+        'the port throws'    | true
+    }
+
+    def "without the model the port is never asked and no model field or limitation is set"() {
+        given:
+        search.search(_) >> new SearchResult([windowed], [okSource])
+        preparation.prepare(_) >> new PreparedCandidates([candidate], [])
+        exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
+
+        when:
+        orchestrator.run(request)
+
+        then:
+        0 * assessment.assess(_, _)
+        1 * scoring.score(new ScoringInput([candidate], [], [windowed], request.identifiers)) >> new ScoringResult([attribution], 'confidence-2')
+        finished.limitations.isEmpty()
+        finished.assessmentMode == AssessmentMode.RULES_ONLY
+        finished.modelVersion == null
+        finished.questionSetVersion == null
     }
 
     def "completes an analysis and hands every stage output to the recorder"() {

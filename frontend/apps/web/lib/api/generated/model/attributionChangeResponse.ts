@@ -25,4 +25,5 @@ export interface AttributionChangeResponse {
   laterMentionIds?: string[];
   /** @nullable */
   absenceVerifiable?: boolean | null;
+  modelAssessmentChanged?: boolean;
 }

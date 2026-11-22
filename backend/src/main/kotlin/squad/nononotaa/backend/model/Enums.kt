@@ -10,13 +10,26 @@ enum class ExclusionReason { EXCHANGE, SMART_CONTRACT, MIXER, FUNDRAISER }
 
 enum class ClassificationStatus { NOT_EXCLUDED, UNAVAILABLE }
 
-enum class ReportLimitation { SOURCE_UNAVAILABLE, BLOCKCHAIN_DATA_UNAVAILABLE, CLASSIFICATION_UNAVAILABLE, ANALYSIS_INCOMPLETE }
+enum class ReportLimitation {
+    SOURCE_UNAVAILABLE,
+    BLOCKCHAIN_DATA_UNAVAILABLE,
+    CLASSIFICATION_UNAVAILABLE,
+    MODEL_ASSESSMENT_UNAVAILABLE,
+    ANALYSIS_INCOMPLETE,
+}
 
 enum class AddressActivityEventType { RECEIVED, SENT, SWAP, CASH_OUT_SIGNAL }
 
 enum class AttributionChangeType { NEW, NOT_OBSERVED, CONFIDENCE_LEVEL_CHANGED, EXCLUSION_CHANGED }
 
-enum class ComparabilityLimitation { IDENTIFIERS_DIFFER, SOURCE_COVERAGE_DIFFERS, NETWORKS_DIFFER, ALGORITHM_VERSION_DIFFERS, PARTIAL_ANALYSIS }
+enum class ComparabilityLimitation {
+    IDENTIFIERS_DIFFER,
+    SOURCE_COVERAGE_DIFFERS,
+    NETWORKS_DIFFER,
+    ALGORITHM_VERSION_DIFFERS,
+    MODEL_VERSION_DIFFERS,
+    PARTIAL_ANALYSIS,
+}
 
 enum class ScheduleAttemptOutcome { STARTED, SKIPPED_OVERLAP, SKIPPED_DOWNTIME, FAILED }
 
@@ -36,3 +49,8 @@ enum class PremiseKind { OWN_PROFILE, OWN_DECLARATION, SALE_OR_SETTLEMENT, DISCU
 enum class AssessedBy { RULE, MODEL }
 
 enum class AuthorMatch { YES, NO, UNKNOWN }
+
+enum class AssessmentMode { RULES_ONLY, WITH_MODEL }
+
+/** The three questions of the question set `premise-questions-1`: `rodzaj_wpisu`, `deklaracja`, `ostrzezenie`. */
+enum class ModelQuestion { KIND, DECLARATION, WARNING }

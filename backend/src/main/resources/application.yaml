@@ -30,3 +30,16 @@ app:
   exclusion:
     # Keyless ETH bytecode check (public JSON-RPC, Blockchair fallback); false keeps every address inside the app (D22-005)
     onchain-check-enabled: ${EXCLUSION_ONCHAIN_CHECK_ENABLED:true}
+  assessment:
+    model:
+      # Decision model TypeSafe "Jev" for the Premises (D13, P20); on by default, but without a key the app runs on rules only
+      enabled: ${ASSESSMENT_MODEL_ENABLED:true}
+      base-url: https://api.typesafe.ai
+      model: jev-latest
+      timeout: 5s
+      # only the variable name lives here, never a value; enabled without a key falls back to rules only
+      api-key: ${ASSESSMENT_MODEL_API_KEY:}
+logging:
+  level:
+    # SystemOneDecisionModel logs the full request (the state) at TRACE: never below INFO
+    org.springframework.ai.systemone: INFO

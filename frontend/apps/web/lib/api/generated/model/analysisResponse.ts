@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { AnalysisResponseAssessmentMode } from "./analysisResponseAssessmentMode";
 import type { AnalysisResponseNetworksItem } from "./analysisResponseNetworksItem";
 import type { AnalysisResponseStatus } from "./analysisResponseStatus";
 import type { AnalysisResponseTrigger } from "./analysisResponseTrigger";
@@ -23,6 +24,12 @@ export interface AnalysisResponse {
   networks?: AnalysisResponseNetworksItem[];
   /** @nullable */
   algorithmVersion?: string | null;
+  /** @nullable */
+  assessmentMode?: AnalysisResponseAssessmentMode;
+  /** @nullable */
+  modelVersion?: string | null;
+  /** @nullable */
+  questionSetVersion?: string | null;
   /** @nullable */
   attributionCount?: number | null;
   /** @nullable */

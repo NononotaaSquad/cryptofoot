@@ -6,6 +6,7 @@ import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.dto.AttributionChangeResponse
 import squad.nononotaa.backend.model.AnalysisRecord
 import squad.nononotaa.backend.model.AnalysisStatus
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AttributionChangeType
 import squad.nononotaa.backend.model.ComparabilityLimitation
 import squad.nononotaa.backend.model.Network
@@ -32,6 +33,8 @@ class AnalysisComparer {
         ComparabilityLimitation.SOURCE_COVERAGE_DIFFERS.takeIf { earlier.sourceStatuses() != later.sourceStatuses() },
         ComparabilityLimitation.NETWORKS_DIFFER.takeIf { earlier.networks.toSet() != later.networks.toSet() },
         ComparabilityLimitation.ALGORITHM_VERSION_DIFFERS.takeIf { earlier.result?.algorithmVersion != later.result?.algorithmVersion },
+        // like the algorithm version: a missing version on one side only (one Analysis without the model) also differs
+        ComparabilityLimitation.MODEL_VERSION_DIFFERS.takeIf { earlier.result?.modelVersion != later.result?.modelVersion },
         ComparabilityLimitation.PARTIAL_ANALYSIS.takeIf {
             earlier.status != AnalysisStatus.COMPLETED || later.status != AnalysisStatus.COMPLETED
         },
@@ -71,8 +74,18 @@ class AnalysisComparer {
             earlierMentionIds = before?.mentionIds.orEmpty(),
             laterMentionIds = after?.mentionIds.orEmpty(),
             absenceVerifiable = if (type == AttributionChangeType.NOT_OBSERVED) absenceVerifiable(key, before, earlier, later) else null,
+            modelAssessmentChanged = type == AttributionChangeType.CONFIDENCE_LEVEL_CHANGED && modelAssessmentChanged(before, after, earlier, later),
         )
     }
+
+    // "Zmieniła się ocena modelu, brak nowych wzmianek" (P23): the same evidence, so only the assessment can explain the change
+    private fun modelAssessmentChanged(
+        before: Side?,
+        after: Side?,
+        earlier: AnalysisRecord,
+        later: AnalysisRecord,
+    ) = before?.mentionIds.orEmpty().toSet() == after?.mentionIds.orEmpty().toSet() &&
+        listOf(earlier, later).any { it.result?.assessmentMode == AssessmentMode.WITH_MODEL }
 
     private fun absenceVerifiable(
         key: Pair<String, String>,

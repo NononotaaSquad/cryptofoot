@@ -31,6 +31,8 @@ const reportLimitationSentences: Record<ReportResponseLimitationsItem, string> =
       "Nie udało się pobrać danych o aktywności adresów w sieci, więc ta część raportu może być pusta lub niepełna.",
     CLASSIFICATION_UNAVAILABLE:
       "Nie udało się sprawdzić, czy adresy należą do serwisów (np. giełd), więc część powiązań może dotyczyć takich adresów.",
+    MODEL_ASSESSMENT_UNAVAILABLE:
+      "Model nie ocenił części lub wszystkich przesłanek; te przesłanki oceniono samymi regułami.",
     ANALYSIS_INCOMPLETE:
       "Analiza nie została ukończona, więc raport może być niepełny.",
   };

@@ -69,9 +69,57 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qAAA": {
+          "kind": {
+            "ownDeclaration": 0.05,
+            "saleOrSettlement": 0.85,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.03
+        }
+      }
     },
     {
       "id": "G2",
@@ -138,9 +186,50 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "0xCCC",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:0xCCC",
+                  "status": "DISMISSED",
+                  "reason": "DECLARED_BY_ANOTHER_PERSON"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DECLARED_BY_ANOTHER_PERSON",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xCCC"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xCCC"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:0xCCC": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.92,
+          "warning": 0.03
+        }
+      }
     },
     {
       "id": "G3",
@@ -204,9 +293,57 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qNEW": {
+          "kind": {
+            "ownDeclaration": 0.82,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.94,
+          "warning": 0.07
+        }
+      }
     },
     {
       "id": "G4",
@@ -277,9 +414,64 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qDDD",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qDDD",
+                  "status": "FOR_REVIEW",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "FOR_REVIEW",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qDDD": {
+          "kind": {
+            "ownDeclaration": 0.15,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.78,
+            "massComment": 0.02
+          },
+          "declaration": 0.48,
+          "warning": 0.05
+        }
+      }
     },
     {
       "id": "G5",
@@ -352,9 +544,62 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qEEE",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qEEE",
+                  "status": "FOR_REVIEW",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "ENTERED_BY_ANALYST",
+                  "contribution": 0,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                },
+                {
+                  "rule": "FOR_REVIEW",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qEEE": {
+          "kind": {
+            "ownDeclaration": 0.88,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.95,
+          "warning": 0.02
+        }
+      }
     },
     {
       "id": "G6",
@@ -425,7 +670,37 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
       "cannedAnswers": {}
     },
@@ -544,9 +819,111 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 95,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_PROFILE",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m2:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:bc1qAAA",
+                    "m2:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA",
+                    "m2:bc1qAAA"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qBBB",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qBBB",
+                  "status": "DISMISSED",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_DISMISSED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qBBB"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qBBB"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qAAA": {
+          "kind": {
+            "ownDeclaration": 0.15,
+            "saleOrSettlement": 0.75,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.03
+        },
+        "m1:bc1qBBB": {
+          "kind": {
+            "ownDeclaration": 0.05,
+            "saleOrSettlement": 0.71,
+            "discussion": 0.2,
+            "massComment": 0.04
+          },
+          "declaration": 0.06,
+          "warning": 0.95
+        },
+        "m2:bc1qAAA": {
+          "kind": {
+            "ownDeclaration": 0.7,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.25,
+            "massComment": 0.03
+          },
+          "declaration": 0.85,
+          "warning": 0.02
+        }
+      }
     },
     {
       "id": "G8",
@@ -640,9 +1017,108 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qOLD",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qOLD",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "WITHDRAWN_ADDRESS",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qOLD": {
+          "kind": {
+            "ownDeclaration": 0.7,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.25,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.9
+        },
+        "m1:bc1qNEW": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.15,
+            "massComment": 0.02
+          },
+          "declaration": 0.94,
+          "warning": 0.07
+        }
+      }
     },
     {
       "id": "G9",
@@ -706,9 +1182,50 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qMMM",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qMMM",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qMMM"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qMMM"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qMMM": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.2,
+            "discussion": 0.65,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        }
+      }
     },
     {
       "id": "G10",
@@ -793,9 +1310,74 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qGGG",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qGGG",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qGGG",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qGGG"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qGGG",
+                    "m2:bc1qGGG"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qGGG",
+                    "m2:bc1qGGG"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qGGG": {
+          "kind": {
+            "ownDeclaration": 0.3,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.65,
+            "massComment": 0.03
+          },
+          "declaration": 0.8,
+          "warning": 0.02
+        },
+        "m2:bc1qGGG": {
+          "kind": {
+            "ownDeclaration": 0.02,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.08,
+            "massComment": 0.85
+          },
+          "declaration": 0.1,
+          "warning": 0.2
+        }
+      }
     },
     {
       "id": "G11",
@@ -873,9 +1455,60 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "0xFFF",
+              "level": 59,
+              "premises": [
+                {
+                  "id": "m1:0xFFF",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_PROFILE",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:0xFFF"
+                  ]
+                },
+                {
+                  "rule": "CLASSIFICATION_UNAVAILABLE",
+                  "contribution": 0,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "CLASSIFICATION_CAP",
+                  "contribution": -21,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xFFF"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:0xFFF": {
+          "kind": {
+            "ownDeclaration": 0.75,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.18,
+            "massComment": 0.02
+          },
+          "declaration": 0.88,
+          "warning": 0.02
+        }
+      }
     },
     {
       "id": "G12",
@@ -943,9 +1576,50 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qHHH",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qHHH",
+                  "status": "DISMISSED",
+                  "reason": "CONFLICTING_EMAIL"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "CONFLICTING_EMAIL",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qHHH"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qHHH"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qHHH": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.25,
+            "discussion": 0.6,
+            "massComment": 0.05
+          },
+          "declaration": 0.3,
+          "warning": 0.05
+        }
+      }
     },
     {
       "id": "G13",
@@ -1039,9 +1713,83 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qCCC",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qCCC",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qCCC",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "COPIED_TEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qCCC": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.16,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        },
+        "m2:bc1qCCC": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.16,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        }
+      }
     },
     {
       "id": "G14",
@@ -1097,9 +1845,50 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qLLL",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qLLL",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qLLL"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qLLL"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qLLL": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.8,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        }
+      }
     },
     {
       "id": "G14b",
@@ -1155,9 +1944,50 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qKKK",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qKKK",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qKKK"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qKKK"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:bc1qKKK": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.8,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        }
+      }
     },
     {
       "id": "G15",
@@ -1322,9 +2152,193 @@
             }
           ]
         },
-        "confidence-3": {}
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+              "band": [
+                60,
+                100
+              ],
+              "premises": [
+                {
+                  "id": "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "premiseIds": [
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+              "band": [
+                60,
+                100
+              ],
+              "premises": [
+                {
+                  "id": "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "premiseIds": [
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+              "band": [
+                60,
+                100
+              ],
+              "premises": [
+                {
+                  "id": "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       },
-      "cannedAnswers": {}
+      "cannedAnswers": {
+        "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.75,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        },
+        "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.75,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        },
+        "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+          "kind": {
+            "ownDeclaration": 0.65,
+            "saleOrSettlement": 0.1,
+            "discussion": 0.22,
+            "massComment": 0.03
+          },
+          "declaration": 0.85,
+          "warning": 0.02
+        },
+        "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed": {
+          "kind": {
+            "ownDeclaration": 0.65,
+            "saleOrSettlement": 0.1,
+            "discussion": 0.22,
+            "massComment": 0.03
+          },
+          "declaration": 0.85,
+          "warning": 0.02
+        },
+        "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.8,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.85,
+          "warning": 0.05
+        }
+      }
     }
   ]
 }
