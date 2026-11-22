@@ -147,7 +147,8 @@ The New case feature loses its mock and calls the Analysis run hook. The route f
 
 ### Reviewed store (Q4)
 
-- The Reviewed mark is kept in `localStorage`, one key per Case id, read and written through one small module; no backend call. Known limit: per browser.
+- The Reviewed mark is kept in `localStorage`, one key per Case id, read and written through one small module (`reviewed-store.ts`, pure rules in `reviewed-mark.ts`); no backend call. Known limit: per browser.
+- *Amended 2026-11-22 (#84, user decision):* the stored value is a versioned mark of the exact reviewed Analysis (id, startedAt), not a bare timestamp. The button marks only the terminal Analysis shown; an older mark never moves a newer one back; a newer finished Analysis (FAILED too) is New Results again; legacy timestamps count as not reviewed. Pure rules are tested by Vitest; the store and components are verified in the browser.
 - Not tested by Vitest; verified in the browser.
 
 ### API contract used
