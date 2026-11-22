@@ -60,3 +60,13 @@ Backend `local` profile on a clean MongoDB database, no HTTP client active after
 3. With the frontend (`NEXT_PUBLIC_DEMO_SCHEDULE=true`, Edge driven by a Playwright script kept outside the repository): state row and label "Tryb demonstracyjny", `GET .../schedule` and `.../analyses` every 5.0 s, a Scheduled Analysis appearing in the select ("Liczba analiz" 4 -> 5, 7 -> 8) without a reload while the address and the displayed report stayed, no loader or skeleton, popover with the five options and the next and last term lines, Escape returning focus to the clock button, a failed save keeping the popover open with the message and the choice, "Anuluj" dropping the choice, disabling removing the row and stopping all requests (0 in 12 s), the state kept after a reload for "Codziennie o 06:00" and for "Wyłączony".
 
 Limit of the evidence: local, synthetic sources; production (Cloud Run) was not deployed or checked; the deploy flags are in `ci.yml` and were validated as YAML only.
+## Verified "every 1 minute" run (2026-11-22, #78 / D27-010)
+
+Backend `local` profile (port 18080, fresh MongoDB database), synthetic demo person `zenek_fx`, no external source called (`github` and `bitcointalk` are off in `local`). `PUT /cases/{id}/schedule` with `{"enabled":true,"cadence":"CUSTOM_INTERVAL","intervalValue":1,"intervalUnit":"MINUTES"}` (not a demo preset, no flag needed), then **no HTTP request for 190 s** (no browser, no polling):
+
+- three Analyses with trigger `SCHEDULED`, started 01:56:30.9Z, 01:57:32.7Z, 01:58:32.7Z (one per minute, no duplicates, no overlap), `lastAttempt` = `STARTED`;
+- `PUT {"enabled":false}`: `nextExecutionAt` null; 150 s later still three Analyses.
+- Restart: with the schedule enabled the backend process was killed and started again; the saved interval was read back and the next two terms ran (02:03:59.9Z, 02:04:59.9Z), so the setting survives a restart.
+- UI (Edge via Playwright, script kept outside the repository): 0, empty, `1.5` and `366 dni` rejected with messages; a save aborted at the network level showed "Nie zapisano harmonogramu. ..." and no state row; the successful save showed "Zapisano harmonogram." and the row "Harmonogram: co 1 minutę · następna analiza: ... (Europe/Warsaw)"; after a reload the row stayed; disabling removed it.
+
+Limits: local only, synthetic sources, tick `PT5S` from the `local` profile (production default is now `PT10S`, so a term can start up to 10 s after its time). Cloud Run was not deployed or checked; production needs `--min-instances 1 --no-cpu-throttling` (already in `ci.yml`, #73) for the scheduler to run without requests.

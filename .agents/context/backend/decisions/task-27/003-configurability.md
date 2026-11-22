@@ -1,5 +1,7 @@
 # D27-003: Configurability: predefined options per Case
 
+> **Extended by D27-010** (2026-11-22, #78): besides the presets the Analyst can set a custom interval (value + unit). Arbitrary cron rules are still not offered.
+
 - **Status:** accepted (by the task owner; not confirmed by the team)
 - **Date:** 2026-11-21
 - **Type:** decision chosen by the user among offered options

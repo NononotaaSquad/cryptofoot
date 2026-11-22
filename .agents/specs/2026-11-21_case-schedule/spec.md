@@ -178,7 +178,7 @@ Not asked in the grilling; proposed so the implementation is not blocked. Each c
 
 - The Case list and the Case counter; whether a Case has an enabled Schedule is not shown there.
 - A history of attempts: the backend keeps only the last one (D27-007).
-- Frequencies entered by the Analyst, and any Frequency outside the fixed list.
+- ~~Frequencies entered by the Analyst~~: added by #78 (D27-010): the option "Własny interwał" with a number and a unit (minuty, godziny, dni), the explanation "interwał a godzina", the note that frequent Analyses increase requests to sources, the Zapisz/Zapisano/error states, and the zone shown next to the next term. Cron-like rules stay out of scope.
 - Notifications about a finished Scheduled Analysis.
 - Resetting the Reviewed mark when a Scheduled Analysis ends: the mark lives in the browser until V11.
 - Comparison of two Analyses (E6.3, D2).

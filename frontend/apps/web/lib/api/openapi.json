@@ -372,7 +372,26 @@
                             "DAILY",
                             "EVERY_6_HOURS",
                             "WEEKLY",
-                            "DEMO_EVERY_MINUTE"
+                            "DEMO_EVERY_MINUTE",
+                            "CUSTOM_INTERVAL"
+                        ]
+                    },
+                    "intervalValue": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "intervalUnit": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "MINUTES",
+                            "HOURS",
+                            "DAYS"
                         ]
                     }
                 }
@@ -416,7 +435,26 @@
                             "DAILY",
                             "EVERY_6_HOURS",
                             "WEEKLY",
-                            "DEMO_EVERY_MINUTE"
+                            "DEMO_EVERY_MINUTE",
+                            "CUSTOM_INTERVAL"
+                        ]
+                    },
+                    "intervalValue": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int64"
+                    },
+                    "intervalUnit": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "MINUTES",
+                            "HOURS",
+                            "DAYS"
                         ]
                     },
                     "demo": {

@@ -6,6 +6,7 @@ import type {
 } from "@/lib/api/generated/model";
 
 import {
+  checkCustomInterval,
   isScheduleOptionValue,
   toScheduleView,
   toUpdateScheduleRequest,
@@ -13,6 +14,7 @@ import {
 
 const NEXT = "2026-11-22T05:00:00Z"; // 06:00 in Warsaw (CET)
 const NEXT_TEXT = "22.11.2026, 06:00";
+const NEXT_ZONED = `${NEXT_TEXT} (Europe/Warsaw)`;
 
 function schedule(overrides: ScheduleResponse = {}): ScheduleResponse {
   return {
@@ -68,7 +70,7 @@ describe("toScheduleView: state row", () => {
     const row = toScheduleView(schedule({ cadence }), off).stateRow;
     expect(row.kind).toBe("info");
     expect(row.text).toBe(
-      `Harmonogram: ${text} · następna analiza: ${NEXT_TEXT}`
+      `Harmonogram: ${text} · następna analiza: ${NEXT_ZONED}`
     );
   });
 
@@ -110,7 +112,7 @@ describe("toScheduleView: state row", () => {
         off
       ).stateRow;
       expect(row.kind).toBe("warning");
-      expect(row.text).toBe(`${sentence} Następna analiza: ${NEXT_TEXT}.`);
+      expect(row.text).toBe(`${sentence} Następna analiza: ${NEXT_ZONED}.`);
     }
   );
 
@@ -203,6 +205,7 @@ describe("toScheduleView: options", () => {
       "Codziennie o 06:00",
       "Co 6 godzin (00:00, 06:00, 12:00, 18:00)",
       "Co tydzień (poniedziałek, 06:00)",
+      "Własny interwał",
     ]);
   });
 
@@ -213,6 +216,7 @@ describe("toScheduleView: options", () => {
       "DAILY",
       "EVERY_6_HOURS",
       "WEEKLY",
+      "CUSTOM_INTERVAL",
       "DEMO_EVERY_MINUTE",
     ]);
     expect(withSwitch.options.at(-1)).toMatchObject({
@@ -261,7 +265,7 @@ describe("toScheduleView: popover lines", () => {
       schedule({ lastAttempt: attempt({ analysisId: "a-7" }) }),
       off
     );
-    expect(view.nextLine).toBe(`Następna analiza: ${NEXT_TEXT}`);
+    expect(view.nextLine).toBe(`Następna analiza: ${NEXT_ZONED}`);
     expect(view.lastAttemptLine).toEqual({
       text: "Ostatnie uruchomienie: 21.11.2026, 06:00",
       analysisId: "a-7",
@@ -324,5 +328,111 @@ describe("isScheduleOptionValue", () => {
     expect(isScheduleOptionValue("WEEKLY")).toBe(true);
     expect(isScheduleOptionValue("MONTHLY")).toBe(false);
     expect(isScheduleOptionValue(null)).toBe(false);
+  });
+});
+
+describe("custom interval", () => {
+  const customSchedule = (
+    intervalValue: number,
+    intervalUnit: "MINUTES" | "HOURS" | "DAYS"
+  ) => schedule({ cadence: "CUSTOM_INTERVAL", intervalValue, intervalUnit });
+
+  it.each([
+    [1, "MINUTES", "co 1 minutę"],
+    [2, "MINUTES", "co 2 minuty"],
+    [5, "MINUTES", "co 5 minut"],
+    [12, "MINUTES", "co 12 minut"],
+    [22, "MINUTES", "co 22 minuty"],
+    [1, "HOURS", "co 1 godzinę"],
+    [3, "HOURS", "co 3 godziny"],
+    [1, "DAYS", "co 1 dzień"],
+    [2, "DAYS", "co 2 dni"],
+    [30, "DAYS", "co 30 dni"],
+  ] as const)(
+    "shows %i %s as '%s' with the next term and its zone",
+    (value, unit, text) => {
+      const view = toScheduleView(customSchedule(value, unit), off);
+      expect(view.stateRow.text).toBe(
+        `Harmonogram: ${text} · następna analiza: ${NEXT_ZONED}`
+      );
+      expect(selected(view)).toEqual(["CUSTOM_INTERVAL"]);
+      expect(view.nextLine).toBe(`Następna analiza: ${NEXT_ZONED}`);
+    }
+  );
+
+  it("does not label a custom interval as the demo mode", () => {
+    expect(
+      toScheduleView(customSchedule(1, "MINUTES"), off).stateRow.demo
+    ).toBe(false);
+  });
+
+  it("offers the saved interval as the starting values, also while disabled", () => {
+    const view = toScheduleView(
+      { ...customSchedule(15, "HOURS"), enabled: false },
+      off
+    );
+    expect(selected(view)).toEqual(["OFF"]);
+    expect(view.customInterval).toEqual({ value: "15", unit: "HOURS" });
+    expect(toScheduleView(undefined, off).customInterval).toEqual({
+      value: "",
+      unit: "MINUTES",
+    });
+  });
+
+  it("does not show an invalid text for a custom schedule without a length", () => {
+    const view = toScheduleView(schedule({ cadence: "CUSTOM_INTERVAL" }), off);
+    expect(view.stateRow.text).toContain("Harmonogram: co własny interwał");
+    expect(view.stateRow.text).not.toContain("undefined");
+  });
+
+  it("builds the save request with the checked length", () => {
+    expect(
+      toUpdateScheduleRequest("CUSTOM_INTERVAL", {
+        intervalValue: 1,
+        intervalUnit: "MINUTES",
+      })
+    ).toEqual({
+      enabled: true,
+      cadence: "CUSTOM_INTERVAL",
+      intervalValue: 1,
+      intervalUnit: "MINUTES",
+    });
+    expect(toUpdateScheduleRequest("DAILY")).toEqual({
+      enabled: true,
+      cadence: "DAILY",
+    });
+  });
+
+  it.each([
+    ["1", "MINUTES"],
+    [" 90 ", "MINUTES"],
+    ["525600", "MINUTES"],
+    ["8760", "HOURS"],
+    ["365", "DAYS"],
+  ] as const)("accepts %j %s", (text, unit) => {
+    expect(checkCustomInterval(text, unit)).toEqual({
+      ok: true,
+      intervalValue: Number(text.trim()),
+      intervalUnit: unit,
+    });
+  });
+
+  it.each([
+    ["", "MINUTES"],
+    ["   ", "MINUTES"],
+    ["0", "MINUTES"],
+    ["-5", "MINUTES"],
+    ["1.5", "MINUTES"],
+    ["1,5", "HOURS"],
+    ["abc", "DAYS"],
+    ["1e3", "MINUTES"],
+    ["525601", "MINUTES"],
+    ["8761", "HOURS"],
+    ["366", "DAYS"],
+    ["99999999999999999999", "DAYS"],
+  ] as const)("rejects %j %s with a message", (text, unit) => {
+    const result = checkCustomInterval(text, unit);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.message).toMatch(/\.$/);
   });
 });

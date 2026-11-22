@@ -1,6 +1,15 @@
 "use client";
 
 import { Button } from "@workspace/ui/components/button";
+import { Input } from "@workspace/ui/components/input";
+import { Label } from "@workspace/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import {
   Popover,
   PopoverContent,
@@ -30,6 +39,12 @@ import {
 } from "@/lib/api/generated/case-controller/case-controller";
 
 import {
+  intervalUnitLabels,
+  intervalUnits,
+  type IntervalUnit,
+} from "./schedule-labels";
+import {
+  checkCustomInterval,
   isScheduleOptionValue,
   toUpdateScheduleRequest,
   type ScheduleOptionValue,
@@ -45,6 +60,9 @@ interface ScheduleButtonProps {
 }
 
 const groupLabelId = "schedule-frequency-label";
+const intervalValueId = "schedule-interval-value";
+const intervalUnitId = "schedule-interval-unit";
+const intervalErrorId = "schedule-interval-error";
 
 // The clock button next to "Rozpocznij nową analizę" and its popover (Q3, Q14).
 export function ScheduleButton({
@@ -58,28 +76,52 @@ export function ScheduleButton({
   const [open, setOpen] = useState(false);
   // null: the option in force; a dropped choice is forgotten on close.
   const [choice, setChoice] = useState<ScheduleOptionValue | null>(null);
+  // null: the saved interval; edits are forgotten on close.
+  const [customText, setCustomText] = useState<string | null>(null);
+  const [customUnit, setCustomUnit] = useState<IntervalUnit | null>(null);
+  const [customError, setCustomError] = useState<string | null>(null);
 
   const inForce =
     view.options.find((option) => option.selected)?.value ?? "OFF";
   const current = choice ?? inForce;
   const readFailed = readError !== null && readError !== undefined;
+  const text = customText ?? view.customInterval.value;
+  const unit = customUnit ?? view.customInterval.unit;
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (!next) {
       setChoice(null);
+      setCustomText(null);
+      setCustomUnit(null);
+      setCustomError(null);
       update.reset();
     }
   };
 
   const save = () => {
     if (update.isPending) return;
+    let custom:
+      { intervalValue: number; intervalUnit: IntervalUnit } | undefined;
+    if (current === "CUSTOM_INTERVAL") {
+      const checked = checkCustomInterval(text, unit);
+      if (!checked.ok) {
+        setCustomError(checked.message);
+        return;
+      }
+      custom = {
+        intervalValue: checked.intervalValue,
+        intervalUnit: checked.intervalUnit,
+      };
+    }
+    setCustomError(null);
+    // Only the answer of the server replaces the cached Schedule: a failed
+    // save never shows the setting as saved.
     update.mutate(
-      { caseId, data: toUpdateScheduleRequest(current) },
+      { caseId, data: toUpdateScheduleRequest(current, custom) },
       {
         onSuccess: (response) => {
           queryClient.setQueryData(getGetScheduleQueryKey(caseId), response);
-          handleOpenChange(false);
         },
       }
     );
@@ -144,7 +186,10 @@ export function ScheduleButton({
                 aria-labelledby={groupLabelId}
                 value={current}
                 onValueChange={(value) => {
-                  if (isScheduleOptionValue(value)) setChoice(value);
+                  if (isScheduleOptionValue(value)) {
+                    setChoice(value);
+                    update.reset();
+                  }
                 }}
               >
                 {view.options.map((option) => (
@@ -157,8 +202,79 @@ export function ScheduleButton({
                   </label>
                 ))}
               </RadioGroup>
+
+              {current === "CUSTOM_INTERVAL" ? (
+                <div className="flex flex-col gap-2 rounded-lg bg-muted p-3">
+                  <div className="flex items-end gap-3">
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor={intervalValueId}>Co ile</Label>
+                      <Input
+                        id={intervalValueId}
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        className="w-28"
+                        value={text}
+                        aria-invalid={customError !== null}
+                        aria-describedby={
+                          customError === null ? undefined : intervalErrorId
+                        }
+                        onChange={(event) => {
+                          setCustomText(event.target.value);
+                          setCustomError(null);
+                          update.reset();
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor={intervalUnitId}>Jednostka</Label>
+                      <Select
+                        items={intervalUnits.map((value) => ({
+                          value,
+                          label: intervalUnitLabels[value],
+                        }))}
+                        value={unit}
+                        onValueChange={(value) => {
+                          if (value !== null) {
+                            setCustomUnit(value);
+                            setCustomError(null);
+                            update.reset();
+                          }
+                        }}
+                      >
+                        <SelectTrigger id={intervalUnitId} className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {intervalUnits.map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {intervalUnitLabels[value]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {customError === null ? null : (
+                    <p
+                      id={intervalErrorId}
+                      role="alert"
+                      className="text-sm text-destructive"
+                    >
+                      {customError}
+                    </p>
+                  )}
+                </div>
+              ) : null}
+
               <p className="text-sm text-muted-foreground">
-                Godziny według czasu polskiego.
+                Interwał to stały odstęp między analizami, liczony od zapisania
+                ustawienia, np. „co 1 minutę”. To nie jest jednorazowe
+                uruchomienie o wskazanej godzinie. Opcje z godziną (np. „o
+                06:00”) uruchamiają analizę w tych godzinach czasu polskiego.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Częste analizy zwiększają liczbę zapytań do źródeł.
               </p>
             </div>
 
@@ -189,7 +305,12 @@ export function ScheduleButton({
 
             {update.isError ? (
               <p role="alert" className="text-destructive">
-                {toUserMessage(update.error)}
+                Nie zapisano harmonogramu. {toUserMessage(update.error)}
+              </p>
+            ) : null}
+            {update.isSuccess ? (
+              <p role="status" className="font-semibold">
+                Zapisano harmonogram.
               </p>
             ) : null}
 
@@ -200,7 +321,7 @@ export function ScheduleButton({
                   handleOpenChange(false);
                 }}
               >
-                Anuluj
+                {update.isSuccess ? "Zamknij" : "Anuluj"}
               </Button>
               <Button onClick={save} disabled={update.isPending}>
                 {update.isPending ? "Zapisywanie…" : "Zapisz"}
