@@ -6,7 +6,8 @@ import type { ReactNode } from "react";
 import kasLogoMark from "@/public/kas-logo-mark.png";
 
 interface PageShellProps {
-  headerLink: { label: string; href: Route };
+  // `badge` sits right after the label (the Case counter).
+  headerLink: { label: string; href: Route; badge?: ReactNode };
   children: ReactNode;
 }
 
@@ -30,6 +31,7 @@ export function PageShell({ headerLink, children }: PageShellProps) {
             className="rounded-sm text-base font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {headerLink.label}
+            {headerLink.badge}
           </Link>
         </div>
       </header>

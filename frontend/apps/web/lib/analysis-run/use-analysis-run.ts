@@ -1,10 +1,11 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useGetAnalysis } from "@/lib/api/generated/analysis-controller/analysis-controller";
+import { getListCasesQueryKey } from "@/lib/api/generated/case-controller/case-controller";
 import type { CreateCaseRequest } from "@/lib/api/generated/model";
 
 import { nextPollInterval } from "./poll-interval";
@@ -60,6 +61,7 @@ export function useAnalysisRun({
   onStartError,
 }: UseAnalysisRunOptions = {}): AnalysisRun {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [, startNavigation] = useTransition();
   const [started, setStarted] = useState<StartedAnalysis | null>(null);
   const [failedStart, setFailedStart] = useState<FailedStart | null>(null);
@@ -82,6 +84,8 @@ export function useAnalysisRun({
     },
     onSuccess: (result) => {
       setStarted(result);
+      // The Case list and the header counter must see the new Case / run.
+      void queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
     },
     onError: (error, input) => {
       const caseId = createdCaseId.current;
@@ -122,6 +126,7 @@ export function useAnalysisRun({
   const openCaseDetails = (target: StartedAnalysis) => {
     if (navigatedFor.current === target.analysisId) return;
     navigatedFor.current = target.analysisId;
+    void queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
     // One transition for the push and the reset: the loader stays until the
     // new page is shown, also when Case details starts a run of its own
     // Case and stays mounted.

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageShell } from "@/components/page-shell";
+import { NewResultsBadge } from "@/features/case-list/new-results-badge";
 import { CaseDetailsView } from "@/features/case-details/case-details-view";
 
 export const metadata: Metadata = {
@@ -15,7 +16,13 @@ export default async function Page({
   const { analysis } = await searchParams;
 
   return (
-    <PageShell headerLink={{ label: "← Lista spraw", href: "/cases" }}>
+    <PageShell
+      headerLink={{
+        label: "← Lista spraw",
+        href: "/cases",
+        badge: <NewResultsBadge />,
+      }}
+    >
       <CaseDetailsView
         caseId={caseId}
         // A repeated `?analysis=` gives an array; the first one wins.
