@@ -45,7 +45,6 @@ enum class SchedulePreset(val demo: Boolean = false) { DAILY, EVERY_6_HOURS, WEE
 
 enum class ScheduleIntervalUnit(val unit: ChronoUnit) { MINUTES(ChronoUnit.MINUTES), HOURS(ChronoUnit.HOURS), DAYS(ChronoUnit.DAYS) }
 
-// TODO E7.1: cover exactly these networks in the demo fixtures; a new network needs a validator branch and api-sync
 enum class Network { BTC, ETH }
 
 enum class AddressValidationFailure { MALFORMED, CHECKSUM_MISMATCH, UNSUPPORTED_NETWORK, NETWORK_MISMATCH }

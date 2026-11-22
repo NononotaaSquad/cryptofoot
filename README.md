@@ -1,186 +1,314 @@
-# {{PROJECT_NAME}}
+# cryptofoot (OŁCyŚ)
 
-{{PROJECT_DESCRIPTION}}
+Osintowy Łapacz Cyfrowych Śladów to narzędzie OSINT dla analityków Krajowej Administracji Skarbowej, przygotowane na zadanie Ministerstwa Finansów w HackNation 2026. Analityk wpisuje identyfikatory osoby: nick, login, e-mail, ID z komunikatora, adres profilu lub adres portfela. Aplikacja:
 
-## Tech Stack
+- przeszukuje publiczne źródła, wyodrębnia adresy BTC i ETH i sprawdza ich sumy kontrolne;
+- odrzuca adresy giełd, smart kontraktów, mikserów i zbiórek;
+- liczy **Stopień pewności** (0–100%) według jawnej punktacji. Opcjonalny **model decyzyjny SI** pomaga odczytać sens wpisu, ale punkty zawsze przyznają reguły;
+- pokazuje **aktywność adresu** i **sygnały wyjścia do walut tradycyjnych**;
+- zapisuje każdą analizę z metadanymi, powtarza ją ręcznie lub według harmonogramu i porównuje z poprzednią.
 
-**Backend:**
-- Spring Boot 4.x
-- MongoDB (Spring Data MongoDB)
-- Kotlin
-- Java 25
-- Gradle (Kotlin DSL)
-- Bean Validation (Hibernate Validator)
-- Spotless (ktlint, greclipse)
-- Spock (Groovy) unit + integration tests, Testcontainers MongoDB
+> [!IMPORTANT]
+> Wynik to **trop do weryfikacji, a nie dowód**. Powiązanie nie przesądza, że adres należy do osoby, a sygnał wyjścia do walut tradycyjnych nie dowodzi wypłaty ani naruszenia przepisów. Aplikacja mówi to wprost w raporcie.
 
-**Frontend:**
-- Next.js 16 (App Router)
-- React 19
-- TypeScript 5
-- Tailwind CSS 4
-- shadcn/ui
-- Orval (generated API client) + TanStack Query
-- zod
-- Motion
-- Vitest
-- Turborepo
+![Lista spraw](.agents/specs/2026-11-22_case-list/verification-87/C-expanded-1920.png)
 
-**Architecture:**
-- MongoDB data persistence
-- RESTful API
-- Monorepo with shared packages
+## Jak działa analiza
 
-## Quick Start
+```mermaid
+flowchart LR
+    A["Sprawa<br/>identyfikatory osoby"] --> B["1. Wyszukiwanie wzmianek<br/>GitHub, Bitcointalk, dane syntetyczne"]
+    B --> C["2. Wykrycie i walidacja adresów<br/>regex + sumy kontrolne"]
+    C --> D["3. Odrzucanie adresów usług<br/>listy etykiet + bytecode"]
+    D --> E["4. Przesłanki i Stopień pewności<br/>reguły + opcjonalny model decyzyjny"]
+    E --> F["5. Aktywność adresu<br/>activity-1"]
+    F --> G[("Zapis analizy<br/>MongoDB")]
+    G --> H["Raport w aplikacji"]
+```
 
-After creating a repo from this template, initialize it once:
+Każdy etap to osobny moduł za interfejsem. Orkiestrator nie zawiera logiki wyszukiwania ani oceny, tylko wyznacza status analizy:
+- **Zakończona**: wszystkie etapy przeszły. Także wtedy, gdy nic nie znaleziono, bo brak wyników to nie błąd.
+- **Częściowa**: część źródeł lub danych była niedostępna. Reszta wyniku zostaje i ma Ograniczenia raportu.
+- **Nieudana**: nie ma żadnego użytecznego wyniku.
+
+Zakończona analiza nigdy się nie zmienia. Ponowne uruchomienie tworzy nową analizę.
+
+## Stopień pewności
+
+**Przesłanka** to jedno wystąpienie adresu we wzmiance, z oknem tekstu do 1200 znaków.
+
+**Kod** ustala, czy przesłanka łączy adres z osobą. Wystarczy jeden z warunków:
+- autorem wpisu jest badana osoba;
+- wpis leży pod adresem jej profilu;
+- identyfikator zawężający stoi najwyżej 200 znaków od adresu i jest dopasowany jako całe słowo. Imię i nazwisko się tu nie liczy.
+
+Przesłanka ma jeden z trzech statusów:
+- **zaliczona**;
+- **do weryfikacji**, najwyżej 40 pkt;
+- **odrzucona**: brak powiązania, e-mail innej osoby, ostrzeżenie przed adresem albo adres podany jako własny przez kogoś innego.
+
+| Rodzaj przesłanki | Punkty |
+| --- | ---: |
+| Własny profil: URL pod profilem ze sprawy albo strona z nickiem i drugim identyfikatorem | 80 |
+| Własna deklaracja autora| 80 |
+| Ogłoszenie sprzedaży lub rozliczenie | 60 |
+| Dyskusja | 40 |
+| Komentarz masowy (giveaway, konkurs, airdrop) | 10 |
+
+- **Premia +15** (raz) za drugą przesłankę, co najmniej dyskusję, z innego serwisu i z innym zdaniem. Kopie, ten sam serwis i komentarze masowe premii nie dają.
+- **Limit 59%** dla adresu niesklasyfikowanego, bo może należeć do giełdy albo kontraktu.
+- **Reguły 0 pkt** wyjaśniają, czemu wynik nie jest wyższy, np. „tylko nick”, „ostrzeżenie”, „kopia”.
+- **Przedziały**: 80–100 bardzo wysokie prawdopodobieństwo, 60–79 prawdopodobny, 40–59 średni, 0–39 niski / szum.
+
+**Przykład: S1 (dane fikcyjne).** Ten sam adres ETH pojawia się w dwóch wzmiankach:
+- profil `halka_eth`: „Tu publikuję mój portfel ETH: 0xE73A…”. To własny profil, więc **80 pkt**;
+- ogłoszenie `oferta/451`: „halka_eth sprzedaje rower szosowy. Płatność w ETH na 0xE73A…”. Inny serwis i inne zdanie, więc **+15**.
+
+Wynik to **95%**. Punkty się nie sumują: ogłoszenie dodaje tylko premię za niezależne źródło. Uzasadnienie jest złożone z szablonów reguł, bez liczb:
+> Adres został opublikowany na profilu badanej osoby (social.example). Niezależne źródła różnego pochodzenia (market.example, social.example) wskazują na ten sam adres.
+
+### Model decyzyjny SI
+
+Reguły z modelem (`confidence-3`) działają wtedy, gdy `ASSESSMENT_MODEL_API_KEY` jest ustawiony oraz `ASSESSMENT_MODEL_ENABLED` jest ustawione na `true`
+
+Model odpowiada prawdopodobieństwami na trzy pytania:
+1. Jaki to rodzaj wpisu?
+2. Czy autor podaje adres jako swój?
+3. Czy tekst ostrzega przed adresem?
+
+Próg „tak” to co najmniej 0,7, próg „nie” najwyżej 0,3. Odpowiedź pomiędzy jest „niepewna” i kieruje przesłankę do weryfikacji. Dzięki temu komentarz obcej osoby na profilu („mój adres na napiwki”) zostaje odrzucony, a wpis „nie wysyłajcie na stary adres, mój nowy to …” liczy się jako własna deklaracja.
+
+- **Pomocniczo.** Model nie łączy adresu z osobą, nie przyznaje punktów i nie pisze Uzasadnienia.
+- **Odtwarzalnie.** Analiza zapisuje odpowiedzi modelu, jego wersję i wersję zestawu pytań. Raport pokazuje przy każdej przesłance, czy oceniła ją reguła, czy model. Gdy model nie odpowie w 5 s (bez ponowień), ocenę przejmują reguły, a raport dostaje Ograniczenie.
+- **Prywatnie.** Model dostaje tylko okno tekstu, oceniany adres i kilka faktów. E-mail, ID komunikatora oraz imię i nazwisko są zamaskowane. URL i dane sprawy nie są wysyłane.
+- **Wymiennie.** Model działa za portem `PremiseAssessment` (Spring AI `DecisionModel`), a adres serwera i nazwa modelu są w konfiguracji. Można więc podłączyć lokalny serwer.
+
+## Odrzucanie błędnych przypisań
+
+- **Adresy odrzucone** wyglądają jak adres, ale mają zły format, sumę kontrolną (Base58Check, bech32/bech32m, EIP-55) albo sieć, np. testnet.
+- **Adresy wykluczone** dostają 0% z powodem i źródłem klasyfikacji. Sprawdzenia idą w tej kolejności:
+  1. **Listy etykiet offline**: 855 adresów ETH ze zbioru Etherscan labels (giełdy, portfele powiernicze, bramki fiat, miksery, zbiórki) i własna lista zespołu. Adres nie opuszcza aplikacji.
+  2. **Kod bajtowy ETH**: `eth_getCode`, z Blockchair jako zapasem. Kod inny niż `0x` oznacza smart kontrakt. Konto z delegacją EIP-7702 zostaje kontem prywatnym.
+  3. **Brak odpowiedzi**: adres jest niesklasyfikowany, oznaczony w raporcie i ograniczony do 59%.
+
+## Aktywność adresu i sygnały wyjścia do walut tradycyjnych
+
+![Aktywność adresu](.agents/specs/2026-11-22_address-activity-readability/reference-current.png)
+
+Dla Powiązań powyżej 0% raport pokazuje:
+- sumę otrzymaną i wysłaną;
+- liczbę transakcji i okres aktywności;
+- sygnały wyjścia do walut tradycyjnych w kolejności czasowej (reguły `activity-1`).
+
+Dane pochodzą z mempool.space (BTC) i Blockscout (ETH). Obie usługi działają bez klucza API i można je hostować samodzielnie. **Brak danych nigdy nie jest pokazywany jako zero.**
+
+| Sygnał | Reguła |
+| --- | --- |
+| Przelew na giełdę, platformę P2P, bramkę płatniczą lub usługę karty | Wypływ na adres z listy etykiet, dowolna kwota. Rodzaj wynika z tagu, np. Remitano, Bity.com, Wirex. |
+| Zamiana na stablecoin | W jednej transakcji adres oddaje ETH lub token i dostaje co najmniej 1000 USDT, USDC lub DAI. Stablecoin rozpoznaje się po adresie kontraktu. |
+
+Sygnał to trop, nie dowód. Raport podaje ograniczenia pokrycia, np. że wykrywane są tylko serwisy z list etykiet.
+
+## Raport dla analityka
+
+Raport to rozwijana lista Powiązań. Po rozwinięciu Powiązania widać:
+- **Punktację**: reguły, punkty i przesłanki, które je uruchomiły;
+- **Uzasadnienie**;
+- **Przesłanki**: status, „Oceniono: reguła” lub „Oceniono: model”, odpowiedzi modelu;
+- **Wzmianki**: źródło, link, czas pobrania, cytat;
+- **Weryfikację adresu** i **Aktywność adresu**.
+
+Pod listą są sekcje *Adresy wykluczone* i *Adresy odrzucone*. Nagłówek raportu podaje rodzaj analizy, czasy, sieci, tryb oceny z wersjami, sprawdzone źródła i Ograniczenia raportu.
+
+| Rodzaj informacji | Elementy raportu |
+| --- | --- |
+| Fakty źródłowe | Wzmianki, sprawdzone źródła, transakcje |
+| Wyniki obliczeń | Punktacja, Stopień pewności, Weryfikacja adresu, sumy aktywności, odpowiedzi modelu |
+| Wnioski do weryfikacji | Uzasadnienie, przesłanki do weryfikacji, sygnały wyjścia, Ograniczenia raportu |
+
+Każda analiza to niezmienny dokument w bazie. Zawiera:
+- użyte identyfikatory i źródła ze statusem i czasem sprawdzenia;
+- wzmianki z pełną treścią i skrótem SHA-256;
+- przesłanki z faktami i odpowiedziami modelu, reguły z punktami;
+- aktywność ze źródłem i czasem odczytu;
+- wersje algorytmu, modelu i reguł.
+
+Dzięki temu każdą analizę da się odtworzyć i zweryfikować.
+
+## Analizy cykliczne i porównanie
+
+![Porównanie analiz](.agents/specs/2026-11-22_case-list/verification-87/details-reading-B-after-C.png)
+
+- **Ponowna analiza** startuje jednym przyciskiem albo według **harmonogramu**: codziennie o 06:00, co 6 godzin, co tydzień lub w odstępie od 1 minuty do 365 dni (strefa Europe/Warsaw). Termin, w którym poprzednia analiza jeszcze trwa, jest pomijany. Terminy przegapione w czasie przestoju nie są nadrabiane.
+- **Porównanie z poprzednią analizą** pokazuje nowe powiązania, niezaobserwowane powiązania, zmiany Stopnia pewności i zmiany wykluczenia.
+  - Zmiana przy tych samych wzmiankach jest oznaczana jako zmiana oceny modelu.
+  - Różnice w źródłach, sieciach i wersjach są wypisane jako ograniczenia porównania.
+- Pozwala to wykryć **podmianę adresu portfela na profilu** (kryterium opcjonalne zadania, scenariusz S11).
+
+## Parametry wyszukiwania
+
+| Parametr | Wartość |
+| --- | --- |
+| Dane wejściowe | Nick, login, e-mail, ID komunikatora, adres profilu, adres portfela (BTC lub ETH), imię i nazwisko. Wymagany co najmniej jeden identyfikator zawężający, samo imię i nazwisko nie wystarcza. |
+| Trafność wzmianki | Treść zawiera identyfikator inny niż imię i nazwisko albo źródło pobrało zasób dla tego identyfikatora |
+| Sieci | Bitcoin (P2PKH, P2SH, bech32, bech32m) i Ethereum |
+| Okna tekstu | Fragment dla analityka: 200 znaków. Okno przesłanki: 1200 znaków. Powiązanie przez identyfikator: do 200 znaków od adresu. |
+| GitHub (REST API) | Login, nick lub URL profilu; pobiera profil i README profilu; maks. 3 loginy |
+| Bitcointalk | Tylko URL profilu, wątku lub posta podany przez analityka; maks. 3 zasoby, 20 postów, 2 s przerwy między żądaniami |
+| Dane syntetyczne | `fixtures/demo-v1.json`, w raporcie oznaczone jako „Dane testowe” |
+| Limity czasu | 10 s na źródło, 5 s na żądanie HTTP i na odpowiedź modelu |
+| Model decyzyjny | Zestaw pytań `premise-questions-1`, progi 0,7 / 0,3 (rodzaj wpisu 0,5) |
+| Próg zamiany na stablecoin | 1000 |
+
+## Założenia
+
+- Analityk KAS. Interfejs jest po polsku.
+- Kierunek osoba → adresy. Wpisany adres portfela to dana wejściowa, nigdy dowód.
+- Mało szumu i wyjaśnialność: każdy punkt ma regułę, zdanie w Uzasadnieniu i swoje przesłanki.
+- Model decyzyjny wspomaga, reguły decydują. Bez klucza aplikacja działa w całości na regułach.
+- Tylko publiczne źródła, bez logowania na cudze konta. Każde połączenie zewnętrzne da się wyłączyć.
+- Demo działa na fikcyjnych danych syntetycznych, więc można je powtórzyć.
+- Brak danych to nie zero. Niedostępne źródło zawsze jest Ograniczeniem raportu.
+
+## Scenariusze testowe (dane syntetyczne)
+
+W `backend/src/main/resources/fixtures/demo-v1.json` jest 11 fikcyjnych osób. Ich wyniki w trybie „tylko reguły” są zamrożone w `DemoScenariosSpec`. Aby sprawdzić scenariusz: *Nowa sprawa* → wpisz podane pola → *Rozpocznij analizę* → rozwiń Powiązania.
+
+| # | Wpisz | Wynik | Co pokazuje |
+| --- | --- | --- | --- |
+| S1 | Nick `halka_eth`, e-mail `halina.przykladowa@example.com`, profil `https://social.example/halka_eth` | 95%; 4 sygnały wyjścia (stablecoin, bramka, P2P, giełda) | Pełna ścieżka |
+| S2 | Nick `bogdan_platnosci` | 0 Powiązań, 5 Adresów wykluczonych | Adresy usług nie są przypisywane |
+| S3 | Nick `celina_uczciwa`, profil `https://social.example/celina_uczciwa` | 80%; adres oszusta z ostrzeżenia 0% | Ostrzeżenie nie jest dowodem |
+| S4 | Nick `darek_mazur`, e-mail `dariusz.mazur@example.com` | 60% z przelewem na Binance; imiennik 0% | Ten sam nick, inna osoba |
+| S5 | Nick `ewa_kopiowana` | 60% bez premii; aktywność 0 BTC | Kopia nie jest niezależna; prawdziwe zero to nie brak danych |
+| S6 | Nick `franek_literowka` | 2 Adresy odrzucone | Zła suma kontrolna |
+| S7 | Nick `grazka_konkursy` | 10%; aktywność niedostępna | Słaby ślad; brak danych to nie zero |
+| S8 | Nick `henio_ukryty` | Adres rozbity spacjami pominięty; adres daleko od nicku 0% | Znane ograniczenia |
+| S9 | Nick `irena_hodl`, e-mail `irena.hodl@example.com`, profil `https://social.example/irena_hodl` | 80%; brak sygnału | Giełda spoza list nie jest rozpoznana |
+| S10 | Nick `kamil_nieobecny` | Brak wzmianek, analiza udana | „Brak wyników” to nie błąd |
+| S11 | Nick `oliwer_zmienny`, profil `https://social.example/oliwer_zmienny` | Każda kolejna analiza zmienia wynik; „Zmiany od poprzedniej analizy (3)” | Porównanie w czasie |
+
+Lokalnie dochodzi źródło `synthetic-broken`, które zawsze jest niedostępne, więc status analizy to „Częściowa”.
+
+## Uruchomienie
+
+Wymagania: Docker oraz Node.js ≥ 22.18 z npm ≥ 11.13. Java 25 jest potrzebna tylko do testów i uruchamiania z IDE. Na Windows skrypty działają w Git Bash.
 
 ```bash
-./scripts/init.sh "<project name>" "<description>"
+git clone https://github.com/NononotaaSquad/cryptofoot.git
+cd cryptofoot
+(cd frontend && npm install)
+./scripts/run-all.sh        # MongoDB i backend w Dockerze (profil local) + frontend
 ```
 
-It fills the README placeholders, sets `APP_NAME` in `backend/docker-compose.yaml` and enables the shared git hooks.
+- Aplikacja: http://localhost:3000
+- API: http://localhost:8080/api/1
+- OpenAPI: http://localhost:8080/v3/api-docs
 
-Git does not clone hook config, so each clone enables the hooks itself: `npm install` in `frontend/` sets them up with [husky](https://typicode.github.io/husky/). Backend-only developers run `git config core.hooksPath .githooks` once.
+Profil `local` działa na danych demo, bez źródeł Web2. Prawdziwe źródła działają bez tego profilu:
+1. `docker compose -f backend/docker-compose.yaml up -d mongodb`
+2. W katalogu `backend/`: `MONGODB_URI=mongodb://localhost:27017/db ./gradlew bootRun`
 
-The pre-commit hook (`.githooks/pre-commit`) formats staged backend files with Spotless and staged frontend files with Prettier, then re-stages them. Partially staged files (`git add -p`) are formatted in the working tree but not re-staged, so your unstaged hunks stay out of the commit.
+| Zmienna | Domyślnie | Znaczenie |
+| --- | --- | --- |
+| `MONGODB_URI` | wymagana | Połączenie z MongoDB |
+| `ASSESSMENT_MODEL_API_KEY` | pusty | Klucz modelu decyzyjnego; bez niego działają tylko reguły. Docker Compose czyta go też z `backend/.env`. |
+| `ASSESSMENT_MODEL_ENABLED` | `true` | Wyłącznik modelu |
+| `SOURCES_GITHUB_ENABLED`, `SOURCES_BITCOINTALK_ENABLED` | `true` (`local`: `false`) | Źródła Web2 |
+| `SOURCES_GITHUB_TOKEN` | pusty | Token bez uprawnień; wymagany w profilu `prod` |
+| `EXCLUSION_ONCHAIN_CHECK_ENABLED` | `true` | Sprawdzanie kodu bajtowego ETH |
+| `ADDRESS_ACTIVITY_LIVE_ENABLED` | `false` (`prod`: `true`) | Aktywność z mempool.space i Blockscout |
+| `SOURCES_SYNTHETIC_ENABLED`, `SOURCES_SYNTHETIC_BROKEN_ENABLED` | `true` (`prod`: drugi `false`) | Dane demo |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8080` | Adres backendu, ustalany przy `next build` |
 
-`backend/docker-compose.yaml` builds the backend image and runs it with the `local` profile together with MongoDB (database `db`).
-
-### Using Run Scripts (Recommended)
+**Offline, bez modelu.** Profil `local` wyłącza źródła Web2 i eksploratory, ale nadal sprawdza kod bajtowy ETH w publicznym węźle. Model wywołuje, jeśli znajdzie klucz, także w `backend/.env`. Pełny tryb offline uruchamia się tak:
 
 ```bash
-./scripts/run-backend.sh   # MongoDB + backend in Docker
-./scripts/run-frontend.sh # Run frontend only
-./scripts/run-all.sh      # Docker stack + frontend
+EXCLUSION_ONCHAIN_CHECK_ENABLED=false ASSESSMENT_MODEL_ENABLED=false \
+SPRING_PROFILES_ACTIVE=local MONGODB_URI=mongodb://localhost:27017/db ./gradlew bootRun
 ```
 
-### Manual Start
+Bez modelu ocenę robią same reguły (`confidence-2`). Analiza ma wtedy `assessmentMode: "RULES_ONLY"`, a `modelVersion` i `questionSetVersion` są puste. Ograniczenie „model nie ocenił przesłanek” pojawia się tylko wtedy, gdy model był włączony, ale nie odpowiedział.
 
-**Backend:**
-```bash
-docker compose -f backend/docker-compose.yaml up --build
-```
+**Lokalny model decyzyjny.** `app.assessment.model.base-url` może wskazać inny serwer protokołu System One (np. Laya, llmman). Klient zawsze woła ścieżkę `/v1/systemone`. Inne środowisko, np. Ollama, wymaga podmiany implementacji `DecisionModel` w `AssessmentConfig.kt`; adapter `PremiseAssessment` i reguły zostają bez zmian. Po zmianie modelu progi trzeba ponownie sprawdzić na zbiorze wzorcowym.
 
-To run the backend from your IDE instead, start only MongoDB (`docker compose -f backend/docker-compose.yaml up -d mongodb`) and run `./gradlew bootRun` in `backend/`. `MONGODB_URI` is required (no default), e.g. `MONGODB_URI=mongodb://localhost:27017/db ./gradlew bootRun`.
+**Wdrożenie:** push do `master` uruchamia GitHub Actions, które wdrażają backend i frontend na Google Cloud Run (baza: MongoDB Atlas). Oba komponenty to kontenery Docker, więc mogą działać w KAS bez publicznej chmury.
 
-Backend runs on `http://localhost:{{BACKEND_PORT}}`. Health: `/actuator/health` (with `/liveness` and `/readiness` probes).
-
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs on `http://localhost:{{FRONTEND_PORT}}`. Run `npm run check` (from `frontend/`) before every commit. Details: `frontend/README.md`.
-
-> **Warning:** the browser calls the backend at `NEXT_PUBLIC_API_URL` (dev-only default in `frontend/apps/web/lib/env.ts`). `NEXT_PUBLIC_*` values are inlined at `next build`, so build the frontend Docker image with the real public backend URL (`--build-arg NEXT_PUBLIC_API_URL=...`). Changing the container's environment afterwards has no effect.
-
-## Testing
-
-**Backend:**
-```bash
-cd backend
-./gradlew test             # Spock unit specs (src/test/groovy)
-./gradlew integrationTest  # Spock integration specs with Testcontainers MongoDB (needs Docker)
-./gradlew check            # Spotless + both suites
-```
-
-**API contract** (from the repo root, needs Docker):
-```bash
-./scripts/api-sync.sh   # rewrite frontend/apps/web/lib/api/openapi.json from the backend + regenerate the client
-```
-
-CI fails when `openapi.json` no longer matches the backend or the generated client no longer matches `openapi.json`.
-
-**Frontend** (in `frontend/apps/web`):
-```bash
-npm run test                      # Vitest unit tests
-```
-
-## Deployment (GCP Cloud Run)
-
-Every push to the default branch runs `.github/workflows/ci.yml`. When tests pass, it deploys both apps to Cloud Run in a shared GCP project as `<repo>-backend` and `<repo>-frontend`, under the GitHub environment `production`. A repo created from this template deploys on its first commit, so it gets its own prod environment without any manual steps. The template repo itself never deploys.
-
-**One-time setup per GitHub org** (an admin with GCP owner rights runs it once):
+## Testy
 
 ```bash
-./scripts/gcp-bootstrap.sh <gcp-project-id> <gcp-region> <github-org>
+cd backend && ./gradlew check     # Spotless + testy Spock (jednostkowe i integracyjne z Testcontainers)
+cd frontend && npm run check      # typecheck, ESLint, Prettier, Vitest
+./scripts/e2e-backend.sh          # E2E Postman + Bruno (57 żądań)
+./scripts/api-sync.sh             # zgodność kontraktu OpenAPI z klientem
 ```
 
-The script enables the required APIs and creates the Artifact Registry repo `hackathon`, a deployer service account and a runtime service account. It sets up keyless Workload Identity Federation that trusts every repo in the org. It then stores these org-level Actions variables: `GCP_PROJECT_ID`, `GCP_PROJECT_NUMBER`, `GCP_REGION`, `GCP_ARTIFACT_REGISTRY`, `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT`, `GCP_RUNTIME_SERVICE_ACCOUNT`. It also stores the org secret `MONGODB_URI`. If the GCP variables are missing, deploy jobs are skipped.
+Testy obejmują między innymi zamrożone scenariusze S1–S11, zbiór wzorcowy w trzech wersjach algorytmu i kontrakt API. CI uruchamia je przy pull requestach i pushu do `master`.
 
-**MongoDB Atlas:** all repos share one Atlas cluster and each gets its own database named after the repo (`MONGODB_DATABASE`, `prod` profile). Atlas Network Access must allow `0.0.0.0/0`, because Cloud Run has no fixed egress IP. To use a separate cluster for one repo, set a repository secret `MONGODB_URI`; it overrides the org secret. The pipeline copies the URI into Secret Manager as `<repo>-mongodb-uri`.
+## Architektura
 
-**GitHub token:** set the Actions secret `SOURCES_GITHUB_TOKEN` (org or repository; a token with no scopes is enough, it only reads public profiles). The pipeline copies it into Secret Manager as `<repo>-github-token` and Cloud Run mounts it as `SOURCES_GITHUB_TOKEN`. Without the secret the deploy switches the GitHub source off; production never calls GitHub anonymously. Locally no token is needed.
+| Warstwa | Technologie |
+| --- | --- |
+| Backend | Kotlin 2.3, Spring Boot 4.2, Java 25, Spring Data MongoDB, jsoup, Bouncy Castle, springdoc-openapi |
+| AI | Spring AI 2.1 (`DecisionModel`) z opcjonalnym modelem decyzyjnym |
+| Baza danych | MongoDB 8 |
+| Frontend | Next.js 16, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, TanStack Query, klient API generowany przez Orval |
+| Testy i infrastruktura | Spock, Testcontainers, Vitest, Postman, Bruno, Docker, Turborepo, GitHub Actions |
 
-**URLs:** `https://<repo>-backend-<project-number>.<region>.run.app` and `https://<repo>-frontend-<project-number>.<region>.run.app`. The frontend image is built with `NEXT_PUBLIC_API_URL` set to the backend URL. The backend allows CORS from any origin on `/api/**`.
+Każdy etap analizy działa za interfejsem, więc rozbudowa nie zmienia orkiestratora:
+- nowe źródło to implementacja `MentionSource`;
+- nowy eksplorator to `AddressActivitySource`;
+- inny model to `PremiseAssessment` albo zmiana adresu w konfiguracji;
+- nowa sieć to wartość w `Network` i nowa gałąź walidatora.
 
-## Project Structure
+Zmiana reguł to nowa wersja algorytmu, a stare analizy zachowują swoją.
 
-```
-{{PROJECT_NAME}}/
-├── backend/                    # Spring Boot Kotlin application
-│   ├── src/
-│   │   ├── main/kotlin/        # Kotlin source code
-│   │   │   └── {{PACKAGE_PATH}}/
-│   │   │       ├── config/     # Configuration
-│   │   │       ├── controller/ # REST controllers
-│   │   │       ├── dto/        # Data transfer objects
-│   │   │       ├── exception/  # Error handling
-│   │   │       ├── model/      # Domain models
-│   │   │       ├── repository/ # MongoDB repositories
-│   │   │       ├── service/    # Business logic
-│   │   │       └── util/       # Utilities
-│   │   └── resources/          # Configuration files
-│   ├── build.gradle.kts        # Gradle build configuration
-│   ├── Dockerfile              # Backend image (layered jar)
-│   ├── docker-compose.yaml     # MongoDB + backend (local profile)
-│   └── gradlew                 # Gradle wrapper
-├── frontend/                   # Next.js monorepo
-│   ├── apps/
-│   │   └── web/               # Next.js web application
-│   ├── packages/
-│   │   ├── ui/                # Shared UI components (shadcn/ui)
-│   │   ├── eslint-config/     # Shared ESLint configuration
-│   │   └── typescript-config/ # Shared TypeScript configuration
-│   ├── Dockerfile             # Frontend image (Next.js standalone)
-│   ├── turbo.json             # Turborepo configuration
-│   └── package.json           # Root package.json
-├── .githooks/
-│   └── pre-commit             # Shared git hook: formats staged backend + frontend files
-├── scripts/
-│   ├── init.sh                # One-time project setup after cloning the template
-│   ├── api-sync.sh            # Sync openapi.json + generated client with the backend
-│   ├── gcp-bootstrap.sh       # One-time GCP + GitHub org setup for deployments
-│   ├── run-backend.sh        # Run MongoDB + backend in Docker
-│   ├── run-frontend.sh      # Run frontend script
-│   └── run-all.sh           # Run both services
-├── .agents/
-│   ├── skills/                 # Agent skills for AI assistance
-│   ├── context/               # Architecture documentation and ADRs
-│   └── rules/                 # Agent constraints
-└── README.md
-```
+**API** (`/api/1`):
 
-## Prerequisites
+| Zasób | Endpointy |
+| --- | --- |
+| Sprawy | `POST`, `GET /cases`; `GET /cases/{id}` |
+| Analizy sprawy | `POST`, `GET /cases/{id}/analyses` |
+| Porównanie | `GET /cases/{id}/comparison` |
+| Harmonogram | `GET`, `PUT /cases/{id}/schedule` |
+| Pojedyncza analiza | `GET /analyses/{id}`, `/analyses/{id}/report`, `/analyses/{id}/mentions` |
 
-- **Backend:** Docker (also used by integration tests via Testcontainers); Java 25 to build or run tests outside Docker
-- **Frontend:** Node.js >= 22.18, npm >= 11.13.0
+Dokumentacja: [słownik](.agents/context/glossary.md), [model domeny](.agents/context/domain-model.md), [specyfikacja](.agents/context/domain/BUSINESS-SPEC.md), [architektura backendu](.agents/context/backend/backend-architecture.md), [diagramy](.agents/context/backend/diagrams/README.md), [frontend](.agents/context/frontend/frontend-architecture.md).
 
-## Code prepared before the hackathon
+## Bezpieczeństwo i OSINT
 
-This template existed before HackNation 2026 started (21 Nov 2026, 11:00). It contains:
-- Spring Boot Kotlin + MongoDB backend skeleton (error handling, API versioning, Docker setup)
-- Next.js frontend monorepo with shared shadcn UI package, API client generator setup (Orval config and fetch client; the client itself is generated from the backend spec), app shell
-- Agent documentation, rules and skills in `.agents/`, plus CI
+Aplikacja korzysta tylko z jawnych źródeł, bez logowania na cudze konta i bez obchodzenia zabezpieczeń. Żądania mają limity rozmiaru i czasu, a każde połączenie zewnętrzne ma wyłącznik:
 
-The git history shows what was written during the event.
+| Usługa | Co jest wysyłane | Wyłącznik |
+| --- | --- | --- |
+| api.github.com | Login lub nick | `SOURCES_GITHUB_ENABLED` |
+| bitcointalk.org | URL od analityka | `SOURCES_BITCOINTALK_ENABLED` |
+| ethereum-rpc.publicnode.com, api.blockchair.com | Adres ETH (sprawdzenie kodu bajtowego) | `EXCLUSION_ONCHAIN_CHECK_ENABLED` |
+| mempool.space, eth.blockscout.com | Adres z Powiązania | `ADDRESS_ACTIVITY_LIVE_ENABLED` |
+| Usługa modelu decyzyjnego (`app.assessment.model.base-url`) | Zamaskowane okno tekstu, adres, fakty | Brak klucza albo `ASSESSMENT_MODEL_ENABLED=false` |
 
-## License
+## Licencje komponentów
 
-MIT
+Kod korzysta wyłącznie z komponentów open source. Model decyzyjny to opcjonalna, zamknięta usługa zewnętrzna, a nie komponent repozytorium.
 
-Third-party data: `backend/src/main/resources/exclusion-labels/etherscan-labels.json` is the Etherscan label dataset from [brianleect/etherscan-labels](https://github.com/brianleect/etherscan-labels) (MIT, licence in `etherscan-labels.LICENSE` next to it), used to recognise Excluded Addresses (decision D22-002).
+<details>
+<summary>Lista licencji</summary>
 
+| Komponent | Licencja |
+| --- | --- |
+| Spring Boot, Spring Framework, Spring Data, Spring AI, Kotlin, Jackson, Hibernate Validator, springdoc-openapi, MongoDB Java Driver, Spock, Groovy, Spotless, Gradle, Newman | Apache-2.0 |
+| TypeScript, class-variance-authority | Apache-2.0 |
+| jsoup, Testcontainers, ktlint, Bruno CLI, Node.js | MIT |
+| Next.js, React, Tailwind CSS, shadcn/ui, Base UI, TanStack Query, Orval, Zod, react-hook-form, Motion, next-themes, Sonner, cmdk, embla-carousel-react, input-otp, react-day-picker, react-resizable-panels, recharts, tw-animate-css, Vitest, Vite, ESLint, typescript-eslint, Prettier, Turborepo, husky | MIT |
+| Bouncy Castle | Bouncy Castle Licence (MIT) |
+| JUnit Platform | EPL-2.0 |
+| lucide-react | ISC |
+| Open Sans | SIL OFL 1.1 |
+| MongoDB Community Server (`mongo:8`) | SSPL-1.0 |
+| Eclipse Temurin (`eclipse-temurin:25`) | GPL-2.0 z Classpath Exception |
+| [brianleect/etherscan-labels](https://github.com/brianleect/etherscan-labels) | MIT (`etherscan-labels.LICENSE`) |
+| Dane demo (`fixtures/`) | Własne, fikcyjne |
+
+Znak KAS w nagłówku interfejsu należy do Krajowej Administracji Skarbowej i jest użyty wyłącznie w prototypie dla organizatora zadania.
+
+</details>
