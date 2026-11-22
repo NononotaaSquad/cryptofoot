@@ -205,7 +205,7 @@ cd cryptofoot
 - API: http://localhost:8080/api/1
 - OpenAPI: http://localhost:8080/v3/api-docs
 
-Profil `local` działa offline, na danych demo. Prawdziwe źródła działają bez tego profilu:
+Profil `local` działa na danych demo, bez źródeł Web2. Prawdziwe źródła działają bez tego profilu:
 1. `docker compose -f backend/docker-compose.yaml up -d mongodb`
 2. W katalogu `backend/`: `MONGODB_URI=mongodb://localhost:27017/db ./gradlew bootRun`
 
@@ -220,6 +220,17 @@ Profil `local` działa offline, na danych demo. Prawdziwe źródła działają b
 | `ADDRESS_ACTIVITY_LIVE_ENABLED` | `false` (`prod`: `true`) | Aktywność z mempool.space i Blockscout |
 | `SOURCES_SYNTHETIC_ENABLED`, `SOURCES_SYNTHETIC_BROKEN_ENABLED` | `true` (`prod`: drugi `false`) | Dane demo |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8080` | Adres backendu, ustalany przy `next build` |
+
+**Offline, bez modelu.** Profil `local` wyłącza źródła Web2 i eksploratory, ale nadal sprawdza kod bajtowy ETH w publicznym węźle. Model wywołuje, jeśli znajdzie klucz, także w `backend/.env`. Pełny tryb offline uruchamia się tak:
+
+```bash
+EXCLUSION_ONCHAIN_CHECK_ENABLED=false ASSESSMENT_MODEL_ENABLED=false \
+SPRING_PROFILES_ACTIVE=local MONGODB_URI=mongodb://localhost:27017/db ./gradlew bootRun
+```
+
+Bez modelu ocenę robią same reguły (`confidence-2`). Analiza ma wtedy `assessmentMode: "RULES_ONLY"`, a `modelVersion` i `questionSetVersion` są puste. Ograniczenie „model nie ocenił przesłanek” pojawia się tylko wtedy, gdy model był włączony, ale nie odpowiedział.
+
+**Lokalny model decyzyjny.** `app.assessment.model.base-url` może wskazać inny serwer protokołu System One (np. Laya, llmman). Klient zawsze woła ścieżkę `/v1/systemone`. Inne środowisko, np. Ollama, wymaga podmiany implementacji `DecisionModel` w `AssessmentConfig.kt`; adapter `PremiseAssessment` i reguły zostają bez zmian. Po zmianie modelu progi trzeba ponownie sprawdzić na zbiorze wzorcowym.
 
 **Wdrożenie:** push do `master` uruchamia GitHub Actions, które wdrażają backend i frontend na Google Cloud Run (baza: MongoDB Atlas). Oba komponenty to kontenery Docker, więc mogą działać w KAS bez publicznej chmury.
 
