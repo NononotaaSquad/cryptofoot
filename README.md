@@ -4,7 +4,7 @@ Osintowy Łapacz Cyfrowych Śladów to narzędzie OSINT dla analityków Krajowej
 
 - przeszukuje publiczne źródła, wyodrębnia adresy BTC i ETH i sprawdza ich sumy kontrolne;
 - odrzuca adresy giełd, smart kontraktów, mikserów i zbiórek;
-- liczy **Stopień pewności** (0–100%) według jawnej punktacji. Opcjonalny **model decyzyjny** pomaga odczytać sens wpisu, ale punkty zawsze przyznają reguły;
+- liczy **Stopień pewności** (0–100%) według jawnej punktacji. Opcjonalny **model decyzyjny SI** pomaga odczytać sens wpisu, ale punkty zawsze przyznają reguły;
 - pokazuje **aktywność adresu** i **sygnały wyjścia do walut tradycyjnych**;
 - zapisuje każdą analizę z metadanymi, powtarza ją ręcznie lub według harmonogramu i porównuje z poprzednią.
 
@@ -67,7 +67,7 @@ Przesłanka ma jeden z trzech statusów:
 Wynik to **95%**. Punkty się nie sumują: ogłoszenie dodaje tylko premię za niezależne źródło. Uzasadnienie jest złożone z szablonów reguł, bez liczb:
 > Adres został opublikowany na profilu badanej osoby (social.example). Niezależne źródła różnego pochodzenia (market.example, social.example) wskazują na ten sam adres.
 
-### Model decyzyjny (AI)
+### Model decyzyjny SI
 
 Reguły z modelem (`confidence-3`) działają wtedy, gdy `ASSESSMENT_MODEL_API_KEY` jest ustawiony oraz `ASSESSMENT_MODEL_ENABLED` jest ustawione na `true`
 
