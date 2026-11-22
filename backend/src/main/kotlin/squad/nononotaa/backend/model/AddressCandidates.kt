@@ -32,7 +32,6 @@ data class RejectedAddressCandidate(
     val failure: AddressValidationFailure,
 )
 
-// TODO E3.1: confirm this input shape with the owner of the Confidence Level algorithm (ADR 0002)
 data class AddressCandidates(
     val candidates: List<AddressCandidate>,
     val rejected: List<RejectedAddressCandidate>,

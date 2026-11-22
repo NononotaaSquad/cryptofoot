@@ -37,7 +37,7 @@ Zakończona analiza nigdy się nie zmienia. Ponowne uruchomienie tworzy nową an
 
 **Przesłanka** to jedno wystąpienie adresu we wzmiance, z oknem tekstu do 1200 znaków.
 
-Tylko **kod** ustala, czy przesłanka łączy adres z osobą. Wystarczy jeden z warunków:
+**Kod** ustala, czy przesłanka łączy adres z osobą. Wystarczy jeden z warunków:
 - autorem wpisu jest badana osoba;
 - wpis leży pod adresem jej profilu;
 - identyfikator zawężający stoi najwyżej 200 znaków od adresu i jest dopasowany jako całe słowo. Imię i nazwisko się tu nie liczy.
@@ -50,30 +50,26 @@ Przesłanka ma jeden z trzech statusów:
 | Rodzaj przesłanki | Punkty |
 | --- | ---: |
 | Własny profil: URL pod profilem ze sprawy albo strona z nickiem i drugim identyfikatorem | 80 |
-| Własna deklaracja autora (tylko z modelem) | 80 |
+| Własna deklaracja autora| 80 |
 | Ogłoszenie sprzedaży lub rozliczenie | 60 |
 | Dyskusja | 40 |
 | Komentarz masowy (giveaway, konkurs, airdrop) | 10 |
 
-- **Baza** to najsilniejsza zaliczona przesłanka.
 - **Premia +15** (raz) za drugą przesłankę, co najmniej dyskusję, z innego serwisu i z innym zdaniem. Kopie, ten sam serwis i komentarze masowe premii nie dają.
 - **Limit 59%** dla adresu niesklasyfikowanego, bo może należeć do giełdy albo kontraktu.
 - **Reguły 0 pkt** wyjaśniają, czemu wynik nie jest wyższy, np. „tylko nick”, „ostrzeżenie”, „kopia”.
 - **Przedziały**: 80–100 bardzo wysokie prawdopodobieństwo, 60–79 prawdopodobny, 40–59 średni, 0–39 niski / szum.
 
 **Przykład: S1 (dane fikcyjne).** Ten sam adres ETH pojawia się w dwóch wzmiankach:
-- profil `social.example/halka_eth`: „Tu publikuję mój portfel ETH: 0xE73A…”. To własny profil, więc **80 pkt**;
-- ogłoszenie `market.example/oferta/451`: „halka_eth sprzedaje rower szosowy. Płatność w ETH na 0xE73A…”. Inny serwis i inne zdanie, więc **+15**.
+- profil `halka_eth`: „Tu publikuję mój portfel ETH: 0xE73A…”. To własny profil, więc **80 pkt**;
+- ogłoszenie `oferta/451`: „halka_eth sprzedaje rower szosowy. Płatność w ETH na 0xE73A…”. Inny serwis i inne zdanie, więc **+15**.
 
 Wynik to **95%**. Punkty się nie sumują: ogłoszenie dodaje tylko premię za niezależne źródło. Uzasadnienie jest złożone z szablonów reguł, bez liczb:
 > Adres został opublikowany na profilu badanej osoby (social.example). Niezależne źródła różnego pochodzenia (market.example, social.example) wskazują na ten sam adres.
 
 ### Model decyzyjny (AI)
 
-| Tryb | Wersja algorytmu | Kiedy działa |
-| --- | --- | --- |
-| Tylko reguły | `confidence-2` | Brak `ASSESSMENT_MODEL_API_KEY`. Nic nie trafia do modelu. |
-| Reguły z modelem | `confidence-3` | Klucz jest ustawiony |
+Reguły z modelem (`confidence-3`) działają wtedy, gdy `ASSESSMENT_MODEL_API_KEY` jest ustawiony oraz `ASSESSMENT_MODEL_ENABLED` jest ustawione na `true`
 
 Model odpowiada prawdopodobieństwami na trzy pytania:
 1. Jaki to rodzaj wpisu?
@@ -86,15 +82,6 @@ Próg „tak” to co najmniej 0,7, próg „nie” najwyżej 0,3. Odpowiedź po
 - **Odtwarzalnie.** Analiza zapisuje odpowiedzi modelu, jego wersję i wersję zestawu pytań. Raport pokazuje przy każdej przesłance, czy oceniła ją reguła, czy model. Gdy model nie odpowie w 5 s (bez ponowień), ocenę przejmują reguły, a raport dostaje Ograniczenie.
 - **Prywatnie.** Model dostaje tylko okno tekstu, oceniany adres i kilka faktów. E-mail, ID komunikatora oraz imię i nazwisko są zamaskowane. URL i dane sprawy nie są wysyłane.
 - **Wymiennie.** Model działa za portem `PremiseAssessment` (Spring AI `DecisionModel`), a adres serwera i nazwa modelu są w konfiguracji. Można więc podłączyć lokalny serwer.
-
-**Zbiór wzorcowy** (`backend/src/test/resources/golden-set/golden-set-v1.json`, 16 przypadków) jest sprawdzany w CI dla każdej wersji algorytmu. Dla `confidence-3` test używa zapisanych odpowiedzi modelu.
-
-| Przypadek | `confidence-1` | `confidence-2` | `confidence-3` |
-| --- | ---: | ---: | ---: |
-| Obcy użytkownik pod repozytorium osoby: „Mój adres na napiwki…” | 80 | 0 | 0 |
-| „Nie wysyłajcie już na stary adres, mój nowy to …” | 0 | 0 (do weryfikacji) | 80 |
-| Nick `max` w słowie „maximum” | 40 | 0 | 0 |
-| Adres ETH, którego nie udało się sklasyfikować | 80 | 59 | 59 |
 
 ## Odrzucanie błędnych przypisań
 
@@ -113,7 +100,7 @@ Dla Powiązań powyżej 0% raport pokazuje:
 - liczbę transakcji i okres aktywności;
 - sygnały wyjścia do walut tradycyjnych w kolejności czasowej (reguły `activity-1`).
 
-Dane pochodzą z danych demo, a potem z mempool.space (BTC) i Blockscout (ETH). Obie usługi działają bez klucza API i można je hostować samodzielnie. **Brak danych nigdy nie jest pokazywany jako zero.**
+Dane pochodzą z mempool.space (BTC) i Blockscout (ETH). Obie usługi działają bez klucza API i można je hostować samodzielnie. **Brak danych nigdy nie jest pokazywany jako zero.**
 
 | Sygnał | Reguła |
 | --- | --- |
@@ -175,10 +162,10 @@ Dzięki temu każdą analizę da się odtworzyć i zweryfikować.
 
 ## Założenia
 
-- Jeden użytkownik: analityk KAS bez wiedzy informatycznej. Interfejs jest po polsku i bez żargonu.
+- Analityk KAS. Interfejs jest po polsku.
 - Kierunek osoba → adresy. Wpisany adres portfela to dana wejściowa, nigdy dowód.
 - Mało szumu i wyjaśnialność: każdy punkt ma regułę, zdanie w Uzasadnieniu i swoje przesłanki.
-- AI wspomaga, reguły decydują. Bez klucza aplikacja działa w całości na regułach.
+- Model decyzyjny wspomaga, reguły decydują. Bez klucza aplikacja działa w całości na regułach.
 - Tylko publiczne źródła, bez logowania na cudze konta. Każde połączenie zewnętrzne da się wyłączyć.
 - Demo działa na fikcyjnych danych syntetycznych, więc można je powtórzyć.
 - Brak danych to nie zero. Niedostępne źródło zawsze jest Ograniczeniem raportu.
@@ -202,17 +189,6 @@ W `backend/src/main/resources/fixtures/demo-v1.json` jest 11 fikcyjnych osób. I
 | S11 | Nick `oliwer_zmienny`, profil `https://social.example/oliwer_zmienny` | Każda kolejna analiza zmienia wynik; „Zmiany od poprzedniej analizy (3)” | Porównanie w czasie |
 
 Lokalnie dochodzi źródło `synthetic-broken`, które zawsze jest niedostępne, więc status analizy to „Częściowa”.
-
-Obowiązkowy scenariusz prezentacji (pkt 6 zadania):
-
-| Etap | Scenariusze |
-| --- | --- |
-| Dane wejściowe i wyszukiwanie | S1 |
-| Wykrycie i weryfikacja adresu | S1, S6 |
-| Stopień pewności | S1, S5, S7 |
-| Odrzucenie błędnych przypisań | S2, S3, S4 |
-| Aktywność blockchain | S1, S4, S9 |
-| Źródła, wynik końcowy i porównanie | S1, S11 |
 
 ## Uruchomienie
 
@@ -300,31 +276,6 @@ Aplikacja korzysta tylko z jawnych źródeł, bez logowania na cudze konta i bez
 | mempool.space, eth.blockscout.com | Adres z Powiązania | `ADDRESS_ACTIVITY_LIVE_ENABLED` |
 | Usługa modelu decyzyjnego (`app.assessment.model.base-url`) | Zamaskowane okno tekstu, adres, fakty | Brak klucza albo `ASSESSMENT_MODEL_ENABLED=false` |
 
-- Listy etykiet działają offline.
-- Sekrety (token GitHub, klucz modelu) są tylko w zmiennych środowiskowych. Logi nie zawierają treści wpisów ani kluczy.
-- Model działa dziś jako usługa zewnętrzna. Zgoda mentorów na tę usługę (pkt 5.7 zadania) jest jeszcze otwarta. Docelowo model ma działać lokalnie w KAS.
-
-> [!WARNING]
-> Prototyp nie ma logowania, a API dopuszcza CORS z dowolnego źródła. Przed wdrożeniem w KAS trzeba dodać uwierzytelnianie i zawęzić CORS.
-
-## Ograniczenia i dalszy rozwój
-
-**Ograniczenia:**
-- Są tylko dwa prawdziwe źródła Web2: GitHub i Bitcointalk.
-- Adres rozbity spacjami nie jest wykrywany.
-- Sygnały wyjścia obejmują tylko serwisy z list etykiet, a lista BTC jest krótka.
-- Eksploratory na żywo czytają tylko pierwszą stronę historii; raport to zaznacza.
-- Model może ocenić ten sam wpis inaczej w kolejnej analizie (dostawca podaje ok. 4% zmian). Pomiar na prawdziwym modelu jest ręczny.
-- Raport jest tylko w aplikacji, bez eksportu PDF.
-- Backend jeszcze nie nadaje numeru sprawy (`2026/0006`).
-- Oznaczenie „Przejrzana” jest zapisywane w przeglądarce, nie na serwerze.
-
-**Dalszy rozwój:**
-- kolejne źródła jako implementacje `MentionSource`;
-- lokalny model i własne instancje eksploratorów w sieci KAS;
-- większe listy etykiet;
-- eksport raportu i uwierzytelnianie.
-
 ## Licencje komponentów
 
 Kod korzysta wyłącznie z komponentów open source. Model decyzyjny to opcjonalna, zamknięta usługa zewnętrzna, a nie komponent repozytorium.
@@ -350,13 +301,3 @@ Kod korzysta wyłącznie z komponentów open source. Model decyzyjny to opcjonal
 Znak KAS w nagłówku interfejsu należy do Krajowej Administracji Skarbowej i jest użyty wyłącznie w prototypie dla organizatora zadania.
 
 </details>
-
-## Kod sprzed hackathonu
-
-Przed startem HackNation 2026 (21.11.2026, 11:00) istniał tylko szablon repozytorium:
-- szkielet backendu Spring Boot z MongoDB;
-- monorepo frontendu Next.js z pakietem UI;
-- dokumentacja i skille agentów w `.agents/`;
-- konfiguracja CI.
-
-Cała logika OŁCyŚ powstała w trakcie wydarzenia, co widać w historii git.
