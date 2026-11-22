@@ -144,6 +144,10 @@ The production deploy sets `SOURCES_SYNTHETIC_ENABLED=true` and `SOURCES_SYNTHET
 
 **Decision model key (prod).** Same wiring as the GitHub token: GitHub Actions secret `ASSESSMENT_MODEL_API_KEY` -> Secret Manager secret `<repo>-assessment-model-api-key` -> Cloud Run env var `ASSESSMENT_MODEL_API_KEY` (`--set-secrets`), and the deploy sets `ASSESSMENT_MODEL_ENABLED=true`. With the Actions secret missing the deploy warns and sets `ASSESSMENT_MODEL_ENABLED=false`, so production scores with rules only (`confidence-2`). A key added by hand in the Cloud Run console is lost on the next deploy (`--set-secrets` replaces all secrets). Decision: `.agents/context/backend/decisions/0005-decision-model-key-in-production.md`.
 
+### Local Docker healthcheck (ADR 0006)
+
+The backend healthcheck in `backend/docker-compose.yaml` sends `GET /actuator/health` with bash over `/dev/tcp` and requires `200`, because the Temurin JRE image has no curl. `docker compose up --wait` in `scripts/run-all.sh` can then pass and the script starts the frontend; when it fails, the script says why and exits 1. The production image is unchanged. Decision: `.agents/context/backend/decisions/0006-local-healthcheck-without-curl.md`.
+
 ## Project Structure
 
 ```
