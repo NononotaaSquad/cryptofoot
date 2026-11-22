@@ -604,6 +604,13 @@
                             "null"
                         ],
                         "format": "int32"
+                    },
+                    "highestConfidenceLevel": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "format": "int32"
                     }
                 }
             },
@@ -621,6 +628,16 @@
                         "format": "date-time"
                     },
                     "latestAnalysis": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AnalysisResponse"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "latestFinishedAnalysis": {
                         "oneOf": [
                             {
                                 "$ref": "#/components/schemas/AnalysisResponse"

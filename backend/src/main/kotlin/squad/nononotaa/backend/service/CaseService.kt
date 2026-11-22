@@ -9,6 +9,7 @@ import squad.nononotaa.backend.dto.CreateCaseRequest
 import squad.nononotaa.backend.dto.PersonIdentifiersResponse
 import squad.nononotaa.backend.exception.NotFoundException
 import squad.nononotaa.backend.model.AddressValidation
+import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.CaseRecord
 import squad.nononotaa.backend.model.PersonIdentifiers
 import squad.nononotaa.backend.repository.AnalysisRepository
@@ -38,7 +39,7 @@ class CaseService(
         val saved = repository.insert(CaseRecord(identifiers = identifiers, createdAt = clock.instant()))
         val id = requireNotNull(saved.id) { "Inserted case has no id" }
         logger.info("Case created id={} identifierTypes={}", id, saved.identifiers.toIdentifiers().map { it.type })
-        return CaseResponse(id, saved.identifiers.toResponse(), saved.createdAt, null)
+        return CaseResponse(id, saved.identifiers.toResponse(), saved.createdAt, null, null)
     }
 
     fun list(): List<CaseResponse> {
@@ -58,8 +59,16 @@ class CaseService(
 
     private fun toResponse(record: CaseRecord): CaseResponse {
         val id = requireNotNull(record.id) { "Stored case has no id" }
-        val latest = analyses.findFirstByCaseIdOrderByStartedAtDescIdDesc(id)?.let(history::toResponse)
-        return CaseResponse(id, record.identifiers.toResponse(), record.createdAt, latest)
+        val latest = analyses.findFirstByCaseIdOrderByStartedAtDescIdDesc(id)
+        val latestFinished =
+            when {
+                latest == null -> null
+                latest.status != AnalysisStatus.RUNNING -> latest
+                else -> analyses.findFirstByCaseIdAndStatusInOrderByStartedAtDescIdDesc(id, FINISHED)
+            }
+        val latestResponse = latest?.let(history::toResponse)
+        val finishedResponse = if (latestFinished === latest) latestResponse else latestFinished?.let(history::toResponse)
+        return CaseResponse(id, record.identifiers.toResponse(), record.createdAt, latestResponse, finishedResponse)
     }
 
     private fun canonical(rawAddress: String): String = when (val result = addressValidator.validate(rawAddress)) {
@@ -81,5 +90,6 @@ class CaseService(
 
     companion object {
         private val logger = logger()
+        private val FINISHED = listOf(AnalysisStatus.COMPLETED, AnalysisStatus.PARTIAL, AnalysisStatus.FAILED)
     }
 }

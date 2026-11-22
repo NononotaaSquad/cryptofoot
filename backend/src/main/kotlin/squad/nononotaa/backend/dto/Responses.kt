@@ -34,6 +34,7 @@ data class CaseResponse(
     val identifiers: PersonIdentifiersResponse,
     val createdAt: Instant,
     val latestAnalysis: AnalysisResponse?,
+    val latestFinishedAnalysis: AnalysisResponse?,
 )
 
 data class SourceCoverageResponse(
@@ -57,6 +58,7 @@ data class AnalysisResponse(
     val algorithmVersion: String?,
     val attributionCount: Int?,
     val excludedAddressCount: Int?,
+    val highestConfidenceLevel: Int?,
 )
 
 data class DetectedAddressResponse(

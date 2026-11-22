@@ -12,4 +12,5 @@ export interface CaseResponse {
   identifiers?: PersonIdentifiersResponse;
   createdAt?: string;
   latestAnalysis?: AnalysisResponse | null;
+  latestFinishedAnalysis?: AnalysisResponse | null;
 }
