@@ -1,6 +1,7 @@
 package squad.nononotaa.backend.service
 
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 import spock.lang.Specification
 import squad.nononotaa.backend.analysis.AppliedRule
 import squad.nononotaa.backend.analysis.Candidate
@@ -9,7 +10,10 @@ import squad.nononotaa.backend.analysis.FoundMention
 import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.analysis.ScoredAttribution
 import squad.nononotaa.backend.analysis.ScoringInput
+import squad.nononotaa.backend.model.AddressValidation
 import squad.nononotaa.backend.model.ClassificationStatus
+import squad.nononotaa.backend.model.Mention
+import squad.nononotaa.backend.repository.MentionRepository
 
 class ConfidenceScoringServiceSpec extends Specification {
 
@@ -317,5 +321,31 @@ class ConfidenceScoringServiceSpec extends Specification {
         attributions*.candidate == [first, second]
         attributions.every { it.confidenceLevel in 0..100 }
         scoring.score(new ScoringInput([], [], [], [NICKNAME])).attributions.isEmpty()
+    }
+
+    def "golden set #id scores as recorded for confidence-1"() {
+        given:
+        def saved = new AtomicInteger()
+        def repository = Stub(MentionRepository) {
+            findByIdentity(_) >> []
+            save(_) >> { Mention m ->
+                GoldenSet.withId(m, "${id}-${saved.incrementAndGet()}")
+            }
+        }
+
+        expect:
+        GoldenSet.score(item, repository, scoring) == item.expected['confidence-1'].attributions
+
+        where:
+        item << GoldenSet.items()
+        id = item.id
+    }
+
+    def "golden set #id address #placeholder is a valid address"() {
+        expect:
+        new AddressValidator().validate(address, null) instanceof AddressValidation.Valid
+
+        where:
+        [id, placeholder, address]<< GoldenSet.addresses()
     }
 }
