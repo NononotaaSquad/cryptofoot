@@ -11,7 +11,7 @@ Osintowy Łapacz Cyfrowych Śladów to narzędzie OSINT dla analityków Krajowej
 > [!IMPORTANT]
 > Wynik to **trop do weryfikacji, a nie dowód**. Powiązanie nie przesądza, że adres należy do osoby, a sygnał wyjścia do walut tradycyjnych nie dowodzi wypłaty ani naruszenia przepisów. Aplikacja mówi to wprost w raporcie.
 
-![Lista spraw](.agents/specs/2026-11-22_case-list/verification-87/C-expanded-1920.png)
+![Lista spraw](docs/screenshots/lista-spraw.png)
 
 ## Jak działa analiza
 
@@ -69,12 +69,16 @@ Wynik to **95%**. Punkty się nie sumują: ogłoszenie dodaje tylko premię za n
 
 ### Model decyzyjny SI
 
-Reguły z modelem (`confidence-3`) działają wtedy, gdy `ASSESSMENT_MODEL_API_KEY` jest ustawiony oraz `ASSESSMENT_MODEL_ENABLED` jest ustawione na `true`
+Reguły z modelem (`confidence-4`) działają wtedy, gdy `ASSESSMENT_MODEL_API_KEY` jest ustawiony oraz `ASSESSMENT_MODEL_ENABLED` jest ustawione na `true`.
 
 Model odpowiada prawdopodobieństwami na trzy pytania:
 1. Jaki to rodzaj wpisu?
 2. Czy autor podaje adres jako swój?
 3. Czy tekst ostrzega przed adresem?
+
+**Szczegóły techniczne.** Model nie zwraca etykiety, tylko prawdopodobieństwa: dla rodzaju wpisu rozkład na cztery opcje, a dla pytań 2 i 3 prawdopodobieństwo „tak” i „nie” (na zrzucie niżej: własna deklaracja 0.99, dyskusja 0.01; deklaracja „tak” 0.99; ostrzeżenie „tak” 0.01). Kod porównuje te liczby z progami i dopiero wtedy przyznaje punkty.
+
+![Przesłanka oceniona przez model](docs/screenshots/model-przeslanka.png)
 
 Próg „tak” to co najmniej 0,7, próg „nie” najwyżej 0,3. Odpowiedź pomiędzy jest „niepewna” i kieruje przesłankę do weryfikacji. Dzięki temu komentarz obcej osoby na profilu („mój adres na napiwki”) zostaje odrzucony, a wpis „nie wysyłajcie na stary adres, mój nowy to …” liczy się jako własna deklaracja.
 
@@ -93,7 +97,7 @@ Próg „tak” to co najmniej 0,7, próg „nie” najwyżej 0,3. Odpowiedź po
 
 ## Aktywność adresu i sygnały wyjścia do walut tradycyjnych
 
-![Aktywność adresu](.agents/specs/2026-11-22_address-activity-readability/reference-current.png)
+![Aktywność adresu](docs/screenshots/aktywnosc-adresu.png)
 
 Dla Powiązań powyżej 0% raport pokazuje:
 - sumę otrzymaną i wysłaną;
@@ -137,7 +141,7 @@ Dzięki temu każdą analizę da się odtworzyć i zweryfikować.
 
 ## Analizy cykliczne i porównanie
 
-![Porównanie analiz](.agents/specs/2026-11-22_case-list/verification-87/details-reading-B-after-C.png)
+![Porównanie analiz](docs/screenshots/porownanie-analiz.png)
 
 - **Ponowna analiza** startuje jednym przyciskiem albo według **harmonogramu**: codziennie o 06:00, co 6 godzin, co tydzień lub w odstępie od 1 minuty do 365 dni (strefa Europe/Warsaw). Termin, w którym poprzednia analiza jeszcze trwa, jest pomijany. Terminy przegapione w czasie przestoju nie są nadrabiane.
 - **Porównanie z poprzednią analizą** pokazuje nowe powiązania, niezaobserwowane powiązania, zmiany Stopnia pewności i zmiany wykluczenia.
@@ -172,7 +176,7 @@ Dzięki temu każdą analizę da się odtworzyć i zweryfikować.
 
 ## Scenariusze testowe (dane syntetyczne)
 
-W `backend/src/main/resources/fixtures/demo-v1.json` jest 11 fikcyjnych osób. Ich wyniki w trybie „tylko reguły” są zamrożone w `DemoScenariosSpec`. Aby sprawdzić scenariusz: *Nowa sprawa* → wpisz podane pola → *Rozpocznij analizę* → rozwiń Powiązania.
+W `backend/src/main/resources/fixtures/demo-v1.json` jest 13 fikcyjnych osób. Ich wyniki w trybie „tylko reguły” są zamrożone w `DemoScenariosSpec`, a wyniki S12 i S13 z modelem sprawdza zbiór wzorcowy. Aby sprawdzić scenariusz: *Nowa sprawa* → wpisz podane pola → *Rozpocznij analizę* → rozwiń Powiązania.
 
 | # | Wpisz | Wynik | Co pokazuje |
 | --- | --- | --- | --- |
@@ -187,6 +191,8 @@ W `backend/src/main/resources/fixtures/demo-v1.json` jest 11 fikcyjnych osób. I
 | S9 | Nick `irena_hodl`, e-mail `irena.hodl@example.com`, profil `https://social.example/irena_hodl` | 80%; brak sygnału | Giełda spoza list nie jest rozpoznana |
 | S10 | Nick `kamil_nieobecny` | Brak wzmianek, analiza udana | „Brak wyników” to nie błąd |
 | S11 | Nick `oliwer_zmienny`, profil `https://social.example/oliwer_zmienny` | Każda kolejna analiza zmienia wynik; „Zmiany od poprzedniej analizy (3)” | Porównanie w czasie |
+| S12 | Nick `ania_krypto`, profil `https://social.example/ania_krypto` | 80% tylko dla adresu z jej profilu; 2 Adresy wykluczone (Binance, router Uniswap); 0% dla adresu z ostrzeżenia, z komentarza innej osoby pod profilem (z modelem: „podany przez inną osobę”) i z wpisu `#kampania_krypto` | Pięć fałszywych tropów wokół jednej osoby |
+| S13 | Nick `zofia_portfel` | 1., 3., … analiza: ogłoszenie 60%. 2., 4., …: wpis „mój nowy to …”: same reguły 0% i 0% (do weryfikacji), z modelem 80% i 80% (stary adres wycofany), przelew 0,2 BTC na Binance | Model rozpoznaje zmianę adresu, którą reguły biorą za ostrzeżenie |
 
 Lokalnie dochodzi źródło `synthetic-broken`, które zawsze jest niedostępne, więc status analizy to „Częściowa”.
 
@@ -243,7 +249,7 @@ cd frontend && npm run check      # typecheck, ESLint, Prettier, Vitest
 ./scripts/api-sync.sh             # zgodność kontraktu OpenAPI z klientem
 ```
 
-Testy obejmują między innymi zamrożone scenariusze S1–S11, zbiór wzorcowy w trzech wersjach algorytmu i kontrakt API. CI uruchamia je przy pull requestach i pushu do `master`.
+Testy obejmują między innymi zamrożone scenariusze S1–S13, zbiór wzorcowy dla `confidence-2` (reguły) i `confidence-4` (model) oraz kontrakt API. CI uruchamia je przy pull requestach i pushu do `master`.
 
 ## Architektura
 
