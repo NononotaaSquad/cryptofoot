@@ -3,15 +3,42 @@
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { useReviewedMarks } from "@/features/case-details/reviewed-store";
 import { toUserMessage } from "@/lib/api/client";
 
 import { buildCaseList, normalizeQuery, reviewedOpen } from "./case-list-model";
+import { CaseListPager } from "./case-list-pager";
+import {
+  defaultPageSize,
+  firstPages,
+  isPageSize,
+  offersPageSize,
+  pageCaseList,
+  pageSizes,
+  pagesMoved,
+  searchChanged,
+  type GroupPages,
+  type Page as RowsPage,
+  type PageSize,
+} from "./case-list-pagination";
 import { CaseListHeader, CaseRow } from "./case-row";
 import type { CaseRowView } from "./case-row-view-model";
 import { useCaseList } from "./use-case-list";
@@ -19,10 +46,17 @@ import { useCaseList } from "./use-case-list";
 const searchId = "case-list-search";
 const searchHintId = `${searchId}-hint`;
 const reviewedListId = "case-list-reviewed";
+const pageSizeId = "case-list-page-size";
+const newResultsName = "Nowe wyniki";
+const reviewedName = "Przejrzane sprawy";
+const pageSizeItems = pageSizes.map((size) => ({
+  value: String(size),
+  label: String(size),
+}));
 
-// Case list: search, the statistics, the New Results and Reviewed groups and
-// the two empty states. The query, the expansion and the focus live here, so a
-// background refresh of the list never resets them.
+// Case list: search, the statistics, the New Results and Reviewed groups, their
+// pages and the two empty states. The query, the expansion, the pages and the
+// focus live here, so a background refresh of the list never resets them.
 export function CaseListView() {
   const casesQuery = useCaseList();
   const [query, setQuery] = useState("");
@@ -30,7 +64,13 @@ export function CaseListView() {
   const [reviewedChoice, setReviewedChoice] = useState(false);
   // A choice made during a search; null: follow the automatic rule.
   const [searchOverride, setSearchOverride] = useState<boolean | null>(null);
+  // Rows drawn per page in each group and the page of each group (#104):
+  // screen state only, the query still holds every Case.
+  const [pageSize, setPageSize] = useState<PageSize>(defaultPageSize);
+  const [pages, setPages] = useState<GroupPages>(firstPages);
   const searchRef = useRef<HTMLInputElement>(null);
+  const newHeadingRef = useRef<HTMLHeadingElement>(null);
+  const reviewedHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const items = useMemo(() => casesQuery.data?.data ?? [], [casesQuery.data]);
   const caseIds = useMemo(
@@ -38,10 +78,12 @@ export function CaseListView() {
     [items]
   );
   const marks = useReviewedMarks(caseIds);
+  // Search, groups and order over the full answer; the pages come last.
   const model = useMemo(
     () => buildCaseList(items, query, marks),
     [items, query, marks]
   );
+  const paged = pageCaseList(model, pages, pageSize);
 
   if (casesQuery.isPending) {
     return (
@@ -78,6 +120,15 @@ export function CaseListView() {
     );
   }
 
+  // A refresh or a mark made a group shorter: keep the last page that still
+  // exists, so a later refresh does not jump back to a page the Analyst left.
+  if (pagesMoved(pages, paged)) {
+    setPages({
+      newResults: paged.newResults.page,
+      reviewed: paged.reviewed.page,
+    });
+  }
+
   const trimmed = normalizeQuery(query);
   const searching = trimmed !== "";
   const open = reviewedOpen({
@@ -90,7 +141,39 @@ export function CaseListView() {
   const clear = () => {
     setQuery("");
     setSearchOverride(null);
+    setPages(firstPages);
     searchRef.current?.focus();
+  };
+
+  // The pressed button keeps the focus. After a mouse or touch press the
+  // group's heading comes back into view when it scrolled away, so the new
+  // page is read from its first row. After Enter or Space the focused button
+  // is kept on screen instead, although the new page is shorter or longer
+  // (the range is announced to screen readers).
+  const goToPage = (
+    group: keyof GroupPages,
+    page: number,
+    byPointer: boolean,
+    heading: RefObject<HTMLHeadingElement | null>
+  ) => {
+    setPages((current) => ({ ...current, [group]: page }));
+    if (!byPointer) {
+      // Next frame: the new page is on screen by then. Centred, so the focus
+      // ring is not cut by the window edge.
+      requestAnimationFrame(() => {
+        const focused = document.activeElement;
+        if (!(focused instanceof HTMLElement)) return;
+        const { top, bottom } = focused.getBoundingClientRect();
+        if (top < 0 || bottom > window.innerHeight) {
+          focused.scrollIntoView({ block: "center" });
+        }
+      });
+      return;
+    }
+    const element = heading.current;
+    if (element !== null && element.getBoundingClientRect().top < 0) {
+      element.scrollIntoView({ block: "start" });
+    }
   };
 
   return (
@@ -108,8 +191,10 @@ export function CaseListView() {
           aria-describedby={searchHintId}
           value={query}
           onChange={(event) => {
-            setQuery(event.target.value);
-            if (normalizeQuery(event.target.value) === "") {
+            const next = event.target.value;
+            if (searchChanged(query, next)) setPages(firstPages);
+            setQuery(next);
+            if (normalizeQuery(next) === "") {
               setSearchOverride(null);
             }
           }}
@@ -148,31 +233,59 @@ export function CaseListView() {
         </EmptyPanel>
       ) : (
         <>
-          <p className="flex flex-wrap gap-x-6 gap-y-1">
-            <span>
-              Liczba spraw: <strong>{model.matching}</strong>
-            </span>
-            <span>
-              Nowe wyniki: <strong>{model.newRows.length}</strong>
-            </span>
-          </p>
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+            {/* All matching Cases, never only the page on screen. */}
+            <p className="flex flex-wrap gap-x-6 gap-y-1">
+              <span>
+                Liczba spraw: <strong>{model.matching}</strong>
+              </span>
+              <span>
+                Nowe wyniki: <strong>{model.newRows.length}</strong>
+              </span>
+            </p>
+            {offersPageSize(model) ? (
+              <PageSizeSelect
+                value={pageSize}
+                onChange={(size) => {
+                  setPageSize(size);
+                  setPages(firstPages);
+                }}
+              />
+            ) : null}
+          </div>
 
           {model.newRows.length > 0 ? (
-            <Group
-              title={`Nowe wyniki (${String(model.newRows.length)})`}
-              rows={model.newRows}
-              emphasized
-            />
+            <section
+              aria-labelledby="case-list-new-title"
+              className="flex flex-col gap-6"
+            >
+              <h2
+                ref={newHeadingRef}
+                id="case-list-new-title"
+                className="scroll-mt-4 text-2xl leading-tight font-bold"
+              >
+                {`${newResultsName} (${String(model.newRows.length)})`}
+              </h2>
+              <PagedRows
+                groupName={newResultsName}
+                page={paged.newResults}
+                emphasized
+                onPageChange={(page, byPointer) => {
+                  goToPage("newResults", page, byPointer, newHeadingRef);
+                }}
+              />
+            </section>
           ) : null}
 
           {model.reviewedRows.length > 0 ? (
             <section aria-labelledby="case-list-reviewed-title">
               <div className="flex items-center justify-between gap-4">
                 <h2
+                  ref={reviewedHeadingRef}
                   id="case-list-reviewed-title"
-                  className="text-2xl leading-tight font-bold"
+                  className="scroll-mt-4 text-2xl leading-tight font-bold"
                 >
-                  {`Przejrzane sprawy (${String(model.reviewedRows.length)})`}
+                  {`${reviewedName} (${String(model.reviewedRows.length)})`}
                 </h2>
                 <Button
                   variant="link"
@@ -192,9 +305,16 @@ export function CaseListView() {
                   )}
                 </Button>
               </div>
+              {/* Collapsed: neither the rows nor their page controls. */}
               {open ? (
                 <div id={reviewedListId} className="mt-6 flex flex-col">
-                  <RowList rows={model.reviewedRows} />
+                  <PagedRows
+                    groupName={reviewedName}
+                    page={paged.reviewed}
+                    onPageChange={(page, byPointer) => {
+                      goToPage("reviewed", page, byPointer, reviewedHeadingRef);
+                    }}
+                  />
                 </div>
               ) : null}
             </section>
@@ -220,38 +340,75 @@ function Page({ children }: { children: ReactNode }) {
   );
 }
 
-function Group({
-  title,
-  rows,
+// The rows of one page of a group and, with more than one page, its navigator.
+function PagedRows({
+  groupName,
+  page,
   emphasized = false,
+  onPageChange,
 }: {
-  title: string;
-  rows: CaseRowView[];
+  groupName: string;
+  page: RowsPage<CaseRowView>;
   emphasized?: boolean;
-}) {
-  return (
-    <section aria-label={title} className="flex flex-col gap-6">
-      <h2 className="text-2xl leading-tight font-bold">{title}</h2>
-      <RowList rows={rows} emphasized={emphasized} />
-    </section>
-  );
-}
-
-function RowList({
-  rows,
-  emphasized = false,
-}: {
-  rows: CaseRowView[];
-  emphasized?: boolean;
+  onPageChange: (page: number, byPointer: boolean) => void;
 }) {
   return (
     <div className="flex flex-col">
       <CaseListHeader />
       <ul>
-        {rows.map((row) => (
+        {page.rows.map((row) => (
           <CaseRow key={row.caseId} row={row} emphasized={emphasized} />
         ))}
       </ul>
+      <CaseListPager
+        groupName={groupName}
+        page={page}
+        onPageChange={onPageChange}
+      />
+    </div>
+  );
+}
+
+// One size for both groups; the label says what the limit applies to.
+function PageSizeSelect({
+  value,
+  onChange,
+}: {
+  value: PageSize;
+  onChange: (size: PageSize) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor={pageSizeId} className="text-base font-semibold">
+        Wierszy na stronę w każdej sekcji
+      </Label>
+      <Select
+        items={pageSizeItems}
+        value={String(value)}
+        onValueChange={(next) => {
+          // `null` would mean "nothing selected"; every option is a size.
+          const size = Number(next);
+          if (next !== null && isPageSize(size)) onChange(size);
+        }}
+      >
+        <SelectTrigger
+          id={pageSizeId}
+          className="h-10 w-28 px-3 text-base data-[size=default]:h-10"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {pageSizeItems.map((item) => (
+            <SelectItem
+              key={item.value}
+              value={item.value}
+              className="py-2 text-base"
+            >
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
