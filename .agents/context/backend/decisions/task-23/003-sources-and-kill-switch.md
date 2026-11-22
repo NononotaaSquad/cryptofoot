@@ -21,7 +21,7 @@ Address Activity needs chain data. The demo-v1 addresses are real mainnet addres
 Options 1, mempool.space + Blockscout, **off by default**.
 
 - Sources are tried in order; the first that covers the address and answers decides: `SyntheticActivitySource` (only the addresses in `fixtures/demo-v1-activity.json`, active with `sources.synthetic.enabled`, the same switch as the synthetic Mention source), then `MempoolActivitySource` (BTC) and `BlockscoutActivitySource` (ETH) when `app.address-activity.live-enabled` is true.
-- `ADDRESS_ACTIVITY_LIVE_ENABLED` (default `false`) switches the live explorers on. `app.address-activity.mempool-url`, `blockscout-url` and `timeout` are configurable, so KAS can point them at its own instances: both explorers are open source and self-hostable, which keeps the target deployment free of public cloud services (section 9).
+- `ADDRESS_ACTIVITY_LIVE_ENABLED` (default `false`) switches the live explorers on. *Production default changed to on by [D23-012](012-live-explorers-in-production.md) (2026-11-22); local runs and tests stay off.* `app.address-activity.mempool-url`, `blockscout-url` and `timeout` are configurable, so KAS can point them at its own instances: both explorers are open source and self-hostable, which keeps the target deployment free of public cloud services (section 9).
 - Data minimisation: only the bare address is sent (no Case, identifiers, Mentions or scores); fixture addresses and 0% Attributions are never sent; counterparties are labelled from the offline lists inside the application.
 - Requests: mempool `GET /api/address/{a}` and `/api/address/{a}/txs`; Blockscout `GET /api/v2/addresses/{a}/counters`, `/transactions`, `/token-transfers?type=ERC-20`. Each stops at the first failed call.
 

@@ -5,3 +5,7 @@ sources:
   github:
     # production never calls GitHub anonymously: an enabled source needs SOURCES_GITHUB_TOKEN (from Secret Manager)
     require-token: true
+app:
+  address-activity:
+    # production reads Address Activity from the live explorers (D23-012); ADDRESS_ACTIVITY_LIVE_ENABLED=false switches them off
+    live-enabled: ${ADDRESS_ACTIVITY_LIVE_ENABLED:true}
