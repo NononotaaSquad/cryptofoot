@@ -16,4 +16,5 @@ export const ScheduleResponseCadence = {
   EVERY_6_HOURS: "EVERY_6_HOURS",
   WEEKLY: "WEEKLY",
   DEMO_EVERY_MINUTE: "DEMO_EVERY_MINUTE",
+  CUSTOM_INTERVAL: "CUSTOM_INTERVAL",
 } as const;

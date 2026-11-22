@@ -13,6 +13,7 @@ import squad.nononotaa.backend.model.ExclusionReason
 import squad.nononotaa.backend.model.Network
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.ScheduleAttemptOutcome
+import squad.nononotaa.backend.model.ScheduleIntervalUnit
 import squad.nononotaa.backend.model.SchedulePreset
 import squad.nononotaa.backend.model.SourceStatus
 import java.math.BigDecimal
@@ -163,6 +164,8 @@ data class ScheduleAttemptResponse(
 data class ScheduleResponse(
     val enabled: Boolean,
     val cadence: SchedulePreset?,
+    val intervalValue: Long?,
+    val intervalUnit: ScheduleIntervalUnit?,
     val demo: Boolean,
     val timezone: String,
     val nextExecutionAt: Instant?,

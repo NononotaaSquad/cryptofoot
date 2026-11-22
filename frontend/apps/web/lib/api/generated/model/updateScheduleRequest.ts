@@ -5,9 +5,14 @@
  * OpenAPI spec version: v0
  */
 import type { UpdateScheduleRequestCadence } from "./updateScheduleRequestCadence";
+import type { UpdateScheduleRequestIntervalUnit } from "./updateScheduleRequestIntervalUnit";
 
 export interface UpdateScheduleRequest {
   enabled?: boolean;
   /** @nullable */
   cadence?: UpdateScheduleRequestCadence;
+  /** @nullable */
+  intervalValue?: number | null;
+  /** @nullable */
+  intervalUnit?: UpdateScheduleRequestIntervalUnit;
 }

@@ -1,5 +1,7 @@
 # D27-008: Clearly labelled demo interval
 
+> **Superseded in part by D27-010** (2026-11-22, #78): a one-minute interval is no longer limited to demo mode; the Analyst can set any interval from 1 minute (`CUSTOM_INTERVAL`). `DEMO_EVERY_MINUTE` stays, still behind `app.scheduler.demo-enabled`, for compatibility.
+
 - **Status:** proposed
 - **Date:** 2026-11-21
 - **Type:** requirement from E6.4/E7.2 ("any shortened test interval is clearly labelled") + own proposal for the mechanism

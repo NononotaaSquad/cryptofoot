@@ -23,6 +23,8 @@ class AnalysisRerunService(
     private val history: AnalysisHistoryService,
     private val executor: Executor,
 ) {
+    private val startLock = Any()
+
     @JvmOverloads
     fun rerun(
         caseId: String,
@@ -33,12 +35,16 @@ class AnalysisRerunService(
                 logger.warn("Rerun rejected: case not found case={}", caseId)
                 throw NotFoundException("Nie znaleziono sprawy o podanym identyfikatorze.")
             }
-        if (repository.existsByCaseIdAndStatus(caseId, AnalysisStatus.RUNNING)) {
-            logger.warn("Rerun rejected: an analysis is already running case={}", caseId)
-            throw ConflictException("Analiza tej sprawy już trwa.")
-        }
         val request = AnalysisRequest(caseId, trigger, current)
-        val analysisId = orchestrator.start(request)
+        // check-and-start must not interleave between a manual and a scheduled start in this instance
+        val analysisId =
+            synchronized(startLock) {
+                if (repository.existsByCaseIdAndStatus(caseId, AnalysisStatus.RUNNING)) {
+                    logger.warn("Rerun rejected: an analysis is already running case={}", caseId)
+                    throw ConflictException("Analiza tej sprawy już trwa.")
+                }
+                orchestrator.start(request)
+            }
         executor.execute { execute(analysisId, request) }
         return history.get(analysisId)
     }

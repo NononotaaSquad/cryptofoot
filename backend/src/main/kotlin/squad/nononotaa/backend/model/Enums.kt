@@ -1,5 +1,7 @@
 package squad.nononotaa.backend.model
 
+import java.time.temporal.ChronoUnit
+
 enum class AnalysisTrigger { MANUAL, SCHEDULED }
 
 enum class AnalysisStatus { RUNNING, COMPLETED, PARTIAL, FAILED }
@@ -26,7 +28,9 @@ enum class ComparabilityLimitation { IDENTIFIERS_DIFFER, SOURCE_COVERAGE_DIFFERS
 
 enum class ScheduleAttemptOutcome { STARTED, SKIPPED_OVERLAP, SKIPPED_DOWNTIME, FAILED }
 
-enum class SchedulePreset(val demo: Boolean = false) { DAILY, EVERY_6_HOURS, WEEKLY, DEMO_EVERY_MINUTE(true) }
+enum class SchedulePreset(val demo: Boolean = false) { DAILY, EVERY_6_HOURS, WEEKLY, DEMO_EVERY_MINUTE(true), CUSTOM_INTERVAL }
+
+enum class ScheduleIntervalUnit(val unit: ChronoUnit) { MINUTES(ChronoUnit.MINUTES), HOURS(ChronoUnit.HOURS), DAYS(ChronoUnit.DAYS) }
 
 // TODO E7.1: cover exactly these networks in the demo fixtures; a new network needs a validator branch and api-sync
 enum class Network { BTC, ETH }

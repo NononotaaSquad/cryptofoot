@@ -5,6 +5,8 @@ import type {
 
 import {
   cadenceTexts,
+  customCadenceText,
+  intervalUnitLabels,
   lastRunLine,
   nextAnalysisEnding,
   nextAnalysisLine,
@@ -15,6 +17,7 @@ import {
   regularCadences,
   stateRowText,
   warningSentences,
+  type IntervalUnit,
   type ScheduleCadence,
   type ScheduleOptionValue,
   type ScheduleOutcome,
@@ -50,6 +53,8 @@ export interface ScheduleView {
   enabled: boolean;
   nextLine: string | null;
   lastAttemptLine: ScheduleLastAttemptLine | null;
+  // Starting values of the custom interval fields.
+  customInterval: { value: string; unit: IntervalUnit };
 }
 
 export interface ScheduleViewSettings {
@@ -62,8 +67,55 @@ function isCadence(value: unknown): value is ScheduleCadence {
     value === "DAILY" ||
     value === "EVERY_6_HOURS" ||
     value === "WEEKLY" ||
-    value === "DEMO_EVERY_MINUTE"
+    value === "DEMO_EVERY_MINUTE" ||
+    value === "CUSTOM_INTERVAL"
   );
+}
+
+function isIntervalUnit(value: unknown): value is IntervalUnit {
+  return value === "MINUTES" || value === "HOURS" || value === "DAYS";
+}
+
+// Same limits as the backend (1 minute to 365 days), which stays the authority.
+const MAX_INTERVAL_VALUE: Record<IntervalUnit, number> = {
+  MINUTES: 525_600,
+  HOURS: 8_760,
+  DAYS: 365,
+};
+
+export type CustomIntervalCheck =
+  | { ok: true; intervalValue: number; intervalUnit: IntervalUnit }
+  | { ok: false; message: string };
+
+/** Checks the text of the number field before it is sent. */
+export function checkCustomInterval(
+  text: string,
+  unit: IntervalUnit
+): CustomIntervalCheck {
+  const trimmed = text.trim();
+  if (trimmed === "") {
+    return { ok: false, message: "Podaj liczbę większą od zera." };
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    return { ok: false, message: "Podaj dodatnią liczbę całkowitą." };
+  }
+  const value = Number(trimmed);
+  if (value < 1) {
+    return {
+      ok: false,
+      message: "Interwał musi wynosić co najmniej 1 minutę.",
+    };
+  }
+  if (value > MAX_INTERVAL_VALUE[unit]) {
+    return {
+      ok: false,
+      message:
+        unit === "DAYS"
+          ? "Interwał może wynosić najwyżej 365 dni."
+          : `Interwał może wynosić najwyżej ${String(MAX_INTERVAL_VALUE[unit])} ${intervalUnitLabels[unit]} (365 dni).`,
+    };
+  }
+  return { ok: true, intervalValue: value, intervalUnit: unit };
 }
 
 export function isScheduleOptionValue(
@@ -146,7 +198,26 @@ export function toScheduleView(
   );
 
   const formatter = makeFormatter(schedule?.timezone ?? DEFAULT_ZONE);
-  const next = formatInstant(schedule?.nextExecutionAt, formatter);
+  const nextDate = formatInstant(schedule?.nextExecutionAt, formatter);
+  const next =
+    nextDate === null
+      ? null
+      : `${nextDate} (${formatter.resolvedOptions().timeZone})`;
+  const intervalValue = schedule?.intervalValue;
+  const intervalUnit = isIntervalUnit(schedule?.intervalUnit)
+    ? schedule.intervalUnit
+    : null;
+  const hasInterval =
+    typeof intervalValue === "number" &&
+    Number.isInteger(intervalValue) &&
+    intervalValue > 0 &&
+    intervalUnit !== null;
+  const cadenceText =
+    cadence === "CUSTOM_INTERVAL" && hasInterval
+      ? customCadenceText(intervalValue, intervalUnit)
+      : cadence === null
+        ? ""
+        : cadenceTexts[cadence];
   const attempt = schedule?.lastAttempt ?? null;
   const outcome = isOutcome(attempt?.outcome) ? attempt.outcome : null;
   const attemptedAt = formatInstant(attempt?.attemptedAt, formatter);
@@ -183,8 +254,8 @@ export function toScheduleView(
             kind: "info",
             text:
               next === null
-                ? stateRowText(cadenceTexts[cadence])
-                : `${stateRowText(cadenceTexts[cadence])} · ${nextAnalysisSegment(next)}`,
+                ? stateRowText(cadenceText)
+                : `${stateRowText(cadenceText)} · ${nextAnalysisSegment(next)}`,
             demo,
           };
   }
@@ -195,14 +266,21 @@ export function toScheduleView(
     enabled,
     nextLine: next === null ? null : nextAnalysisLine(next),
     lastAttemptLine,
+    customInterval: {
+      value: hasInterval ? String(intervalValue) : "",
+      unit: intervalUnit ?? "MINUTES",
+    },
   };
 }
 
-/** The request that saves the chosen option. */
+/** The request that saves the chosen option; a custom interval carries its checked length. */
 export function toUpdateScheduleRequest(
-  value: ScheduleOptionValue
+  value: ScheduleOptionValue,
+  custom?: { intervalValue: number; intervalUnit: IntervalUnit }
 ): UpdateScheduleRequest {
-  return value === OFF_OPTION_VALUE
-    ? { enabled: false }
-    : { enabled: true, cadence: value };
+  if (value === OFF_OPTION_VALUE) return { enabled: false };
+  if (value === "CUSTOM_INTERVAL" && custom !== undefined) {
+    return { enabled: true, cadence: value, ...custom };
+  }
+  return { enabled: true, cadence: value };
 }

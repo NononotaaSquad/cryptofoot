@@ -28,7 +28,7 @@ class ScheduledRunner(
 ) {
     private val idleWarned = AtomicBoolean(false)
 
-    @Scheduled(fixedDelayString = "\${app.scheduler.tick:PT30S}")
+    @Scheduled(fixedDelayString = "\${app.scheduler.tick:PT10S}")
     fun runDue() {
         val analyses = rerun.getIfAvailable()
         if (analyses == null) {
@@ -53,7 +53,7 @@ class ScheduledRunner(
         analyses: AnalysisRerunService,
     ) {
         val due = requireNotNull(schedule.nextExecutionAt) { "Enabled schedule without next execution" }
-        val claimed = repository.save(schedule.copy(nextExecutionAt = calculator.next(schedule.cadence, now)))
+        val claimed = repository.save(schedule.copy(nextExecutionAt = calculator.following(schedule, due, now)))
         val attempt =
             if (now.isAfter(due.plus(properties.grace))) {
                 logger.warn("Scheduled run missed during downtime case={} due={}", schedule.caseId, due)

@@ -2,7 +2,11 @@
 // (like features/analysis-report/report-labels.ts).
 
 export type ScheduleCadence =
-  "DAILY" | "EVERY_6_HOURS" | "WEEKLY" | "DEMO_EVERY_MINUTE";
+  | "DAILY"
+  | "EVERY_6_HOURS"
+  | "WEEKLY"
+  | "DEMO_EVERY_MINUTE"
+  | "CUSTOM_INTERVAL";
 
 export type ScheduleOutcome =
   "STARTED" | "SKIPPED_OVERLAP" | "SKIPPED_DOWNTIME" | "FAILED";
@@ -16,6 +20,7 @@ export const regularCadences: readonly ScheduleCadence[] = [
   "DAILY",
   "EVERY_6_HOURS",
   "WEEKLY",
+  "CUSTOM_INTERVAL",
 ];
 
 export const offOptionLabel = "Wyłączony";
@@ -25,6 +30,7 @@ export const optionLabels: Record<ScheduleCadence, string> = {
   EVERY_6_HOURS: "Co 6 godzin (00:00, 06:00, 12:00, 18:00)",
   WEEKLY: "Co tydzień (poniedziałek, 06:00)",
   DEMO_EVERY_MINUTE: "Co minutę (tryb demonstracyjny)",
+  CUSTOM_INTERVAL: "Własny interwał",
 };
 
 export const cadenceTexts: Record<ScheduleCadence, string> = {
@@ -32,7 +38,39 @@ export const cadenceTexts: Record<ScheduleCadence, string> = {
   EVERY_6_HOURS: "co 6 godzin",
   WEEKLY: "co tydzień w poniedziałek o 06:00",
   DEMO_EVERY_MINUTE: "co minutę",
+  CUSTOM_INTERVAL: "co własny interwał",
 };
+
+export type IntervalUnit = "MINUTES" | "HOURS" | "DAYS";
+
+export const intervalUnits: readonly IntervalUnit[] = [
+  "MINUTES",
+  "HOURS",
+  "DAYS",
+];
+
+export const intervalUnitLabels: Record<IntervalUnit, string> = {
+  MINUTES: "minuty",
+  HOURS: "godziny",
+  DAYS: "dni",
+};
+
+// Accusative after "co": 1 minutę, 2 minuty, 5 minut, 22 minuty.
+const unitForms: Record<IntervalUnit, [string, string, string]> = {
+  MINUTES: ["minutę", "minuty", "minut"],
+  HOURS: ["godzinę", "godziny", "godzin"],
+  DAYS: ["dzień", "dni", "dni"],
+};
+
+export function customCadenceText(value: number, unit: IntervalUnit): string {
+  const lastTwo = value % 100;
+  const last = value % 10;
+  const [one, few, many] = unitForms[unit];
+  let form = many;
+  if (value === 1) form = one;
+  else if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) form = few;
+  return `co ${String(value)} ${form}`;
+}
 
 export const demoLabel = "Tryb demonstracyjny";
 

@@ -1,7 +1,9 @@
 package squad.nononotaa.backend.dto
 
 import jakarta.validation.constraints.Email
+import squad.nononotaa.backend.model.ScheduleIntervalUnit
 import squad.nononotaa.backend.model.SchedulePreset
+import squad.nononotaa.backend.util.IntegerOnly
 import squad.nononotaa.backend.util.NarrowingIdentifier
 import squad.nononotaa.backend.util.TrimToNull
 import squad.nononotaa.backend.util.ValidWalletAddress
@@ -18,7 +20,9 @@ data class CreateCaseRequest(
     @param:JsonDeserialize(using = TrimToNull::class) @field:ValidWalletAddress val walletAddress: String? = null,
 )
 
-data class UpdateScheduleRequest(
+data class UpdateScheduleRequest @JvmOverloads constructor(
     val enabled: Boolean,
     val cadence: SchedulePreset? = null,
+    @param:JsonDeserialize(using = IntegerOnly::class) val intervalValue: Long? = null,
+    val intervalUnit: ScheduleIntervalUnit? = null,
 )

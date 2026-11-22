@@ -6,11 +6,16 @@
  */
 import type { ScheduleAttemptResponse } from "./scheduleAttemptResponse";
 import type { ScheduleResponseCadence } from "./scheduleResponseCadence";
+import type { ScheduleResponseIntervalUnit } from "./scheduleResponseIntervalUnit";
 
 export interface ScheduleResponse {
   enabled?: boolean;
   /** @nullable */
   cadence?: ScheduleResponseCadence;
+  /** @nullable */
+  intervalValue?: number | null;
+  /** @nullable */
+  intervalUnit?: ScheduleResponseIntervalUnit;
   demo?: boolean;
   timezone?: string;
   /** @nullable */
