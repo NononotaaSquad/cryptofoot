@@ -7,7 +7,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 COMPOSE=(docker compose -f "$ROOT_DIR/backend/docker-compose.yaml")
 
 echo "Starting MongoDB and backend (profile: local) in Docker, waiting until healthy..."
-"${COMPOSE[@]}" up --build -d --wait
+"${COMPOSE[@]}" up --build -d
 
 echo "Starting frontend..."
 cd "$ROOT_DIR/frontend"
