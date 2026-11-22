@@ -7,7 +7,8 @@ import squad.nononotaa.backend.analysis.MentionSource
 import squad.nononotaa.backend.analysis.RawMention
 
 @Component
-@ConditionalOnProperty(name = ["sources.synthetic.enabled"], havingValue = "true", matchIfMissing = true)
+// needs both switches: production keeps the demo data but not the always-unavailable source (ADR 0003)
+@ConditionalOnProperty(name = ["sources.synthetic.enabled", "sources.synthetic-broken.enabled"], havingValue = "true", matchIfMissing = true)
 class SyntheticFailingMentionSource : MentionSource {
     override val sourceName = "synthetic-broken"
 

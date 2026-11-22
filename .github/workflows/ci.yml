@@ -280,7 +280,7 @@ jobs:
             --min-instances 1 \
             --no-cpu-throttling \
             --max-instances 3 \
-            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=false,SOURCES_GITHUB_ENABLED=$GITHUB_SOURCE_ENABLED" \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=true,SOURCES_SYNTHETIC_BROKEN_ENABLED=false,SOURCES_GITHUB_ENABLED=$GITHUB_SOURCE_ENABLED" \
             --set-secrets "$secrets" \
             --quiet
 
