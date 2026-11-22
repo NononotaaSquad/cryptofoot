@@ -18,10 +18,6 @@ import squad.nononotaa.backend.model.SourceStatus
 import java.math.BigDecimal
 import java.time.Instant
 
-data class TestResponse(
-    val message: String,
-)
-
 data class PersonIdentifiersResponse(
     val nickname: String?,
     val login: String?,

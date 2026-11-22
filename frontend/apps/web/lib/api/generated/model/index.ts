@@ -44,7 +44,5 @@ export * from "./scheduleResponseCadence";
 export * from "./scoringRuleContributionResponse";
 export * from "./sourceCoverageResponse";
 export * from "./sourceCoverageResponseStatus";
-export * from "./testRequest";
-export * from "./testResponse";
 export * from "./updateScheduleRequest";
 export * from "./updateScheduleRequestCadence";
