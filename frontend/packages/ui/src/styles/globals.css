@@ -47,6 +47,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-focus: var(--focus);
   --color-navy: var(--navy);
   --color-primary-light: var(--primary-light);
   --color-primary-tint: var(--primary-tint);
@@ -87,6 +88,7 @@
   --border: #dadada;
   --input: #b7b7b7;
   --ring: #0052a5;
+  --focus: #0452a8;
   --navy: #00468d;
   --primary-light: #006cd7;
   --primary-tint: #f0f6fc;
@@ -160,4 +162,15 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+/* gov.pl focus ring (www.gov.pl/css/main-*.css, 2026-11-22): dark blue, white,
+   dark blue. Unlayered on purpose, so it wins over every component's ring-*
+   utility and every focusable element gets the same, clearly visible ring. */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--focus),
+    0 0 0 4px #ffffff,
+    0 0 0 6px var(--focus) !important;
 }

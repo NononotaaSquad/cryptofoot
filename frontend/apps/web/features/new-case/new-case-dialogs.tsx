@@ -15,11 +15,11 @@ export type ValidationProblem = "empty" | "fullNameOnly";
 const copy: Record<ValidationProblem, { title: string; text: string }> = {
   empty: {
     title: "Podaj co najmniej jeden identyfikator",
-    text: "Aby rozpocząć analizę, wpisz nick, login, adres e-mail, identyfikator z komunikatora, adres profilu lub adres kryptowalutowy.",
+    text: "Aby rozpocząć analizę, wpisz nazwę użytkownika, login, adres e-mail, identyfikator z komunikatora, adres profilu lub adres kryptowalutowy.",
   },
   fullNameOnly: {
     title: "Samo imię i nazwisko nie wystarczy",
-    text: "Dodaj co najmniej jeden identyfikator, na przykład nick lub adres e-mail.",
+    text: "Dodaj co najmniej jeden identyfikator, na przykład nazwę użytkownika lub adres e-mail.",
   },
 };
 

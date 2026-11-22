@@ -4,7 +4,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible";
-import { CircleCheck, Info, TriangleAlert } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  CircleCheck,
+  Info,
+  TriangleAlert,
+} from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import type { AddressActivityFigures } from "./address-activity-figures";
@@ -17,7 +23,8 @@ export function AttributionDetails({
   attribution: AttributionView;
 }) {
   return (
-    <div className="flex flex-col gap-6">
+    // Design: 36px between blocks, 18px bold block headings, 14px under them.
+    <div className="flex flex-col gap-9">
       <Scoring attribution={attribution} />
 
       <Block heading="Uzasadnienie">
@@ -30,11 +37,14 @@ export function AttributionDetails({
       />
 
       <Block heading={attribution.mentionsHeading}>
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-5">
           {attribution.mentions.map((mention) => (
-            <li key={mention.key} className="flex flex-col gap-1">
+            <li
+              key={mention.key}
+              className="flex flex-col gap-1.5 not-first:border-t not-first:border-border not-first:pt-5"
+            >
               <span>
-                <span className="font-medium">{mention.sourceName}</span>
+                <span className="font-semibold">{mention.sourceName}</span>
                 {mention.collectedAt !== null ? (
                   <span className="text-muted-foreground">
                     {" "}
@@ -44,7 +54,7 @@ export function AttributionDetails({
               </span>
               <MentionLink mention={mention} />
               {mention.context !== null ? (
-                <blockquote className="border-l-2 border-border pl-3 text-muted-foreground italic">
+                <blockquote className="border-l-3 border-border-strong py-1 pl-3.5 text-muted-foreground italic">
                   „{mention.context}”
                 </blockquote>
               ) : null}
@@ -54,7 +64,7 @@ export function AttributionDetails({
       </Block>
 
       <Block heading="Weryfikacja adresu">
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-2">
           {attribution.verification.map((line) => (
             <li
               key={line.text}
@@ -90,15 +100,23 @@ function Scoring({ attribution }: { attribution: AttributionView }) {
     <Collapsible
       open={open}
       onOpenChange={setOpen}
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-3.5"
     >
-      <h4 className="flex items-center gap-3 font-semibold">
+      <h4 className="flex items-center gap-3 text-lg leading-snug font-bold">
         Punktacja
         <CollapsibleTrigger
-          className={buttonVariants({ variant: "link", className: "px-0" })}
+          className={buttonVariants({
+            variant: "link",
+            className: "h-auto px-0 text-base font-semibold",
+          })}
         >
           {open ? "Zwiń" : "Rozwiń"}
           <span className="sr-only"> punktację</span>
+          {open ? (
+            <ChevronUp aria-hidden="true" className="size-6" />
+          ) : (
+            <ChevronDown aria-hidden="true" className="size-6" />
+          )}
         </CollapsibleTrigger>
       </h4>
       <CollapsibleContent>
@@ -132,51 +150,56 @@ function Activity({ figures }: { figures: AddressActivityFigures }) {
     );
   }
   return (
-    <div className="flex flex-col gap-3">
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1">
-        <dt className="text-muted-foreground">Łączny wolumen</dt>
-        <dd>{figures.volume}</dd>
-        <dt className="text-muted-foreground">Liczba transakcji</dt>
-        <dd>{figures.transactionCount}</dd>
-        <dt className="text-muted-foreground">Okres</dt>
-        <dd>{figures.period ?? "—"}</dd>
-        <dt className="text-muted-foreground">Źródło danych</dt>
-        <dd className="break-all">{figures.source}</dd>
+    <div className="flex flex-col gap-3.5">
+      {/* Design: the three figures side by side, label over a bold value. */}
+      <dl className="flex flex-wrap gap-x-8 gap-y-3">
+        <Figure label="Łączny wolumen" value={figures.volume} />
+        <Figure label="Liczba transakcji" value={figures.transactionCount} />
+        <Figure label="Okres" value={figures.period ?? "—"} />
       </dl>
+      <p className="text-sm break-all text-muted-foreground">
+        Źródło danych: {figures.source}
+      </p>
       {figures.events.length > 0 ? (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col border-t border-border">
           {figures.events.map((event) => (
-            <li key={event.key} className="flex flex-col">
-              <span>
-                <span className="text-muted-foreground">
-                  {event.occurredAt}
-                </span>{" "}
-                <span className="font-medium">{event.typeLabel}</span>
-                {event.amount !== null ? ` ${event.amount}` : null}
-              </span>
-              {event.counterparty !== null ? (
-                <span className="break-all text-muted-foreground">
-                  Kontrahent: {event.counterparty}
+            <li
+              key={event.key}
+              className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 border-b border-border py-3 last:border-b-0"
+            >
+              <span className="text-muted-foreground">{event.occurredAt}</span>
+              <span className="flex min-w-0 flex-col gap-1">
+                <span>
+                  <span className="font-semibold">{event.typeLabel}</span>
+                  {event.amount !== null ? ` ${event.amount}` : null}
                 </span>
-              ) : null}
-              <span className="break-all text-muted-foreground">
-                Transakcja:{" "}
-                {event.transactionUrl === null ? (
-                  event.transaction
-                ) : (
-                  <a
-                    href={event.transactionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline underline-offset-3"
-                  >
-                    {event.transaction}
-                  </a>
-                )}
-              </span>
-              <span className="flex items-center gap-1.5 text-warning-text">
-                <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
-                {event.cashOutNote}
+                {event.counterparty !== null ? (
+                  <span className="break-all text-muted-foreground">
+                    Kontrahent: {event.counterparty}
+                  </span>
+                ) : null}
+                <span className="break-all text-muted-foreground">
+                  Transakcja –{" "}
+                  {event.transactionUrl === null ? (
+                    event.transaction
+                  ) : (
+                    <a
+                      href={event.transactionUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline underline-offset-3"
+                    >
+                      {event.transaction}
+                    </a>
+                  )}
+                </span>
+                <span className="flex items-center gap-1.5 text-warning-text">
+                  <TriangleAlert
+                    className="size-4 shrink-0"
+                    aria-hidden="true"
+                  />
+                  {event.cashOutNote}
+                </span>
               </span>
             </li>
           ))}
@@ -195,6 +218,15 @@ function Activity({ figures }: { figures: AddressActivityFigures }) {
   );
 }
 
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-sm text-muted-foreground">{label}</dt>
+      <dd className="text-lg font-bold">{value}</dd>
+    </div>
+  );
+}
+
 function Block({
   heading,
   children,
@@ -203,8 +235,8 @@ function Block({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <h4 className="font-semibold">{heading}</h4>
+    <div className="flex flex-col gap-3.5">
+      <h4 className="text-lg leading-snug font-bold">{heading}</h4>
       {children}
     </div>
   );

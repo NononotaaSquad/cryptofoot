@@ -12,6 +12,10 @@ Full definitions of the remaining terms are in `domain/BUSINESS-CONTEXT.md`.
 The object created for one investigated person from their identifiers. It needs at least one narrowing identifier (nickname, login, e-mail, messenger ID, profile address, cryptocurrency wallet address); a full name alone is not enough.
 _Avoid_: investigation, project
 
+**Nickname** (PL: Nazwa użytkownika):
+The name a person shows publicly on a forum or service. Not the same as a Login, the name used to sign in.
+_Avoid_: nick (in UI copy)
+
 **Wallet address** (PL: Adres portfela):
 A cryptocurrency address entered by the Analyst as an identifier of the Case. Input data, not a finding: never a Mention, never independent confirmation.
 _Avoid_: address candidate

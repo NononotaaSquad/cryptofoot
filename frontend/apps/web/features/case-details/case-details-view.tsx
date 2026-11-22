@@ -124,7 +124,7 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-8">
         <CaseHeader
           caseId={caseId}
           identifiers={identifiers}
@@ -166,7 +166,7 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
       : toAnalysisOrder(displayed);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       <CaseHeader
         caseId={caseId}
         identifiers={identifiers}

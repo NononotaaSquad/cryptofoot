@@ -119,7 +119,7 @@ const scoringRules = {
   },
   COPIED_TEXT: { label: "Skopiowana treść", withSources: false },
   NICKNAME_ONLY: {
-    label: "Powiązanie tylko przez nick lub login",
+    label: "Powiązanie tylko przez nazwę użytkownika lub login",
     withSources: false,
   },
   WITHDRAWN_ADDRESS: {
@@ -241,7 +241,7 @@ const identifierTypeLabels: Record<
   PremiseFactsResponseIdentifierTypesItem,
   string
 > = {
-  NICKNAME: "nick",
+  NICKNAME: "nazwa użytkownika",
   LOGIN: "login",
   EMAIL: "e-mail",
   MESSENGER_ID: "identyfikator komunikatora",

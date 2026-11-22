@@ -1,4 +1,4 @@
-import { CalendarClockIcon, TriangleAlertIcon } from "lucide-react";
+import { Clock4Icon, TriangleAlertIcon } from "lucide-react";
 
 import { demoLabel } from "./schedule-labels";
 import type { ScheduleStateRow as ScheduleStateRowView } from "./schedule-view-model";
@@ -12,24 +12,19 @@ interface ScheduleStateRowProps {
 export function ScheduleStateRow({ row }: ScheduleStateRowProps) {
   if (row.kind === "none") return null;
   const warning = row.kind === "warning";
-  const Icon = warning ? TriangleAlertIcon : CalendarClockIcon;
+  const Icon = warning ? TriangleAlertIcon : Clock4Icon;
 
+  // Design: a 4px left edge, grey for the plain row; a skip or a failure is
+  // a warning (amber), not an error.
   return (
     <div
       className={
         warning
-          ? "flex w-full items-start gap-3 rounded-lg border-l-4 border-destructive bg-destructive/10 px-5 py-4"
-          : "flex w-full items-start gap-3 rounded-lg border-l-4 border-primary bg-muted px-5 py-4"
+          ? "flex w-full items-start gap-2.5 border-l-4 border-warning-text bg-warning-tint px-4 py-2.5 text-warning-text"
+          : "flex w-full items-start gap-2.5 border-l-4 border-border-strong px-4 py-2.5"
       }
     >
-      <Icon
-        aria-hidden="true"
-        className={
-          warning
-            ? "mt-0.5 size-5 shrink-0 text-destructive"
-            : "mt-0.5 size-5 shrink-0 text-primary"
-        }
-      />
+      <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
       <p className={warning ? "leading-normal font-bold" : "leading-normal"}>
         {row.text}
         {row.demo ? (

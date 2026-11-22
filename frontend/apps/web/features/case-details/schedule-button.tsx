@@ -161,9 +161,9 @@ export function ScheduleButton({
         <TooltipContent>Harmonogram</TooltipContent>
       </Tooltip>
 
-      <PopoverContent align="end" className="w-96 gap-4 p-5">
+      <PopoverContent align="end" className="w-130 gap-6 p-6">
         <PopoverHeader>
-          <PopoverTitle className="text-lg font-bold">Harmonogram</PopoverTitle>
+          <PopoverTitle className="text-xl font-bold">Harmonogram</PopoverTitle>
           <PopoverDescription>
             Analiza tej sprawy uruchomi się sama w wybranych terminach.
           </PopoverDescription>
@@ -178,7 +178,7 @@ export function ScheduleButton({
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <p id={groupLabelId} className="font-semibold">
                 Częstotliwość
               </p>
@@ -279,7 +279,7 @@ export function ScheduleButton({
             </div>
 
             {view.nextLine !== null || view.lastAttemptLine !== null ? (
-              <div className="flex flex-col gap-1 text-sm">
+              <div className="flex flex-col gap-1.5 border-t border-border pt-4">
                 {view.nextLine !== null ? <p>{view.nextLine}</p> : null}
                 {view.lastAttemptLine !== null ? (
                   <p>
@@ -314,17 +314,19 @@ export function ScheduleButton({
               </p>
             ) : null}
 
-            <div className="flex justify-end gap-3">
+            {/* Design: the primary action first, the way out as a link. */}
+            <div className="flex items-center gap-6">
+              <Button size="lg" onClick={save} disabled={update.isPending}>
+                {update.isPending ? "Zapisywanie…" : "Zapisz"}
+              </Button>
               <Button
-                variant="outline"
+                variant="link"
+                className="h-auto px-0 text-base font-semibold"
                 onClick={() => {
                   handleOpenChange(false);
                 }}
               >
                 {update.isSuccess ? "Zamknij" : "Anuluj"}
-              </Button>
-              <Button onClick={save} disabled={update.isPending}>
-                {update.isPending ? "Zapisywanie…" : "Zapisz"}
               </Button>
             </div>
           </>

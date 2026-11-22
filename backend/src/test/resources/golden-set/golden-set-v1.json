@@ -2339,6 +2339,495 @@
           "warning": 0.05
         }
       }
+    },
+    {
+      "id": "G16",
+      "from": "#96",
+      "category": "uncertain",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "zenek_fx"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/portfele/12",
+          "content": "zenek_fx kiedyś wrzucał bc1qZZZ w wątku o portfelach."
+        },
+        {
+          "key": "m2",
+          "sourceName": "social",
+          "url": "https://x.example/zenek_fx/status/555",
+          "content": "@zenek_fx: trust wallet — BTC bc1qZZZ. DM open."
+        }
+      ],
+      "addresses": {
+        "bc1qZZZ": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+      },
+      "classification": {
+        "bc1qZZZ": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qZZZ",
+              "level": 55,
+              "premises": [
+                {
+                  "id": "m1:bc1qZZZ",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qZZZ",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qZZZ",
+              "level": 95,
+              "premises": [
+                {
+                  "id": "m1:bc1qZZZ",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qZZZ",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-4": {
+          "attributions": [
+            {
+              "address": "bc1qZZZ",
+              "level": 55,
+              "premises": [
+                {
+                  "id": "m1:bc1qZZZ",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qZZZ",
+                  "status": "FOR_REVIEW",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "FOR_REVIEW",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m2:bc1qZZZ"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qZZZ",
+                    "m2:bc1qZZZ"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qZZZ": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.8,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        },
+        "m2:bc1qZZZ": {
+          "kind": {
+            "ownDeclaration": 0.75,
+            "saleOrSettlement": 0.1,
+            "discussion": 0.1,
+            "massComment": 0.05
+          },
+          "declaration": 0.44,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "id": "G17",
+      "from": "demo S12",
+      "category": "false positive",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "ania_krypto"
+        },
+        {
+          "type": "PROFILE_URL",
+          "value": "https://social.example/ania_krypto"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "synthetic",
+          "url": "https://social.example/ania_krypto/komentarze/12",
+          "author": "tomek_napiwki",
+          "content": "Dzięki za poradnik! Mój adres na napiwki: bc1qCOM"
+        }
+      ],
+      "addresses": {
+        "bc1qCOM": "bc1qrt64xs4kvn980c8syzhj5xx3w2d22ge5h2ja7v"
+      },
+      "classification": {
+        "bc1qCOM": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qCOM",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qCOM",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCOM"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-4": {
+          "attributions": [
+            {
+              "address": "bc1qCOM",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qCOM",
+                  "status": "DISMISSED",
+                  "reason": "DECLARED_BY_ANOTHER_PERSON"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DECLARED_BY_ANOTHER_PERSON",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCOM"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCOM"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qCOM": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.92,
+          "warning": 0.03
+        }
+      }
+    },
+    {
+      "id": "G18",
+      "from": "demo S13",
+      "category": "false negative",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "zofia_portfel"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "synthetic",
+          "url": "https://forum.example/t/zmiana-portfela/208",
+          "author": "zofia_portfel",
+          "content": "Nie wysyłajcie już na mój stary adres bc1qOLD, mój nowy to bc1qNEW."
+        }
+      ],
+      "addresses": {
+        "bc1qOLD": "bc1qpvq0wy40vfw76nveutqcemkymzh2qp8u8xuv0n",
+        "bc1qNEW": "bc1qngstu33ksmv0w9w6cy7vnqmsfkpdx58hyapg9q"
+      },
+      "classification": {
+        "bc1qOLD": "ACCEPTED",
+        "bc1qNEW": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "FOR_REVIEW",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_CONTEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qOLD",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qOLD",
+                  "status": "FOR_REVIEW",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_CONTEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-4": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qOLD",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qOLD",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "WITHDRAWN_ADDRESS",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qOLD": {
+          "kind": {
+            "ownDeclaration": 0.7,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.25,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.9
+        },
+        "m1:bc1qNEW": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.15,
+            "massComment": 0.02
+          },
+          "declaration": 0.94,
+          "warning": 0.07
+        }
+      }
     }
   ]
 }

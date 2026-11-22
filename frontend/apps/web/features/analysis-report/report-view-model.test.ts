@@ -906,7 +906,7 @@ describe("toReportView Premises", () => {
       { label: "Strona pod profilem osoby", value: "tak", assessedBy },
       {
         label: "Identyfikatory osoby w tekście",
-        value: "nick, e-mail",
+        value: "nazwa użytkownika, e-mail",
         assessedBy,
       },
       {

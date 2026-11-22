@@ -42,7 +42,7 @@ class SyntheticMentionSourceSpec extends Specification {
     def "the first Analysis of a Case gets every fixture mention except the even-only ones as raw mentions"() {
         expect:
         source.findMentions([]).take(3)*.url == [FORUM_URL, X_URL, P2P_URL]
-        source.findMentions([]).size() == 21
+        source.findMentions([]).size() == 27
         source.findMentions([]).every {
             !it.content.isEmpty() && it.collectedAt != null
         }
@@ -97,9 +97,22 @@ class SyntheticMentionSourceSpec extends Specification {
 
     def "every other fixture mention is seen by every Analysis"() {
         expect:
-        source.fixture.mentions.count { it.visibleIn != null } == 3
-        source.findMentions([], 0).size() == 21
-        source.findMentions([], 1).size() == 22
+        source.fixture.mentions.count { it.visibleIn != null } == 5
+        source.findMentions([], 0).size() == 27
+        source.findMentions([], 1).size() == 28
+    }
+
+    def "a fixture mention keeps its author, as a real source reports it (S12, S13)"() {
+        given:
+        def authors = (source.findMentions([], 0) + source.findMentions([], 1)).collectEntries {
+            [(it.url): it.author]
+        }
+
+        expect:
+        authors['https://social.example/ania_krypto/komentarze/12'] == 'tomek_napiwki'
+        authors['https://market.example/oferta/aparat-analogowy-207'] == 'zofia_portfel'
+        authors['https://forum.example/t/zmiana-portfela/208'] == 'zofia_portfel'
+        authors[FORUM_URL] == null
     }
 
     def "failing synthetic source simulates a source failure"() {

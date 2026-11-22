@@ -636,7 +636,7 @@ class ConfidenceScoringServiceSpec extends Specification {
         id = item.id
     }
 
-    def "golden set #id scores as expected for confidence-3 with canned model answers"() {
+    def "golden set #id scores as expected for confidence-4 with canned model answers"() {
         given:
         def saved = new AtomicInteger()
         def repository = Stub(MentionRepository) {
@@ -645,13 +645,14 @@ class ConfidenceScoringServiceSpec extends Specification {
                 GoldenSet.withId(m, "${id}-${saved.incrementAndGet()}")
             }
         }
-        def expected = item.expected['confidence-3'].attributions as List<Map>
+        // confidence-4 changed only the rows that have their own entry; the others keep the confidence-3 result
+        def expected = (item.expected['confidence-4'] ?: item.expected['confidence-3']).attributions as List<Map>
 
         when:
         def result = GoldenSet.run(item, repository, scoring, AssessmentMode.WITH_MODEL)
 
         then:
-        result.algorithmVersion == 'confidence-3'
+        result.algorithmVersion == 'confidence-4'
         GoldenSet.banded(result.attributions as List<Map>, expected) == expected
 
         where:
@@ -689,6 +690,25 @@ class ConfidenceScoringServiceSpec extends Specification {
         'rodzaj_wpisu'| 0.49  | 'zenek_fx' || 'undetermined' | PremiseStatus.FOR_REVIEW | null                                       | [ModelQuestion.KIND]           | 40
     }
 
+    def "an own declaration by the model with an undetermined declaration is for review at most as discussion, author #author"() {
+        given:
+        def m = mention('m1', 'https://x.example/zenek_fx/status/555', "@zenek_fx: trust wallet — BTC ${BTC}. DM open.", author)
+        def answers = new PremiseAnswers(new KindProbabilities(0.75, 0.1, 0.1, 0.05), yesNo(0.44), yesNo(0.05))
+
+        when:
+        def premise = scoreWithModel([m], [(id('m1')): answers]).premises[0]
+
+        then:
+        premise.status == PremiseStatus.FOR_REVIEW
+        premise.kind == PremiseKind.DISCUSSION
+        premise.points == 40
+        premise.undetermined == [ModelQuestion.DECLARATION]
+        premise.dismissalReason == null
+
+        where:
+        author << [null, 'zenek_fx']
+    }
+
     def "with the model on, a Premise without an answer falls back to the rules and the others keep the model"() {
         given:
         def mentions = [
@@ -704,7 +724,7 @@ class ConfidenceScoringServiceSpec extends Specification {
         def premises = result.attributions[0].premises
 
         then:
-        result.algorithmVersion == 'confidence-3'
+        result.algorithmVersion == 'confidence-4'
         premises*.id == [id('m1'), id('m2')]
         premises*.assessedBy == [
             AssessedBy.MODEL,

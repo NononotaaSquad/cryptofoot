@@ -75,7 +75,7 @@ export function CaseHeader({
                   </span>
                 ) : null}
                 <span className="text-muted-foreground">
-                  {identifierKindLabels[identifier.kind]}:
+                  {identifierKindLabels[identifier.kind]} –
                 </span>{" "}
                 {identifier.value}
               </li>

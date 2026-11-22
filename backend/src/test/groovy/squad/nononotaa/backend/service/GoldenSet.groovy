@@ -179,10 +179,10 @@ class GoldenSet {
         (validation as AddressValidation.Valid).canonicalAddress.address
     }
 
-    // the demo fixture is read, not copied, so the golden set and demo-v1 do not drift; SyntheticMentionSource has no author
+    // the demo fixture is read, not copied, so the golden set and demo-v1 do not drift
     private static List<Map> fixtureMentions(String name) {
         (read("/fixtures/${name}.json").mentions as List<Map>).withIndex().collect { Map it, int index ->
-            [key: "m${index + 1}" as String, sourceName: 'synthetic', mention: new RawMention(it.url as String, Instant.parse(it.collectedAt as String), it.content as String)]
+            [key: "m${index + 1}" as String, sourceName: 'synthetic', mention: new RawMention(it.url as String, Instant.parse(it.collectedAt as String), it.content as String, it.author as String)]
         }
     }
 
