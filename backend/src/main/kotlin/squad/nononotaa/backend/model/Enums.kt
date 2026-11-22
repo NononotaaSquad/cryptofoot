@@ -26,3 +26,13 @@ enum class SchedulePreset(val demo: Boolean = false) { DAILY, EVERY_6_HOURS, WEE
 enum class Network { BTC, ETH }
 
 enum class AddressValidationFailure { MALFORMED, CHECKSUM_MISMATCH, UNSUPPORTED_NETWORK, NETWORK_MISMATCH }
+
+enum class PremiseStatus { COUNTED, DISMISSED, FOR_REVIEW }
+
+enum class DismissalReason { WARNING, DECLARED_BY_ANOTHER_PERSON, NO_PERSON_LINK, CONFLICTING_EMAIL }
+
+enum class PremiseKind { OWN_PROFILE, OWN_DECLARATION, SALE_OR_SETTLEMENT, DISCUSSION, MASS_COMMENT }
+
+enum class AssessedBy { RULE, MODEL }
+
+enum class AuthorMatch { YES, NO, UNKNOWN }

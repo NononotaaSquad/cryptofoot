@@ -19,7 +19,24 @@ class AddressCandidateDetector {
         RawAddressCandidate(mentionId, raw, network)
     }.toList()
 
+    /**
+     * One window per distinct detected address, around its first occurrence: [WINDOW_MARGIN] characters on each
+     * side, moved inward at the start or end of [text] so it keeps its length when the text allows.
+     * The canonical [AddressWindow.address] is left null; the caller fills it after validation.
+     */
+    fun windows(text: String): List<AddressWindow> = PATTERN
+        .findAll(text)
+        .distinctBy { it.value }
+        .map { match ->
+            val length = match.value.length + 2 * WINDOW_MARGIN
+            val start = (match.range.first - WINDOW_MARGIN).coerceIn(0, maxOf(0, text.length - length))
+            val window = text.substring(start, minOf(text.length, start + length))
+            AddressWindow(match.value, null, window, match.range.first - start, match.value.length)
+        }.toList()
+
     companion object {
+        private const val WINDOW_MARGIN = 600
+
         private val PATTERN =
             Regex(
                 "(?<![A-Za-z0-9])" +

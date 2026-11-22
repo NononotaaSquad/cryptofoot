@@ -71,7 +71,13 @@ class SearchServiceIntegrationSpec extends BaseSpec {
         doc.collectedAt == Instant.parse('2026-11-21T10:00:00Z')
         doc.context == mention.context
         doc.detectedAddresses == mention.detectedAddresses
-        doc.identity == Mention.computeIdentity('stub-ok', mention.url, mention.context)
+        doc.identity == Mention.computeIdentity('stub-ok', mention.url,
+                'post by CryptoNick: send BTC to 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or ETH to 0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
+        doc.addressWindows == mention.addressWindows
+        doc.addressWindows*.address == [
+            '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+            '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed'
+        ]
     }
 
     def "repeated search reuses the persisted mention instead of duplicating it"() {

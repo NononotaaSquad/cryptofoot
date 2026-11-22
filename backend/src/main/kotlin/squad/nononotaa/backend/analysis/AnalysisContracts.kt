@@ -2,8 +2,13 @@ package squad.nononotaa.backend.analysis
 
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessedBy
+import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.ClassificationStatus
+import squad.nononotaa.backend.model.DismissalReason
 import squad.nononotaa.backend.model.ExclusionReason
+import squad.nononotaa.backend.model.PremiseKind
+import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.SourceStatus
 import java.time.Instant
@@ -23,6 +28,19 @@ data class AnalysisRequest(
     val identifiers: List<CaseIdentifier>,
 )
 
+/**
+ * The text around one detected address. `text.substring(addressStart, addressStart + addressLength)` is the
+ * address as written ([rawAddress]); indices are Kotlin `String` indices (UTF-16 code units).
+ * [address] is the canonical form from `AddressValidator`, null when the address is invalid.
+ */
+data class AddressWindow(
+    val rawAddress: String,
+    val address: String?,
+    val text: String,
+    val addressStart: Int,
+    val addressLength: Int,
+)
+
 data class FoundMention @JvmOverloads constructor(
     val id: String,
     val sourceName: String,
@@ -31,6 +49,8 @@ data class FoundMention @JvmOverloads constructor(
     val context: String?,
     val detectedAddresses: List<String>,
     val author: String? = null,
+    // Mentions stored before algorithm confidence-2 have no windows
+    val addressWindows: List<AddressWindow> = emptyList(),
 )
 
 data class SourceReport(
@@ -74,9 +94,11 @@ data class ExclusionResult(
     val unclassified: List<Candidate>,
 )
 
-data class AppliedRule(
+data class AppliedRule @JvmOverloads constructor(
     val rule: String,
     val contribution: Int,
+    // Analyses stored before algorithm confidence-2 have no Premises
+    val premiseIds: List<String> = emptyList(),
 )
 
 data class ScoringInput(
@@ -86,13 +108,49 @@ data class ScoringInput(
     val identifiers: List<CaseIdentifier>,
 )
 
-data class ScoredAttribution(
+/** The facts code computes about one Premise (D3). [identifierTypes] holds types only, never values. */
+data class PremiseFacts(
+    val authorIsPerson: AuthorMatch,
+    val underProfile: Boolean,
+    val identifierTypes: List<IdentifierType>,
+    val identifierDistance: Int?,
+    val conflictingEmail: Boolean,
+    val addressCount: Int,
+    val host: String?,
+    val sourceName: String,
+)
+
+/** One cryptocurrency address in one Mention, with its assessment. Id: `"{mentionId}:{address}"`. */
+data class Premise(
+    val id: String,
+    val mentionId: String,
+    val address: String,
+    val window: AddressWindow,
+    val facts: PremiseFacts,
+    val status: PremiseStatus,
+    val kind: PremiseKind?,
+    val points: Int,
+    val dismissalReason: DismissalReason?,
+    val assessedBy: AssessedBy,
+) {
+    companion object {
+        @JvmStatic
+        fun idOf(
+            mentionId: String,
+            address: String,
+        ): String = "$mentionId:$address"
+    }
+}
+
+data class ScoredAttribution @JvmOverloads constructor(
     val candidate: Candidate,
     val confidenceLevel: Int,
     val appliedRules: List<AppliedRule>,
     // Analyses stored before algorithm confidence-1 have no Justification text
     val justification: String = "",
     val classificationStatus: ClassificationStatus = ClassificationStatus.NOT_EXCLUDED,
+    // Analyses stored before algorithm confidence-2 have no Premises
+    val premises: List<Premise> = emptyList(),
 )
 
 data class ScoringResult(

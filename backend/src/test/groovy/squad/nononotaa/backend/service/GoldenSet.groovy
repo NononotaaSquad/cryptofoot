@@ -46,7 +46,7 @@ class GoldenSet {
     }
 
     static Mention withId(Mention m, String id) {
-        new Mention(id, m.sourceName, m.url, m.collectedAt, m.context, m.detectedAddresses, m.identity, m.author)
+        new Mention(id, m.sourceName, m.url, m.collectedAt, m.context, m.detectedAddresses, m.identity, m.author, m.addressWindows)
     }
 
     /** Scores one item and returns its Attributions as [address: placeholder, level, rules], sorted by placeholder. */

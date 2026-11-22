@@ -5,6 +5,7 @@ import squad.nononotaa.backend.BaseSpec
 import squad.nononotaa.backend.model.Mention
 import squad.nononotaa.backend.model.SourceStatus
 import squad.nononotaa.backend.repository.MentionRepository
+import tools.jackson.databind.ObjectMapper
 
 class SyntheticSourceIntegrationSpec extends BaseSpec {
 
@@ -56,8 +57,15 @@ class SyntheticSourceIntegrationSpec extends BaseSpec {
         def persisted = repository.findAll()
         persisted.size() == 3
         persisted.every { it.sourceName == 'synthetic' }
+        def contentByUrl = fixtureContentByUrl()
         persisted.every {
-            it.identity == Mention.computeIdentity(it.sourceName, it.url, it.context)
+            it.identity == Mention.computeIdentity(it.sourceName, it.url, contentByUrl[it.url])
+        }
+        persisted.every { m ->
+            m.addressWindows*.rawAddress == m.detectedAddresses &&
+                    m.addressWindows.every {
+                        it.address != null && it.text.substring(it.addressStart, it.addressStart + it.addressLength) == it.rawAddress
+                    }
         }
     }
 
@@ -71,5 +79,29 @@ class SyntheticSourceIntegrationSpec extends BaseSpec {
         result.mentions.size() == 1
         result.mentions[0].url == 'https://forum.example/t/porady-p2p-od-zenka/123'
         repository.findAll().size() == 1
+    }
+
+    def "a repeated demo-v1 search reuses the stored Mentions, also a page longer than the excerpt"() {
+        given:
+        def nickname = [
+            new CaseIdentifier(IdentifierType.NICKNAME, 'zenek_fx')
+        ]
+        def first = searchService.search(nickname)
+
+        when:
+        def second = searchService.search(nickname)
+
+        then:
+        repository.findAll().size() == 3
+        second.mentions*.id.toSet() == first.mentions*.id.toSet()
+    }
+
+    private static Map<String, String> fixtureContentByUrl() {
+        def fixture = SyntheticSourceIntegrationSpec.getResourceAsStream('/fixtures/demo-v1.json').withCloseable {
+            new ObjectMapper().readValue(it, Map)
+        }
+        (fixture.mentions as List<Map>).collectEntries {
+            [(it.url): it.content]
+        }
     }
 }
