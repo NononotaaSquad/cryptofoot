@@ -73,54 +73,6 @@
                 }
             }
         },
-        "/api/1/test": {
-            "get": {
-                "tags": [
-                    "test-controller"
-                ],
-                "operationId": "hello",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TestResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "test-controller"
-                ],
-                "operationId": "greet",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TestRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "*/*": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TestResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/1/cases": {
             "get": {
                 "tags": [
@@ -489,26 +441,6 @@
                                 "type": "null"
                             }
                         ]
-                    }
-                }
-            },
-            "TestRequest": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "required": [
-                    "name"
-                ]
-            },
-            "TestResponse": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string"
                     }
                 }
             },
