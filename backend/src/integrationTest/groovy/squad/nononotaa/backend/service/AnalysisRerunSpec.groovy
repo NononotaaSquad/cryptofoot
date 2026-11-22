@@ -82,7 +82,7 @@ class AnalysisRerunSpec extends BaseSpec {
         json(earlier) == before
 
         when:
-        search.search(_) >> new SearchResult([], [
+        search.search(_, _) >> new SearchResult([], [
             new SourceReport('forum', SourceStatus.CHECKED, true, Instant.now())
         ])
         deferred*.run()
@@ -92,11 +92,37 @@ class AnalysisRerunSpec extends BaseSpec {
         json(earlier) == before
     }
 
+    def "the search hears how many Analyses of this Case started before, whatever their trigger or outcome"() {
+        given:
+        earlierCompleted()
+        recorder.begin(new AnalysisRequest(caseId, AnalysisTrigger.SCHEDULED, currentIdentifiers))
+        recorder.begin(new AnalysisRequest("other-${caseId}", AnalysisTrigger.MANUAL, currentIdentifiers))
+        repository.findByCaseIdOrderByStartedAtDescIdDesc(caseId).findAll {
+            it.status == AnalysisStatus.RUNNING
+        }.each {
+            recorder.finish(it.id, new AnalysisResult(AnalysisStatus.FAILED, [], [], [], [], [], [], [], [], null))
+        }
+        def heard = []
+        search.search(_, _) >> { List ids, int earlier ->
+            heard << earlier
+            new SearchResult([], [
+                new SourceReport('forum', SourceStatus.CHECKED, true, Instant.now())
+            ])
+        }
+
+        when:
+        rerunService().rerun(caseId)
+        deferred*.run()
+
+        then:
+        heard == [2]
+    }
+
     def "a failed rerun is stored as failed and the earlier result stays untouched"() {
         given:
         def earlier = earlierCompleted()
         def before = json(earlier)
-        search.search(_) >> { throw new IllegalStateException('boom') }
+        search.search(_, _) >> { throw new IllegalStateException('boom') }
 
         when:
         def started = rerunService().rerun(caseId)

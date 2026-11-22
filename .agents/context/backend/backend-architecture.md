@@ -120,6 +120,10 @@ Use `@RestControllerAdvice` with `RestExceptionHandler` class to handle exceptio
 
 The production deploy sets `SOURCES_SYNTHETIC_ENABLED=true` and `SOURCES_SYNTHETIC_BROKEN_ENABLED=false`: the demo person of `fixtures/demo-v1.json` and its Address Activity work on production next to the real sources, while `SyntheticFailingMentionSource` (`synthetic-broken`, always unavailable) needs both `sources.synthetic.enabled` and `sources.synthetic-broken.enabled` and stays off there, so real Analyses are not made partial by it. Locally and in tests both switches default to on. Decision: `.agents/context/backend/decisions/0003-synthetic-demo-in-production.md`.
 
+### Demo results that change between Analyses (ADR 0004)
+
+`AnalysisRequest.earlierAnalyses` (counted by `AnalysisRerunService` per Case, any trigger or outcome) reaches every source through `MentionSearch.search(identifiers, earlierAnalyses)` and the default method `MentionSource.findMentions(identifiers, earlierAnalyses)`; real sources ignore it. `SyntheticMentionSource` drops fixture Mentions whose `visibleIn` (`ODD_ANALYSES`, `EVEN_ANALYSES`) does not match, so scenario S11 alternates between two states and every rerun of its Case has changes to compare (E6.3). Decision: `.agents/context/backend/decisions/0004-demo-fixture-changes-between-analyses.md`.
+
 ### Demo scheduler check (task #28, Bohdan's part)
 
 `application-local.yaml` (profile `local`) shortens the scheduler check to 5 seconds and allows the labelled `DEMO_EVERY_MINUTE` cadence. The repeatable verification, its blockers and the proposed (not implemented) reset boundary are in `.agents/context/backend/demo-scheduler-check.md`; decisions in `.agents/context/backend/decisions/task-28/`.

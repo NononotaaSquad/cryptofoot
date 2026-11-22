@@ -43,7 +43,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "completes an analysis and hands every stage output to the recorder"() {
         given:
-        search.search(request.identifiers) >> new SearchResult([mention], [okSource])
+        search.search(request.identifiers, 0) >> new SearchResult([mention], [okSource])
         preparation.prepare([mention]) >> new PreparedCandidates([candidate, excludedCandidate], [
             new RejectedCandidate('m1', 'bad', 'INVALID_ADDRESS')
         ])
@@ -69,7 +69,7 @@ class AnalysisOrchestratorSpec extends Specification {
     def "a source that was not checked is no failure, but without any checked source the search fails"() {
         given:
         def skipped = new SourceReport('github', SourceStatus.NOT_CHECKED, false, null)
-        search.search(_) >>> [
+        search.search(_, _) >>> [
             new SearchResult([], [okSource, skipped]),
             new SearchResult([], [skipped]),
             new SearchResult([], [skipped, downSource])
@@ -91,7 +91,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "no mentions from healthy sources is a completed analysis, not a failure"() {
         given:
-        search.search(_) >> new SearchResult([], [okSource])
+        search.search(_, _) >> new SearchResult([], [okSource])
 
         when:
         def run = orchestrator.run(request)
@@ -107,7 +107,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "an unavailable source makes the analysis partial and keeps the other findings"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource, downSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource, downSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
         scoring.score(_) >> new ScoringResult([attribution], 'v1')
@@ -125,7 +125,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "an unavailable classification is flagged on the scored Attribution and makes the analysis partial"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate, excludedCandidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [excludedCandidate])
         def unclassifiedAttribution = new ScoredAttribution(excludedCandidate, 20, [], '', ClassificationStatus.NOT_EXCLUDED)
@@ -159,7 +159,7 @@ class AnalysisOrchestratorSpec extends Specification {
                     AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY
                 ])
         def available = new AddressActivityOutcome(AddressActivityStatus.AVAILABLE, activityData)
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate, excludedCandidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate, excludedCandidate], [], [])
         scoring.score(_) >> new ScoringResult([attribution, unlinked], 'v1')
@@ -177,7 +177,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "unavailable Address Activity makes the Analysis partial with its limitation, never failed"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
         scoring.score(_) >> new ScoringResult([attribution], 'v1')
@@ -203,7 +203,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "a failing Address Activity module keeps the Attributions, marks their activity unavailable and leaves the Analysis partial"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
         scoring.score(_) >> new ScoringResult([attribution], 'v1')
@@ -226,7 +226,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "Address Activity is not collected without Attributions or after a failed scoring"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult(noneAccepted ? [] : [candidate], [], [])
         scoring.score(_) >> {
@@ -257,13 +257,24 @@ class AnalysisOrchestratorSpec extends Specification {
         def run = orchestrator.execute(id, request)
 
         then:
-        1 * search.search(request.identifiers) >> new SearchResult([], [okSource])
+        1 * search.search(request.identifiers, 0) >> new SearchResult([], [okSource])
         run == new AnalysisRun('a-1', AnalysisStatus.COMPLETED)
         finished.limitations.isEmpty()
     }
+
+    def "the search hears how many Analyses of the Case started before this one"() {
+        given:
+        def third = new AnalysisRequest('case-1', AnalysisTrigger.SCHEDULED, request.identifiers, 2)
+
+        when:
+        orchestrator.execute('a-1', third)
+
+        then:
+        1 * search.search(request.identifiers, 2) >> new SearchResult([], [okSource])
+    }
     def "all sources unavailable fails the analysis instead of storing zero findings"() {
         given:
-        search.search(_) >> new SearchResult([], [downSource])
+        search.search(_, _) >> new SearchResult([], [downSource])
 
         when:
         def run = orchestrator.run(request)
@@ -278,7 +289,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "a search that checked no source fails the analysis"() {
         given:
-        search.search(_) >> new SearchResult([], [])
+        search.search(_, _) >> new SearchResult([], [])
 
         expect:
         orchestrator.run(request).status == AnalysisStatus.FAILED
@@ -287,7 +298,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "a failing module ends the analysis as failed and keeps earlier output"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> new PreparedCandidates([candidate], [])
         exclusions.classify(_) >> new ExclusionResult([candidate], [], [])
         scoring.score(_) >> { throw new IllegalStateException('boom') }
@@ -306,7 +317,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "a failing stage stops later stages"() {
         given:
-        search.search(_) >> { throw new IllegalStateException('boom') }
+        search.search(_, _) >> { throw new IllegalStateException('boom') }
 
         when:
         def run = orchestrator.run(request)
@@ -321,7 +332,7 @@ class AnalysisOrchestratorSpec extends Specification {
 
     def "a failing preparation or exclusion stage fails the analysis"() {
         given:
-        search.search(_) >> new SearchResult([mention], [okSource])
+        search.search(_, _) >> new SearchResult([mention], [okSource])
         preparation.prepare(_) >> {
             if (failAt == AnalysisStage.CANDIDATE_PREPARATION) throw new IllegalStateException(); new PreparedCandidates([candidate], [])
         }

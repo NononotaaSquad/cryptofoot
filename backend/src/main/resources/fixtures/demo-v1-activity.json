@@ -74,6 +74,30 @@
         { "transactionId": "597bf8f78fada8f9773d38dfe5440e3e76b35e833f7e06283262294883a795ad", "occurredAt": "2026-01-20T09:00:00Z", "direction": "IN", "amount": "4", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
         { "transactionId": "66f9faa6db0b4ee89157426b6aaebbf7520c316605810ec8e9a9bc11df8944dd", "occurredAt": "2026-02-02T14:00:00Z", "direction": "OUT", "amount": "3.9", "unit": "BTC", "counterparty": "1Bdag2zhDWLUDAbkgw1o6XVnnWaSiNNv4K" }
       ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca",
+      "transfers": [
+        { "transactionId": "d2daaa1165247c1b4d01b8a784e3e452f46bba8c6b2bc422e87eab4c97f953d4", "occurredAt": "2026-04-02T09:30:00Z", "direction": "IN", "amount": "0.3", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" },
+        { "transactionId": "c46860ecca46cc9c1dfcbe6c5ce746b50354b4e06121bd12d1cb78b984c6a096", "occurredAt": "2026-09-10T14:00:00Z", "direction": "IN", "amount": "0.25", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy",
+      "transfers": [
+        { "transactionId": "9f6330c80d045c3deb1cdfee2c435e2e33c0e1f3ff6456257e510ebd1160fa20", "occurredAt": "2026-10-01T11:00:00Z", "direction": "IN", "amount": "0.12", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "3e9e0fb53d7bfd3211fbfadb2ead11bb88cd4a0c0ba76a5f4b247e775b44446f", "occurredAt": "2026-10-20T16:45:00Z", "direction": "OUT", "amount": "0.12", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n",
+      "transfers": [
+        { "transactionId": "b87387c915dbe61588e52b1c7c349a6d97c8d76a0398076f2bc1e9f9aa9625c8", "occurredAt": "2026-11-05T10:15:00Z", "direction": "IN", "amount": "0.4", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" },
+        { "transactionId": "610101345e245c857a71596393f5614848d59100211d14daadf0808b78260bfb", "occurredAt": "2026-11-12T18:40:00Z", "direction": "OUT", "amount": "0.35", "unit": "BTC", "counterparty": "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s" }
+      ]
     }
   ]
 }

@@ -35,7 +35,7 @@ class AnalysisOrchestrator(
 
     private fun collect(request: AnalysisRequest): AnalysisResult {
         val found =
-            guarded(AnalysisStage.SEARCH) { search.search(request.identifiers) }
+            guarded(AnalysisStage.SEARCH) { search.search(request.identifiers, request.earlierAnalyses) }
                 ?: return failed(AnalysisStage.SEARCH, "MODULE_ERROR")
         val unavailable = found.sources.filter { it.status == SourceStatus.UNAVAILABLE }
         if (found.sources.none { it.status == SourceStatus.CHECKED }) {

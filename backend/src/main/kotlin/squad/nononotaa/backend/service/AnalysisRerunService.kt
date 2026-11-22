@@ -35,15 +35,16 @@ class AnalysisRerunService(
                 logger.warn("Rerun rejected: case not found case={}", caseId)
                 throw NotFoundException("Nie znaleziono sprawy o podanym identyfikatorze.")
             }
-        val request = AnalysisRequest(caseId, trigger, current)
         // check-and-start must not interleave between a manual and a scheduled start in this instance
-        val analysisId =
+        val (analysisId, request) =
             synchronized(startLock) {
                 if (repository.existsByCaseIdAndStatus(caseId, AnalysisStatus.RUNNING)) {
                     logger.warn("Rerun rejected: an analysis is already running case={}", caseId)
                     throw ConflictException("Analiza tej sprawy już trwa.")
                 }
-                orchestrator.start(request)
+                // counted under the lock, so two starts in this instance never get the same position
+                val request = AnalysisRequest(caseId, trigger, current, repository.countByCaseId(caseId).toInt())
+                orchestrator.start(request) to request
             }
         executor.execute { execute(analysisId, request) }
         return history.get(analysisId)

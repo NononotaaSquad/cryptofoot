@@ -57,7 +57,7 @@ class CustomIntervalSchedulerSpec extends BaseSpec {
     def queued = []
     boolean runInline = true
     MentionSearch search = Stub() {
-        search(_) >> new SearchResult([], [
+        search(_, _) >> new SearchResult([], [
             new SourceReport('synthetic', SourceStatus.CHECKED, true, T0)
         ])
     }

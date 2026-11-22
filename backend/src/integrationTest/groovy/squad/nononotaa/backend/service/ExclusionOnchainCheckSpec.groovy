@@ -190,7 +190,7 @@ class ExclusionOnchainCheckSpec extends BaseSpec {
         ]
         def mention = new FoundMention('m1', 'forum', 'https://example.test/m1', Instant.parse('2026-11-21T10:00:00Z'), 'ctx', [])
         MentionSearch search = Stub() {
-            search(_) >> new SearchResult([mention], [
+            search(_, _) >> new SearchResult([mention], [
                 new SourceReport('forum', SourceStatus.CHECKED, true, Instant.parse('2026-11-21T10:00:00Z'))
             ])
         }

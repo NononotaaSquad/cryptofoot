@@ -34,7 +34,7 @@ class SearchServiceIntegrationSpec extends BaseSpec {
         when:
         def result = searchService.search([
             new CaseIdentifier(IdentifierType.NICKNAME, 'CryptoNick')
-        ])
+        ], 0)
 
         then:
         result.sources.size() == 4
@@ -78,10 +78,10 @@ class SearchServiceIntegrationSpec extends BaseSpec {
         when:
         searchService.search([
             new CaseIdentifier(IdentifierType.NICKNAME, 'CryptoNick')
-        ])
+        ], 0)
         def result = searchService.search([
             new CaseIdentifier(IdentifierType.NICKNAME, 'CryptoNick')
-        ])
+        ], 0)
 
         then:
         result.mentions.size() == 1

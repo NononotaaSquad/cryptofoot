@@ -44,6 +44,34 @@ class SearchServiceSpec extends Specification {
     Instant.parse('2026-11-21T10:00:00Z'),
     'post by CryptoNick: send BTC to 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or ETH to 0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
 
+    def "every source hears how many Analyses of the Case started before this one"() {
+        given:
+        def heard = []
+        def source = new FakeSource('stub-ok', []) {
+            @Override
+            List<RawMention> findMentions(List<CaseIdentifier> identifiers, int earlierAnalyses) {
+                heard << earlierAnalyses
+                []
+            }
+        }
+        def service = new SearchService([source], detector, repository, validator, Duration.ofSeconds(10))
+
+        when:
+        service.search([nickname], 3)
+
+        then:
+        heard == [3]
+    }
+
+    def "a real source answers the same for every Analysis of a Case"() {
+        given:
+        def source = new FakeSource('stub-ok', [rawMention])
+
+        expect:
+        source.findMentions([nickname], 0) == source.findMentions([nickname], 5)
+        source.findMentions([nickname], 5) == [rawMention]
+    }
+
     def "checked source with a relevant mention is persisted with snippet, detected addresses and identity"() {
         given:
         def source = new FakeSource('stub-ok', [rawMention])
@@ -55,7 +83,7 @@ class SearchServiceSpec extends Specification {
         }
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.sources.size() == 1
@@ -95,7 +123,7 @@ class SearchServiceSpec extends Specification {
         repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         notThrown(Exception)
@@ -114,7 +142,7 @@ class SearchServiceSpec extends Specification {
         def service = new SearchService([slow], detector, repository, validator, Duration.ofMillis(200))
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         notThrown(Exception)
@@ -131,7 +159,7 @@ class SearchServiceSpec extends Specification {
         def service = new SearchService([empty], detector, repository, validator, Duration.ofSeconds(10))
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.sources.size() == 1
@@ -149,7 +177,7 @@ class SearchServiceSpec extends Specification {
         def service = new SearchService([source], detector, repository, validator, Duration.ofSeconds(10))
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.sources[0].status == SourceStatus.CHECKED
@@ -169,7 +197,7 @@ class SearchServiceSpec extends Specification {
         when:
         def result = service.search([
             new CaseIdentifier(IdentifierType.NICKNAME, 'cryptonick')
-        ])
+        ], 0)
 
         then:
         result.mentions.size() == 1
@@ -187,7 +215,7 @@ class SearchServiceSpec extends Specification {
         repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.mentions.size() == 1
@@ -211,7 +239,7 @@ class SearchServiceSpec extends Specification {
         repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
 
         when:
-        def result = service.search([addressIdentifier])
+        def result = service.search([addressIdentifier], 0)
 
         then:
         result.sources.every { it.status == SourceStatus.CHECKED }
@@ -237,7 +265,7 @@ class SearchServiceSpec extends Specification {
         def result = service.search([
             wallet,
             new CaseIdentifier(IdentifierType.WALLET_ADDRESS, 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4')
-        ])
+        ], 0)
 
         then:
         result.mentions*.url == [
@@ -255,7 +283,7 @@ class SearchServiceSpec extends Specification {
         ], detector, repository, validator, Duration.ofSeconds(10))
 
         when:
-        def result = service.search([broken])
+        def result = service.search([broken], 0)
 
         then:
         result.mentions.isEmpty()
@@ -274,8 +302,8 @@ class SearchServiceSpec extends Specification {
         repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
 
         expect:
-        service.search([fullName]).mentions.isEmpty()
-        service.search([fullName, nickname]).mentions*.url == ['https://stub.example/p/9']
+        service.search([fullName], 0).mentions.isEmpty()
+        service.search([fullName, nickname], 0).mentions*.url == ['https://stub.example/p/9']
     }
 
     def "mention already persisted under the same identity is reused, not saved again"() {
@@ -287,7 +315,7 @@ class SearchServiceSpec extends Specification {
         repository.findByIdentity(identity) >> [existing]
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.mentions.size() == 1
@@ -303,7 +331,7 @@ class SearchServiceSpec extends Specification {
         repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.mentions.size() == 1
@@ -315,7 +343,7 @@ class SearchServiceSpec extends Specification {
         def service = new SearchService([], detector, repository, validator, Duration.ofSeconds(10))
 
         expect:
-        service.search([nickname]) == new SearchResult([], [])
+        service.search([nickname], 0) == new SearchResult([], [])
     }
 
     def "a source that was not checked is reported as such, without a check time, and the others keep their results"() {
@@ -328,7 +356,7 @@ class SearchServiceSpec extends Specification {
         repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
 
         when:
-        def result = service.search([nickname])
+        def result = service.search([nickname], 0)
 
         then:
         result.sources*.status == [
@@ -358,7 +386,7 @@ class SearchServiceSpec extends Specification {
         when:
         def result = service.search([
             new CaseIdentifier(IdentifierType.LOGIN, '@CryptoNick')
-        ])
+        ], 0)
 
         then:
         result.mentions*.url == ['https://reddit.example/p/1']
@@ -385,10 +413,10 @@ class SearchServiceSpec extends Specification {
         when:
         def profile = service.search([
             new CaseIdentifier(IdentifierType.PROFILE_URL, 'https://bitcointalk.org/index.php?action=profile;u=123')
-        ])
+        ], 0)
         def post = service.search([
             new CaseIdentifier(IdentifierType.PROFILE_URL, 'https://bitcointalk.org/index.php?topic=5.msg7#msg7')
-        ])
+        ], 0)
 
         then:
         profile.mentions*.url == [

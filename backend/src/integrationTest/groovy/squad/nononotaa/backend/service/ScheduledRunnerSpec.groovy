@@ -52,7 +52,7 @@ class ScheduledRunnerSpec extends BaseSpec {
     def clock = new MutableClock(T0)
     def known = [] as Set
     MentionSearch search = Stub() {
-        search(_) >> new SearchResult([], [
+        search(_, _) >> new SearchResult([], [
             new SourceReport('forum', SourceStatus.CHECKED, true, T0)
         ])
     }

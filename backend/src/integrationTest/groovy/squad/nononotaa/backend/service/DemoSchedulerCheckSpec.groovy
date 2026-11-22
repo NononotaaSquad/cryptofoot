@@ -47,7 +47,7 @@ class DemoSchedulerCheckSpec extends BaseSpec {
     def clock = new MutableClock(Instant.parse('2026-11-21T10:00:20Z'))
     def props = new SchedulerProperties(true, Duration.ofMinutes(2))
     MentionSearch search = Stub() {
-        search(_) >> new SearchResult([], [
+        search(_, _) >> new SearchResult([], [
             new SourceReport('stub-source', SourceStatus.CHECKED, true, Instant.now())
         ])
     }

@@ -107,6 +107,29 @@
       "url": "https://social.example/irena_hodl",
       "collectedAt": "2026-11-21T09:15:00Z",
       "content": "irena_hodl · Irena Hodlerka. Moje BTC: bc1q592ze7z6w4pl5mp4xuaa494cjjt5fq7ksj7d8k, kontakt irena.hodl@example.com"
+    },
+    {
+      "url": "https://forum.example/t/portfele-sprzetowe/412",
+      "collectedAt": "2026-11-18T18:20:00Z",
+      "content": "oliwer_zmienny: od roku trzymam oszczędności na bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca i jestem zadowolony z portfela sprzętowego."
+    },
+    {
+      "url": "https://market.example/oferta/konsola-retro-118",
+      "collectedAt": "2026-11-19T12:00:00Z",
+      "content": "oliwer_zmienny sprzedam konsolę retro z kompletem gier, płatność w BTC na 14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy.",
+      "visibleIn": "ODD_ANALYSES"
+    },
+    {
+      "url": "https://social.example/oliwer_zmienny",
+      "collectedAt": "2026-11-21T08:00:00Z",
+      "content": "oliwer_zmienny · Oliwer Zmienny. Moje oszczędności są na bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca.",
+      "visibleIn": "EVEN_ANALYSES"
+    },
+    {
+      "url": "https://social.example/oliwer_zmienny/posty/2",
+      "collectedAt": "2026-11-21T08:05:00Z",
+      "content": "oliwer_zmienny: zmieniam portfel, nowe wpłaty proszę kierować na bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n.",
+      "visibleIn": "EVEN_ANALYSES"
     }
   ],
   "scenarios": [
@@ -179,6 +202,13 @@
       "title": "Nikt nie wspomina tej osoby",
       "identifiers": [{ "type": "NICKNAME", "value": "kamil_nieobecny" }],
       "expected": "Brak wzmianek i powiązań; to nie jest błąd analizy"
+    },
+    {
+      "id": "S11",
+      "category": "CHANGE_OVER_TIME",
+      "title": "Ponowna analiza widzi zmienioną sieć",
+      "identifiers": [{ "type": "NICKNAME", "value": "oliwer_zmienny" }, { "type": "PROFILE_URL", "value": "https://social.example/oliwer_zmienny" }],
+      "expected": "Analiza 1., 3., …: bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca 40% (dyskusja), 14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy 60% (ogłoszenie). Analiza 2., 4., …: bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca 95% (własny profil i niezależne źródło), bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n 80% (własny profil, wyjście na giełdę), ogłoszenia brak. Każda ponowna analiza pokazuje nowe powiązanie, zmieniony stopień pewności i powiązanie nieobserwowane"
     }
   ]
 }
