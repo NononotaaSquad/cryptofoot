@@ -132,15 +132,25 @@ export function toRowConfidence(
   };
 }
 
-/** Finished: when it ended (start as a fallback); running: when it started. */
-export function toRowDate(analysis: AnalysisResponse | null | undefined) {
-  if (analysis === null || analysis === undefined) return none;
+/**
+ * The moment a row shows and sorts by: a finished Analysis ended (start as a
+ * fallback), a running one started. Null when there is none or it is unreadable.
+ */
+export function analysisInstant(
+  analysis: AnalysisResponse | null | undefined
+): string | null {
+  if (analysis === null || analysis === undefined) return null;
   const instant =
     analysis.status === "RUNNING"
       ? analysis.startedAt
       : (analysis.finishedAt ?? analysis.startedAt);
-  if (instant === undefined || Number.isNaN(Date.parse(instant))) return none;
-  return formatDateTime(instant);
+  if (instant === undefined || Number.isNaN(Date.parse(instant))) return null;
+  return instant;
+}
+
+export function toRowDate(analysis: AnalysisResponse | null | undefined) {
+  const instant = analysisInstant(analysis);
+  return instant === null ? none : formatDateTime(instant);
 }
 
 /**

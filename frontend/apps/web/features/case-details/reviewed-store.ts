@@ -84,6 +84,35 @@ export function unmarkReviewed(caseId: string): boolean {
 }
 
 /**
+ * The valid marks of many Cases at once (the Case list and the header
+ * counter), from the same store. Cases without a valid mark are not in the
+ * map. The snapshot is one string, so it stays stable until a mark changes.
+ */
+export function useReviewedMarks(
+  caseIds: readonly string[]
+): ReadonlyMap<string, ReviewedMark> {
+  const raw = useSyncExternalStore(
+    subscribe,
+    () => JSON.stringify(caseIds.map(readRaw)),
+    () => JSON.stringify(caseIds.map(() => null))
+  );
+  const idsKey = JSON.stringify(caseIds);
+  return useMemo(() => {
+    const ids: unknown = JSON.parse(idsKey);
+    const raws: unknown = JSON.parse(raw);
+    const marks = new Map<string, ReviewedMark>();
+    if (!Array.isArray(ids) || !Array.isArray(raws)) return marks;
+    ids.forEach((id: unknown, index) => {
+      const stored: unknown = raws[index];
+      if (typeof id !== "string") return;
+      const mark = parseMark(typeof stored === "string" ? stored : null);
+      if (mark !== null) marks.set(id, mark);
+    });
+    return marks;
+  }, [raw, idsKey]);
+}
+
+/**
  * The Case's valid Reviewed mark. The server render and the first client
  * render read `null`, then the stored value, so the HTML never mismatches on
  * hydration.

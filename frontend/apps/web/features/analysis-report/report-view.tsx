@@ -16,6 +16,7 @@ import {
 import {
   getGetCaseQueryKey,
   getListAnalysesQueryKey,
+  getListCasesQueryKey,
 } from "@/lib/api/generated/case-controller/case-controller";
 import type {
   AnalysisResponseStatus,
@@ -157,6 +158,8 @@ function useRefreshCaseWhenAnalysisEnds(
       void queryClient.invalidateQueries({
         queryKey: getGetCaseQueryKey(caseId),
       });
+      // The Case list and the header counter read the latest Analysis too.
+      void queryClient.invalidateQueries({ queryKey: getListCasesQueryKey() });
     }
   }, [queryClient, caseId, analysisId, status]);
 }

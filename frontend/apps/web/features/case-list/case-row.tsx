@@ -34,7 +34,15 @@ function Shortened({ text, full }: { text: string; full: string }) {
   );
 }
 
-export function CaseRow({ row }: { row: CaseRowView }) {
+// `emphasized`: a Case with New Results has a bold label (the Reviewed ones do
+// not); it is not the blue highlight, which only the 80% rule gives.
+export function CaseRow({
+  row,
+  emphasized = false,
+}: {
+  row: CaseRowView;
+  emphasized?: boolean;
+}) {
   const { confidence } = row;
   const highlight = confidence.kind === "level" && confidence.highlight;
 
@@ -55,7 +63,12 @@ export function CaseRow({ row }: { row: CaseRowView }) {
       >
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-baseline gap-x-3">
-            <span className="text-lg leading-snug font-semibold break-words group-hover:underline">
+            <span
+              className={cn(
+                "text-lg leading-snug break-words group-hover:underline",
+                emphasized ? "font-bold" : "font-medium"
+              )}
+            >
               <Shortened text={row.title} full={row.titleFull} />
             </span>
             {row.caseNumber === null ? null : (
