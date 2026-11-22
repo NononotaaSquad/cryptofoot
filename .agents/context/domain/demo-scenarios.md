@@ -1,9 +1,9 @@
 # Demo scenarios (synthetic data)
 
-Ten fictional people in `backend/src/main/resources/fixtures/demo-v1.json` (`scenarios`), next to the original demo person Zenon Fikcyjny (`zenek_fx`, D9-008). Each one shows one behaviour of the tool: a correct result (happy path), a protection against a false lead (false positive), a known limit (false negative), or an edge case. Mentors and the jury can click through them in the application.
+Eleven fictional people in `backend/src/main/resources/fixtures/demo-v1.json` (`scenarios`), next to the original demo person Zenon Fikcyjny (`zenek_fx`, D9-008). Each one shows one behaviour of the tool: a correct result (happy path), a protection against a false lead (false positive), a known limit (false negative), an edge case, or a change between two Analyses of one Case. Mentors and the jury can click through them in the application.
 
 - **Fictional on purpose.** The task requires anonymised or synthetic test data (section 3, E7.1). None of these people exist, and no real person's name is used.
-- **Keyless addresses.** The people's own addresses are derived from public seeds (`olcys/demo-v1/scenario/...`), so nobody holds a key for them and they cannot belong to anyone. The ETH address of S1 (`0xE73A…20c6`) was checked on mainnet: no code, no transactions.
+- **Keyless addresses.** The people's own addresses are derived from public seeds (`olcys/demo-v1/scenario/...`; for S11 the payload is the first 20 bytes of SHA-256 of `olcys/demo-v1/scenario/S11/<forum|sale|new>`), so nobody holds a key for them and they cannot belong to anyone. The ETH address of S1 (`0xE73A…20c6`) was checked on mainnet: no code, no transactions.
 - **Real service addresses.** S2 uses public exchange, mixer, fundraiser and contract addresses from the bundled label lists, because that is what the exclusion checks recognise.
 - **Synthetic chain data.** Address Activity comes from `fixtures/demo-v1-activity.json` and is labelled "dane testowe".
 - **Where it runs.** Synthetic data is on locally (profile `local`) and, after ADR 0003, on production. The expected values below assume the default configuration with the bytecode check on.
@@ -13,6 +13,7 @@ Ten fictional people in `backend/src/main/resources/fixtures/demo-v1.json` (`sce
 
 1. Open **Nowa sprawa**, fill in only the fields listed for the scenario, click **Rozpocznij analizę**.
 2. In **Szczegóły sprawy**, expand each row of **Powiązania** and look at **Punktacja**, **Uzasadnienie**, **Wzmianki** and **Aktywność adresu**. Then check **Adresy wykluczone** and **Adresy odrzucone**.
+3. For S11, click **Rozpocznij nową analizę** (or set the Schedule to every minute). The report of the new Analysis opens with **Zmiany od poprzedniej analizy** (frontend ADR-0014, PR #81). Each further rerun flips back, so it always has changes to show.
 
 Locally every Analysis also lists `synthetic-broken` as an unavailable source (the "source unavailable" scene), so the status is **Częściowa**. On production that source is off (ADR 0003).
 
@@ -30,6 +31,7 @@ Locally every Analysis also lists `synthetic-broken` as an unavailable source (t
 | S8 | False negative | Nick `henio_ukryty` | **Powiązania (0)** although the person published two addresses | Known detection limits: an address split by spaces, and one more than 100 characters after the nickname (outside the 200-character context) |
 | S9 | False negative | Nick `irena_hodl`, E-mail `irena.hodl@example.com`, Adres profilu `https://social.example/irena_hodl` | **80%**; activity 4 BTC in, 3,9 BTC out, **no cash-out signal** | A deposit to an exchange address that is not on the label lists is not recognised (`LABELLED_COUNTERPARTIES_ONLY`) |
 | S10 | Edge case | Nick `kamil_nieobecny` | No Mentions and no Attributions; the source is checked, the Analysis is not failed | "No results" is not an error (E2.3) |
+| S11 | Change over time | Nick `oliwer_zmienny`, Adres profilu `https://social.example/oliwer_zmienny` | **1st, 3rd, … Analysis:** `bc1qtcrn…2pca` **40%** (forum discussion), `14MqWB…Ycoy` **60%** (sale ad). **2nd, 4th, … Analysis:** `bc1qtcrn…2pca` **95%** (own profile + independent forum post), `bc1q3pu…tt0n` **80%** (own profile; transfer **0,35 BTC to Binance**), the ad is gone. **Zmiany od poprzedniej analizy (3):** new Attribution, changed Confidence Level, not observed | A rerun or a Scheduled Analysis compared with the previous one (E6.3, E6.4). The fictional web alternates, so every rerun has changes, even after rehearsals (ADR 0004) |
 
 ## With the bytecode check switched off
 
@@ -39,5 +41,5 @@ With `EXCLUSION_ONCHAIN_CHECK_ENABLED=false`, two results change:
 
 ## Not covered by static data
 
-- **Two Analyses with a real change** (E6.3). The fixture does not change between runs.
+- ~~Two Analyses with a real change~~ (E6.3): covered by S11 since 2026-11-22 (ADR 0004).
 - **A real source outage.** Locally `synthetic-broken` stands in for it.

@@ -56,7 +56,7 @@ class ExcludedAddressPipelineSpec extends Specification {
 
     def setup() {
         def mention = new FoundMention('m1', 'forum', 'https://example.test/m1', Instant.parse('2026-11-21T10:00:00Z'), 'ctx', [])
-        search.search(_) >> new SearchResult([mention], [
+        search.search(_, _) >> new SearchResult([mention], [
             new SourceReport('forum', SourceStatus.CHECKED, true, Instant.parse('2026-11-21T10:00:00Z'))
         ])
         preparation.prepare(_) >> { new PreparedCandidates(candidates, []) }

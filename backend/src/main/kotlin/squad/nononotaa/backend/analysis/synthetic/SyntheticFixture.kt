@@ -64,4 +64,19 @@ data class FixtureMention(
     val url: String,
     val collectedAt: String,
     val content: String,
+    // null: every Analysis sees it; otherwise only every other Analysis of a Case does (scenario S11)
+    val visibleIn: FixtureVisibility? = null,
 )
+
+// A fictional web that flips between two states, so every rerun of a demo Case has something to compare (E6.3),
+// even after rehearsals: a Case cannot be created twice (duplicate rule), so a one-way change would be used up.
+enum class FixtureVisibility {
+    // the 1st, 3rd, 5th... Analysis of a Case
+    ODD_ANALYSES,
+
+    // the 2nd, 4th, 6th... Analysis of a Case
+    EVEN_ANALYSES,
+    ;
+
+    fun covers(earlierAnalyses: Int): Boolean = (earlierAnalyses % 2 == 0) == (this == ODD_ANALYSES)
+}

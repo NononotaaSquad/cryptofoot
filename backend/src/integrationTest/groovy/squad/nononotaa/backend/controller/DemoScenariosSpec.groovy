@@ -9,7 +9,7 @@ import squad.nononotaa.backend.BaseSpec
 import squad.nononotaa.backend.analysis.synthetic.SyntheticMentionSource
 import squad.nononotaa.testsupport.StubChainServer
 
-// frozen expected results of the fictional demo scenarios S1-S10 of fixtures/demo-v1.json (demo-scenarios.md)
+// frozen expected results of the fictional demo scenarios S1-S11 of fixtures/demo-v1.json (demo-scenarios.md)
 class DemoScenariosSpec extends BaseSpec {
 
     static final StubChainServer CHAIN = new StubChainServer()
@@ -25,6 +25,9 @@ class DemoScenariosSpec extends BaseSpec {
     static final String BTC_GRAZKA = 'bc1qy68k8774jj4nkugjw0vkkzms28359lkp56uhrj'
     static final String BTC_HENIO_FAR = '1C6U3KTce8VaBY9X37DchkG4dKF2kaDRfb'
     static final String BTC_IRENA = 'bc1q592ze7z6w4pl5mp4xuaa494cjjt5fq7ksj7d8k'
+    static final String BTC_OLIWER_SAVINGS = 'bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca'
+    static final String BTC_OLIWER_SALE = '14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy'
+    static final String BTC_OLIWER_NEW = 'bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n'
     static final String BINANCE_BTC = '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'
     static final String KRAKEN = '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'
     static final String ROUTER = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'
@@ -74,10 +77,18 @@ class DemoScenariosSpec extends BaseSpec {
 
     // runs the scenario with exactly the identifiers listed in the fixture
     private Map analyse(String scenarioId) {
+        run(scenarioCase(scenarioId))
+    }
+
+    private String scenarioCase(String scenarioId) {
         def scenario = source.fixture.scenarios.find { it.id == scenarioId }
-        def caseId = createCase(scenario.identifiers.collectEntries {
+        createCase(scenario.identifiers.collectEntries {
             [(FIELDS[it.type]): it.value]
         })
+    }
+
+    // one more Analysis of the Case, as "Rozpocznij nową analizę" starts it
+    private Map run(String caseId) {
         def started = new JsonSlurper().parseText(client.post().uri("/api/1/cases/${caseId}/analyses").exchange()
                 .expectStatus().isAccepted().expectBody(String).returnResult().responseBody) as Map
         Map analysis = null
@@ -104,12 +115,13 @@ class DemoScenariosSpec extends BaseSpec {
 
     def "the fixture lists the ten scenarios this spec freezes"() {
         expect:
-        source.fixture.scenarios*.id == (1..10).collect { "S$it".toString() }
+        source.fixture.scenarios*.id == (1..11).collect { "S$it".toString() }
         source.fixture.scenarios*.category.toSet() == [
             'HAPPY_PATH',
             'FALSE_POSITIVE',
             'FALSE_NEGATIVE',
-            'EDGE_CASE'
+            'EDGE_CASE',
+            'CHANGE_OVER_TIME'
         ] as Set
     }
 
@@ -354,5 +366,118 @@ class DemoScenariosSpec extends BaseSpec {
             it.sourceName == 'synthetic'
         }.status == 'CHECKED'
         result.analysis.status != 'FAILED'
+    }
+
+    def "S11 change over time: each rerun of the Case sees the other state of the web, and the comparison lists what changed"() {
+        given:
+        def caseId = scenarioCase('S11')
+
+        when:
+        def first = run(caseId)
+        def second = run(caseId)
+        def third = run(caseId)
+        def changes = json("/api/1/cases/${caseId}/comparison?earlierAnalysisId=${first.analysis.id}&laterAnalysisId=${second.analysis.id}")
+        def back = json("/api/1/cases/${caseId}/comparison?earlierAnalysisId=${second.analysis.id}&laterAnalysisId=${third.analysis.id}")
+
+        then: 'odd Analyses: a forum post and a sale ad'
+        levels(first.report) == [
+            [
+                BTC_OLIWER_SALE,
+                60,
+                [
+                    'SALE_OR_SETTLEMENT',
+                    'NICKNAME_ONLY'
+                ]
+            ],
+            [
+                BTC_OLIWER_SAVINGS,
+                40,
+                [
+                    'DISCUSSION',
+                    'NICKNAME_ONLY'
+                ]
+            ]
+        ]
+        levels(third.report) == levels(first.report)
+
+        and: 'even Analyses: the ad is gone, the savings address and a new one are on the own profile'
+        levels(second.report) == [
+            [
+                BTC_OLIWER_SAVINGS,
+                95,
+                [
+                    'OWN_PROFILE',
+                    'INDEPENDENT_SOURCES'
+                ]
+            ],
+            [
+                BTC_OLIWER_NEW,
+                80,
+                ['OWN_PROFILE']
+            ]
+        ]
+        activity(second.report, BTC_OLIWER_NEW).addressActivity.cashOutSignals.collect {
+            [
+                it.kind,
+                it.amount,
+                it.counterpartyAddress
+            ]
+        } == [
+            ['EXCHANGE', 0.35, BINANCE_BTC]
+        ]
+        [first, second, third].every {
+            it.report.attributions.every { attribution ->
+                attribution.addressActivityStatus == 'AVAILABLE'
+            }
+        }
+
+        and: 'the comparison shows a new Attribution, a changed Confidence Level and one not observed (sorted by address)'
+        changes.changes.collect {
+            [
+                it.address,
+                it.change,
+                it.earlierConfidenceLevel,
+                it.laterConfidenceLevel
+            ]
+        } == [
+            [
+                BTC_OLIWER_SALE,
+                'NOT_OBSERVED',
+                60,
+                null
+            ],
+            [
+                BTC_OLIWER_NEW,
+                'NEW',
+                null,
+                80
+            ],
+            [
+                BTC_OLIWER_SAVINGS,
+                'CONFIDENCE_LEVEL_CHANGED',
+                40,
+                95
+            ]
+        ]
+        // locally synthetic-broken makes every Analysis partial, so the absence cannot be confirmed
+        changes.changes.find {
+            it.change == 'NOT_OBSERVED'
+        }.absenceVerifiable == false
+        changes.comparabilityLimitations == ['PARTIAL_ANALYSIS']
+
+        and: 'the next rerun flips back, so a rehearsed demo Case still has changes to show'
+        back.changes.collect {
+            [it.address, it.change]
+        } == [
+            [BTC_OLIWER_SALE, 'NEW'],
+            [
+                BTC_OLIWER_NEW,
+                'NOT_OBSERVED'
+            ],
+            [
+                BTC_OLIWER_SAVINGS,
+                'CONFIDENCE_LEVEL_CHANGED'
+            ]
+        ]
     }
 }

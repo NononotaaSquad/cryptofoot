@@ -21,10 +21,14 @@ data class CaseIdentifier(
     val value: String,
 )
 
-data class AnalysisRequest(
+data class AnalysisRequest
+@JvmOverloads
+constructor(
     val caseId: String,
     val trigger: AnalysisTrigger,
     val identifiers: List<CaseIdentifier>,
+    // Analyses of this Case started before this one; read only by the synthetic demo source (S11)
+    val earlierAnalyses: Int = 0,
 )
 
 data class FoundMention @JvmOverloads constructor(
@@ -165,7 +169,10 @@ data class AnalysisRun(
 )
 
 interface MentionSearch {
-    fun search(identifiers: List<CaseIdentifier>): SearchResult
+    fun search(
+        identifiers: List<CaseIdentifier>,
+        earlierAnalyses: Int,
+    ): SearchResult
 }
 
 interface CandidatePreparation {
