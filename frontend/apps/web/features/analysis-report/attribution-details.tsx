@@ -8,6 +8,7 @@ import { CircleCheck, Info, TriangleAlert } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import type { AddressActivityFigures } from "./address-activity-figures";
+import { PremiseList } from "./premise-list";
 import type { AttributionView, MentionView } from "./report-view-model";
 
 export function AttributionDetails({
@@ -22,6 +23,11 @@ export function AttributionDetails({
       <Block heading="Uzasadnienie">
         <p>{attribution.justification}</p>
       </Block>
+
+      <PremiseList
+        heading={attribution.premisesHeading}
+        premises={attribution.premises}
+      />
 
       <Block heading={attribution.mentionsHeading}>
         <ul className="flex flex-col gap-4">
@@ -188,7 +194,11 @@ function Block({
 }
 
 /** Source link; a non-http(s) address is shown as text, never as a link. */
-export function MentionLink({ mention }: { mention: MentionView }) {
+export function MentionLink({
+  mention,
+}: {
+  mention: Pick<MentionView, "url" | "urlText">;
+}) {
   return mention.url === null ? (
     <span className="break-all">{mention.urlText}</span>
   ) : (

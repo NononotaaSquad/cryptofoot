@@ -1,6 +1,6 @@
 # 03 — Premises in the Analysis report
 
-**Spec:** [../spec.md](../spec.md) · **Blocked by:** 01 (contract); model fields need 02 · **Status:** ready-for-agent
+**Spec:** [../spec.md](../spec.md) · **Blocked by:** 01 (contract); model fields need 02 · **Status:** implemented on 2026-11-22, parts A and B together; some states were not seen in the browser (see Acceptance criteria and Implementation notes)
 
 **What to build:** The Analyst opens an Attribution on Case details and sees, after "Uzasadnienie" and before "Wzmianki", a new block "Przesłanki (N)". Each Premise (PL: Przesłanka) shows its Mention (source, link, author, collection date), the text window with the assessed address highlighted, its status "Zaliczona", "Odrzucona" or "Do weryfikacji" (icon and word), the reason of a dismissal, the kind of post and the points it gave, the facts that code found, and for each part who assessed it: "reguła" or "model". When the model answered, its three answers are shown as "tak / nie / niepewne" with a percentage, and the raw numbers sit in a collapsed "szczegóły techniczne" section. Each line of Punktacja names the Premises that made it apply. The report summary shows, once per Analysis, the algorithm version, the assessment mode, the model version and the question-set version, and the new Report Limitation when the model did not answer. A report without model answers (model off) and an older report without `premises` render without errors. This covers user stories 1–6, 8–10, 20–26 of the spec.
 
@@ -66,34 +66,44 @@ Not changed by this task: `report-view.tsx`, `attribution-list.tsx`, `excluded-a
 
 Part A (after 01):
 
-- [ ] Tests: each status code gives its word and icon key; an unknown status code gives the raw code.
-- [ ] Tests: each of the four reasons gives its label; a "Zaliczona" Premise has no reason; an unknown reason code gives the raw code.
-- [ ] Tests: each of the five kinds gives its label and the Premise's points as text ("80", "0").
-- [ ] Tests: Premises are ordered "Zaliczona", "Do weryfikacji", "Odrzucona", and inside a group they keep the API order. The heading counts all of them ("Przesłanki (3)").
-- [ ] Tests: the highlight splits the window into before / address / after for an address at the start, in the middle and at the end of the window; a start or length outside the window, or absent, gives the whole window as plain text with no highlight and no error; an emoji before the address does not move the highlight.
-- [ ] Tests: the fact lines (D3): author is the investigated person "tak / nie / nieznany" (P6), page under the person's profile, the identifier types found (types, not values), the distance in characters, e-mail of another person, number of addresses in the Mention, service; each with "Oceniono: reguła". An absent fact gives no line.
-- [ ] Tests: the Mention part of a Premise has source name, link (non-http(s) stays plain text, as `mentionView` does today), author ("—" or no line when absent, see Notes) and collection time in pl-PL.
-- [ ] Tests: a Punktacja line with `premiseIds` names those Premises and only their source names; a `premiseIds` entry that matches no Premise is ignored; a line without `premiseIds` is built as today; the new rule codes of 01 have labels, and a negative contribution (the cap, P9) is shown with its minus sign.
-- [ ] Tests: an older report with `premises` absent, and one with `premises: []`, give no Premise block, Punktacja as today and no mode line.
-- [ ] Tests: the summary shows "Wersja algorytmu: confidence-2" when `algorithmVersion` is set and no line when it is `null`.
+- [x] Tests: each status code gives its word and icon key; an unknown status code gives the raw code.
+- [x] Tests: each of the four reasons gives its label; a "Zaliczona" Premise has no reason; an unknown reason code gives the raw code.
+- [x] Tests: each of the five kinds gives its label and the Premise's points as text ("80", "0").
+- [x] Tests: Premises are ordered "Zaliczona", "Do weryfikacji", "Odrzucona", and inside a group they keep the API order. The heading counts all of them ("Przesłanki (3)").
+- [x] Tests: the highlight splits the window into before / address / after for an address at the start, in the middle and at the end of the window; a start or length outside the window, or absent, gives the whole window as plain text with no highlight and no error; an emoji before the address does not move the highlight.
+- [x] Tests: the fact lines (D3): author is the investigated person "tak / nie / nieznany" (P6), page under the person's profile, the identifier types found (types, not values), the distance in characters, e-mail of another person, number of addresses in the Mention, service; each with "Oceniono: reguła". An absent fact gives no line.
+- [x] Tests: the Mention part of a Premise has source name, link (non-http(s) stays plain text, as `mentionView` does today), author ("—" or no line when absent, see Notes) and collection time in pl-PL.
+- [x] Tests: a Punktacja line with `premiseIds` names those Premises and only their source names; a `premiseIds` entry that matches no Premise is ignored; a line without `premiseIds` is built as today; the new rule codes of 01 have labels, and a negative contribution (the cap, P9) is shown with its minus sign.
+- [x] Tests: an older report with `premises` absent, and one with `premises: []`, give no Premise block, Punktacja as today and no mode line.
+- [x] Tests: the summary shows "Wersja algorytmu: confidence-2" when `algorithmVersion` is set and no line when it is `null`.
 
 Part B (after 02):
 
-- [ ] Tests: answers at probability 0.3, 0.5 and 0.7 with the backend value "nie", undetermined and "tak" give "nie (30%)", "niepewne (50%)", "tak (70%)"; 0.925 gives "93%"; the word follows the backend value, not the percentage.
-- [ ] Tests: `rodzaj_wpisu` shows the kind label of the chosen option with its percentage, or "niepewne"; "szczegóły techniczne" list every option with its raw probability.
-- [ ] Tests: kind, declaration and warning are "Oceniono: model" when the model answered for the Premise and "Oceniono: reguła" when it did not; a Premise without model answers has no answer lines and no "szczegóły techniczne".
-- [ ] Tests: a withdrawn address gives status "Zaliczona" and the note "Adres wycofany przez autora".
-- [ ] Tests: the mode line for `WITH_MODEL` and `RULES_ONLY`; model and question-set version lines only when present.
-- [ ] Tests: `MODEL_ASSESSMENT_UNAVAILABLE` gives its sentence; an unknown limitation code keeps the fallback sentence.
+- [x] Tests: answers at probability 0.3, 0.5 and 0.7 with the backend value "nie", undetermined and "tak" give "nie (30%)", "niepewne (50%)", "tak (70%)"; 0.925 gives "93%"; the word follows the backend value, not the percentage. *Met in a changed form: the API sends no value, so the tests use the `undetermined` list and the raw probabilities (Implementation notes, 1).*
+- [x] Tests: `rodzaj_wpisu` shows the kind label of the chosen option with its percentage, or "niepewne"; "szczegóły techniczne" list every option with its raw probability.
+- [x] Tests: kind, declaration and warning are "Oceniono: model" when the model answered for the Premise and "Oceniono: reguła" when it did not; a Premise without model answers has no answer lines and no "szczegóły techniczne".
+- [x] Tests: a withdrawn address gives status "Zaliczona" and the note "Adres wycofany przez autora".
+- [x] Tests: the mode line for `WITH_MODEL` and `RULES_ONLY`; model and question-set version lines only when present.
+- [x] Tests: `MODEL_ASSESSMENT_UNAVAILABLE` gives its sentence; an unknown limitation code keeps the fallback sentence.
 
 Both parts:
 
-- [ ] Fixtures are typed with the generated model types and built by small factories in the test file. No test looks at components, hooks or markup (ADR-0010).
-- [ ] No meaning by colour alone: status, reason, "Do weryfikacji", the withdrawn note and the "reguła" / "model" labels are words; icons are `aria-hidden`; the highlight uses `<mark>` (not a coloured `span`), so it is not colour alone either.
-- [ ] Every "szczegóły techniczne" opens and closes with Tab plus Enter/Space, is collapsed on entry and has a visible focus ring; the Premise block adds no other focus stop except the source links.
-- [ ] A long window (about 1200 characters) wraps and does not widen the page; a long address in it breaks (`break-all` as in `MentionLink`).
-- [ ] `npm run check` and `npm run build` pass from `frontend/`.
-- [ ] Verified in the browser against `./scripts/run-backend.sh` with demo data and a clean console: an Attribution with its Premises and the highlight, Punktacja with Premise references, the summary lines, and (after 02, model off by default) "Tryb oceny: tylko reguły" with no answer lines; an older Analysis saved before 01 still opens without errors, if one is in the database. Model-on states and the new Report Limitation are checked only by the unit tests unless the lead switches the model on; report them as read, not run.
+- [x] Fixtures are typed with the generated model types and built by small factories in the test file. No test looks at components, hooks or markup (ADR-0010).
+- [x] No meaning by colour alone: status, reason, "Do weryfikacji", the withdrawn note and the "reguła" / "model" labels are words; icons are `aria-hidden`; the highlight uses `<mark>` (not a coloured `span`), so it is not colour alone either.
+- [x] Every "szczegóły techniczne" opens and closes with Tab plus Enter/Space, is collapsed on entry and has a visible focus ring; the Premise block adds no other focus stop except the source links. *Seen in the browser on the Case with the model: collapsed on entry, reached with Tab, toggled with Enter and with Space on one button, focus ring visible; the only focus stops in the block are the source links and one button per Premise.*
+- [x] A long window (about 1200 characters) wraps and does not widen the page; a long address in it breaks (`break-all` as in `MentionLink`). *Seen at desktop width only.*
+- [x] `npm run check` passes from `frontend/`.
+- [x] `npm run build` passes from `frontend/`.
+- Verified in the browser against `./scripts/run-backend.sh` with demo data and a clean console. Three Cases were opened at desktop width: one assessed with the model, one with rules only, one with an older Analysis.
+  - [x] An Attribution with its Premises and the highlight, Punktacja with Premise references, the summary lines.
+  - [x] A Case assessed with rules only: no answer lines and no "szczegóły techniczne".
+  - [x] A Case assessed with the model: the answer lines, "Oceniono: model" and "szczegóły techniczne".
+  - [x] An older Analysis saved before 01 opens without errors and without the "Przesłanki" block.
+  - [ ] The statuses "Do weryfikacji" and "Odrzucona" with "Powód: …". *Not seen in the browser. Unit tests only.*
+  - [ ] The note "Adres wycofany przez autora". *Not seen in the browser. Unit tests only.*
+  - [ ] The Report Limitation `MODEL_ASSESSMENT_UNAVAILABLE`. *Not seen in the browser. Unit tests only.*
+  - [ ] The summary line "Tryb oceny: tylko reguły". *Not seen in the browser. Unit tests only.*
+  - [ ] The layout below the `sm` breakpoint (Implementation notes, 5). *Not seen: the browser check was at desktop width only.*
 
 ## Notes
 
@@ -111,7 +121,26 @@ Both parts:
 - **Open questions for the lead:**
   - "Odrzucona" (a dismissed Premise) is close to "Adresy odrzucone" (Rejected Address, an invalid address) in the same report. Keep both words, or use for example "Pominięta" for a Premise?
   - Should the block "Przesłanki (N)" be open, or collapsed like Punktacja? With many Premises of about 1200 characters each, an open block is long. This task keeps it open (P25 puts it next to "Uzasadnienie", which is open).
-  - P28 says "the yes/no word follows the thresholds". This task takes the word from the backend value, so the thresholds live only in the backend. Confirm that the API sends the value and the undetermined flag (D14 says so), and that the frontend must not compute them.
+  - P28 says "the yes/no word follows the thresholds". This task takes the word from the backend value, so the thresholds live only in the backend. Confirm that the API sends the value and the undetermined flag (D14 says so), and that the frontend must not compute them. **Answered on 2026-11-22: the API does not send the value.** It sends the raw probabilities and, per Premise, the list `undetermined`. The frontend keeps no thresholds; see Implementation notes, 1.
   - Should the collapsed Attribution row show a count, for example "3 przesłanki, 1 do weryfikacji"? Not in the spec; this task does not add it.
-  - "Assessment mode" and "withdrawn address" are not glossary terms yet (spec Further Notes). The code here uses `assessmentMode` and `withdrawn…` as 01 and 02 name them.
+  - "Assessment mode" and "withdrawn address" are not glossary terms yet (spec Further Notes). The code here uses `assessmentMode` and `withdrawn…` as 01 and 02 name them. Still open on 2026-11-22: `glossary.md` has neither term.
   - Should the "Wersja algorytmu" line be shown to the Analyst at all, or only in a technical part of the summary? D18 says "shown once per Analysis"; this task puts it in the summary `<dl>`.
+
+## Implementation notes (2026-11-22)
+
+Parts A and B were built together, after 01 and 02. The code is the source of truth: `premise-view-model.ts`, `premise-list.tsx`, `report-view-model.ts`, `report-labels.ts`, `report-summary.tsx`, `attribution-details.tsx` and `report-view-model.test.ts` in `frontend/apps/web/features/analysis-report/`. Where the text above and this section differ, this section wins.
+
+Built as planned: the two new files; `premisesHeading` and `premises` on `AttributionView`; `versionLines` on `ReportSummaryView` ("Wersja algorytmu", "Tryb oceny", "Wersja modelu", "Wersja zestawu pytań"; a line with an absent field is not shown); Punktacja lines that name their Premises inside the label, for example "Adres na profilu osoby (przesłanka 1: GitHub)". An Attribution without Premises (older Analysis) keeps the old source names in brackets.
+
+Differences from the plan, decided during implementation:
+
+1. **No yes/no value in the API.** The API sends only the raw probabilities and, per Premise, the list `undetermined` (`KIND` / `DECLARATION` / `WARNING`). This list holds only the undetermined answers that mattered for the status. So the frontend shows "niepewne" only for a question in that list. Otherwise it shows the more probable option: "tak" when yes >= no, and for the kind the top option. The frontend keeps no thresholds. This replaces the P28 line in "Decisions that apply" ("the word follows the value and the undetermined flag sent by the backend").
+   - Known effect: an answer that the backend treated as undetermined, but not relevant for the status, is shown as "tak" or "nie". Seen in the browser: "Deklaracja: nie (44%)" on a Premise counted as "Własna deklaracja".
+   - Recommended follow-up for the backend: send the value of each answer. Related open issue: #96.
+2. **The percentage of a yes/no answer is always the probability of "yes"**, also when the word is "nie" ("nie (30%)"). For the kind it is the probability of the top option.
+3. **"Oceniono: reguła / model" comes from one field.** Kind, declaration and warning take it from the single per-Premise API field `assessedBy`. Facts are always "reguła".
+4. **"szczegóły techniczne" shows no request id.** It lists the raw probability of each option, rounded to 2 decimal places. The request id of the model is not shown in the frontend (lead's decision after the review), although the API still sends `requestId`. This replaces "and the request id when the API sends one" in "Decisions that apply".
+5. **Narrow screens.** Below the `sm` breakpoint the fact and answer lists are one column. The two-column grid hid the values on narrow screens.
+6. **New Punktacja labels** for the rule codes of `confidence-2` and `confidence-3`: `OWN_DECLARATION` "Własna deklaracja adresu", `DECLARED_BY_ANOTHER_PERSON` "Adres podany przez inną osobę", `WITHDRAWN_ADDRESS` "Adres wycofany przez autora", `FOR_REVIEW` "Przesłanki do weryfikacji", `WARNING_DISMISSED` "Ostrzeżenie przed adresem, przesłanka odrzucona", `CLASSIFICATION_CAP` "Ograniczenie z powodu niedostępnej klasyfikacji", `MODEL_ASSISTED` "Ocena z pomocą modelu".
+
+Verification: `npm run check` passes. The browser check covered three Cases (with the model, rules only, an older Analysis) at desktop width. The states left unticked in the browser criterion above are covered by unit tests only.
