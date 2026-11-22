@@ -27,6 +27,158 @@
       "url": "https://p2p.example/ad/987",
       "collectedAt": "2026-11-21T07:05:00Z",
       "content": "Ogłoszenie P2P od zenek_fx. Adres premium (tylko tutaj): bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4. Wpłaty na hot wallet giełdy: 0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae. Stary uszkodzony adres: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfN0 — nie używać."
+    },
+    {
+      "url": "https://social.example/halka_eth",
+      "collectedAt": "2026-11-19T08:10:00Z",
+      "content": "halka_eth · Halina Przykładowa. Tu publikuję mój portfel ETH: 0xE73A66581205C9585215196C89c5648dea1420c6. Kontakt: halina.przykladowa@example.com"
+    },
+    {
+      "url": "https://market.example/oferta/451",
+      "collectedAt": "2026-11-19T12:40:00Z",
+      "content": "halka_eth sprzedaje rower szosowy. Płatność w ETH na 0xE73A66581205C9585215196C89c5648dea1420c6, pytania: halina.przykladowa@example.com"
+    },
+    {
+      "url": "https://forum.example/t/platnosci-bogdana/77",
+      "collectedAt": "2026-11-19T14:00:00Z",
+      "content": "bogdan_platnosci: wpłaty za kurs przyjmuję na 1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s albo na 0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0."
+    },
+    {
+      "url": "https://forum.example/t/platnosci-bogdana/78",
+      "collectedAt": "2026-11-19T14:05:00Z",
+      "content": "bogdan_platnosci poleca: wymiana przez 0x7a250d5630b4cf539739df2c5dacb4c659f2488d, a mieszanie monet przez 0x722122df12d4e14e13ac3b6895a86e84145b6967."
+    },
+    {
+      "url": "https://forum.example/t/platnosci-bogdana/79",
+      "collectedAt": "2026-11-19T14:10:00Z",
+      "content": "bogdan_platnosci: zamiast płacić mi, wesprzyj zbiórkę 0x165cd37b4c644c2921454429e7f9358d18a45e14."
+    },
+    {
+      "url": "https://social.example/celina_uczciwa",
+      "collectedAt": "2026-11-20T07:30:00Z",
+      "content": "celina_uczciwa · mój jedyny adres BTC to bc1qym2cd57yxhzgwyk9g9st5gwu0yzenphmgav703."
+    },
+    {
+      "url": "https://forum.example/t/uwaga-oszust/90",
+      "collectedAt": "2026-11-20T09:00:00Z",
+      "content": "Ostrzegam: ktoś podszywa się pod celina_uczciwa i prosi o wpłaty na 1BitBDDpit1FNtTRjXS9BWosurnHvZP3BY. To oszust, nie wysyłaj tam pieniędzy."
+    },
+    {
+      "url": "https://p2p.example/ogloszenie/301",
+      "collectedAt": "2026-11-20T10:15:00Z",
+      "content": "darek_mazur sprzedaje USDT za PLN, kontakt dariusz.mazur@example.com, adres do wpłat: bc1q6qq06qyp98pvwckcmqgmnqgjvw2u8r4pp4hzpm"
+    },
+    {
+      "url": "https://forum2.example/watek/12",
+      "collectedAt": "2026-11-20T11:20:00Z",
+      "content": "Ogłoszenie: darek_mazur (darek.inny@example.org) kupi rower, płatność na 18EvUarRFEFrmDBJg1J2brT6epaSqdaGGu."
+    },
+    {
+      "url": "https://forum.example/t/sprzedam-konsole/55",
+      "collectedAt": "2026-11-20T13:00:00Z",
+      "content": "ewa_kopiowana: sprzedam konsolę, płatność BTC na bc1qfjy9mr8n5jtrwevzqrj38axjkstn9tlhupkg28."
+    },
+    {
+      "url": "https://mirror.example/forum/t/55",
+      "collectedAt": "2026-11-20T13:45:00Z",
+      "content": "ewa_kopiowana: sprzedam konsolę, płatność BTC na bc1qfjy9mr8n5jtrwevzqrj38axjkstn9tlhupkg28."
+    },
+    {
+      "url": "https://forum.example/t/adresy/66",
+      "collectedAt": "2026-11-20T15:00:00Z",
+      "content": "franek_literowka: mój BTC 1GbntFg1DvKoWUfibVf9Fsw4myaYKz5gD4, a ETH 0x5e3223B2D31A5689e6Ca1D82528042c9Ca2b7809."
+    },
+    {
+      "url": "https://social.example/post/giveaway-2026",
+      "collectedAt": "2026-11-20T16:30:00Z",
+      "content": "GIVEAWAY! Wygraj 0,1 BTC: zostaw adres w komentarzu. grazka_konkursy: bc1qy68k8774jj4nkugjw0vkkzms28359lkp56uhrj"
+    },
+    {
+      "url": "https://forum.example/t/henio/88",
+      "collectedAt": "2026-11-21T08:00:00Z",
+      "content": "henio_ukryty: przelewy proszę na bc1q x9mj 2z80 r9f8 aec6 c5s7 uyl7 sx34 xwtx p274 we (bez spacji)."
+    },
+    {
+      "url": "https://blog.example/henio/o-mnie",
+      "collectedAt": "2026-11-21T08:30:00Z",
+      "content": "henio_ukryty pisze o sobie: w weekendy jeżdżę na rowerze po Mazurach, w tygodniu naprawiam stare radia i zbieram znaczki z lat sześćdziesiątych. Dużo czytam o historii techniki i piszę o tym krótkie notatki dla znajomych. Na koniec adres do darowizn: 1C6U3KTce8VaBY9X37DchkG4dKF2kaDRfb"
+    },
+    {
+      "url": "https://social.example/irena_hodl",
+      "collectedAt": "2026-11-21T09:15:00Z",
+      "content": "irena_hodl · Irena Hodlerka. Moje BTC: bc1q592ze7z6w4pl5mp4xuaa494cjjt5fq7ksj7d8k, kontakt irena.hodl@example.com"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "S1",
+      "category": "HAPPY_PATH",
+      "title": "Własny profil i ogłoszenie, wyjście do walut tradycyjnych przez ETH",
+      "identifiers": [{ "type": "NICKNAME", "value": "halka_eth" }, { "type": "EMAIL", "value": "halina.przykladowa@example.com" }, { "type": "PROFILE_URL", "value": "https://social.example/halka_eth" }],
+      "expected": "ETH 95% (własny profil + niezależne źródło); aktywność: zamiana na USDC, bramka płatnicza, P2P, giełda"
+    },
+    {
+      "id": "S2",
+      "category": "FALSE_POSITIVE",
+      "title": "Same adresy usług: giełdy, kontrakt, mikser, zbiórka",
+      "identifiers": [{ "type": "NICKNAME", "value": "bogdan_platnosci" }],
+      "expected": "Powiązania (0); Adresy wykluczone (5): 2× giełda, smart kontrakt, mikser, zbiórka"
+    },
+    {
+      "id": "S3",
+      "category": "FALSE_POSITIVE",
+      "title": "Adres oszusta zacytowany w ostrzeżeniu",
+      "identifiers": [{ "type": "NICKNAME", "value": "celina_uczciwa" }, { "type": "PROFILE_URL", "value": "https://social.example/celina_uczciwa" }],
+      "expected": "własny adres 80%; adres z ostrzeżenia 0% (ostrzeżenie)"
+    },
+    {
+      "id": "S4",
+      "category": "FALSE_POSITIVE",
+      "title": "Imiennik z cudzym adresem e-mail",
+      "identifiers": [{ "type": "NICKNAME", "value": "darek_mazur" }, { "type": "EMAIL", "value": "dariusz.mazur@example.com" }],
+      "expected": "własny adres 60% z przelewem na giełdę; adres imiennika 0% (cudzy e-mail)"
+    },
+    {
+      "id": "S5",
+      "category": "EDGE_CASE",
+      "title": "Skopiowana wzmianka i adres bez żadnej aktywności",
+      "identifiers": [{ "type": "NICKNAME", "value": "ewa_kopiowana" }],
+      "expected": "60% bez premii za niezależne źródła (kopia); aktywność: 0 BTC, 0 transakcji"
+    },
+    {
+      "id": "S6",
+      "category": "EDGE_CASE",
+      "title": "Adresy z błędną sumą kontrolną",
+      "identifiers": [{ "type": "NICKNAME", "value": "franek_literowka" }],
+      "expected": "Powiązania (0); Adresy odrzucone (2): błędna suma kontrolna BTC i ETH"
+    },
+    {
+      "id": "S7",
+      "category": "EDGE_CASE",
+      "title": "Wpis konkursowy (giveaway) i brak danych o aktywności",
+      "identifiers": [{ "type": "NICKNAME", "value": "grazka_konkursy" }],
+      "expected": "10% (Niski / szum); aktywność niedostępna, analiza częściowa"
+    },
+    {
+      "id": "S8",
+      "category": "FALSE_NEGATIVE",
+      "title": "Adres rozbity spacjami i adres daleko od nicku",
+      "identifiers": [{ "type": "NICKNAME", "value": "henio_ukryty" }],
+      "expected": "Powiązania (0) mimo dwóch adresów: ograniczenie wykrywania"
+    },
+    {
+      "id": "S9",
+      "category": "FALSE_NEGATIVE",
+      "title": "Wyjście na nieznany adres depozytowy giełdy",
+      "identifiers": [{ "type": "NICKNAME", "value": "irena_hodl" }, { "type": "EMAIL", "value": "irena.hodl@example.com" }, { "type": "PROFILE_URL", "value": "https://social.example/irena_hodl" }],
+      "expected": "80%; aktywność 4 BTC / 3,9 BTC bez sygnału (adres giełdy spoza list)"
+    },
+    {
+      "id": "S10",
+      "category": "EDGE_CASE",
+      "title": "Nikt nie wspomina tej osoby",
+      "identifiers": [{ "type": "NICKNAME", "value": "kamil_nieobecny" }],
+      "expected": "Brak wzmianek i powiązań; to nie jest błąd analizy"
     }
   ]
 }

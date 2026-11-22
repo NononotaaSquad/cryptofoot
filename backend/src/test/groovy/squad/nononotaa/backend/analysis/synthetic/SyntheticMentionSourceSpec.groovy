@@ -41,7 +41,8 @@ class SyntheticMentionSourceSpec extends Specification {
 
     def "source returns all fixture mentions as raw mentions"() {
         expect:
-        source.findMentions([])*.url == [FORUM_URL, X_URL, P2P_URL]
+        source.findMentions([]).take(3)*.url == [FORUM_URL, X_URL, P2P_URL]
+        source.findMentions([]).size() == 19
         source.findMentions([]).every {
             !it.content.isEmpty() && it.collectedAt != null
         }

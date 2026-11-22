@@ -37,6 +37,16 @@ data class SyntheticFixture(
     val synthetic: Boolean,
     val person: FixturePerson,
     val mentions: List<FixtureMention>,
+    // fictional demo scenarios: what to enter and what to expect (demo-scenarios.md)
+    val scenarios: List<FixtureScenario> = emptyList(),
+)
+
+data class FixtureScenario(
+    val id: String,
+    val category: String,
+    val title: String,
+    val identifiers: List<FixtureIdentifier>,
+    val expected: String,
 )
 
 data class FixturePerson(

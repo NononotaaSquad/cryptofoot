@@ -24,7 +24,7 @@ E7 needs exact expected scores under a named version. A new fixture with adverse
 Verified in the running app on 2026-11-21 (profile `local`, MongoDB in Docker, `EXCLUSION_ONCHAIN_CHECK_ENABLED=false`): the same levels and rules, plus, because no bytecode check runs, `CLASSIFICATION_UNAVAILABLE` on both ETH addresses and the contract `0xde0b…` shown as an unclassified 60% Attribution (`SALE_OR_SETTLEMENT`, `NICKNAME_ONLY`), which is gap G2 of DS1-007. A stored Analysis without the `justification` field (before `confidence-1`) reads back with an empty text.
 
 ## Consequences and risks
-- **Known gap (E7):** demo-v1 has no low-score Attribution and none of the E7.3 adverse cases except the excluded contract; the film cannot show them. A fixture `demo-v2` (owner E2 T4 / E7) can add them without changing the algorithm.
+- **Known gap (E7):** demo-v1 has no low-score Attribution and none of the E7.3 adverse cases except the excluded contract; the film cannot show them. A fixture `demo-v2` (owner E2 T4 / E7) can add them without changing the algorithm. *2026-11-22: demo-v1 was extended instead with ten fictional scenario people (S1–S10, incl. 10%, 0% warning, namesake, copy, wrong checksum); Zenek's values above are unchanged. Catalogue: `../../../domain/demo-scenarios.md`, frozen by `DemoScenariosSpec`.*
 - DS1-007 G1 (malformed address never detected) and G2 (exchange label) are unchanged.
 
 ## Verification

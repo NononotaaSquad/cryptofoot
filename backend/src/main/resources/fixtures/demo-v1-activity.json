@@ -33,6 +33,47 @@
         { "transactionId": "6a29a90c376f40a916ebd6e1e2443a63813ddafa4a83f6f18c5602b5b8318885", "occurredAt": "2026-09-20T14:10:00Z", "direction": "IN", "amount": "0.5", "unit": "BTC", "counterparty": "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq" },
         { "transactionId": "a7ca1d22546b8e7e16e3e4282bf584a9290f03d30d87eb0a661e4952a076ab28", "occurredAt": "2026-10-05T09:40:00Z", "direction": "OUT", "amount": "1.1", "unit": "BTC", "counterparty": "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3", "counterpartyLabel": { "kind": "P2P", "name": "P2P marketplace escrow (synthetic)" } }
       ]
+    },
+    {
+      "network": "ETH",
+      "address": "0xe73a66581205c9585215196c89c5648dea1420c6",
+      "transfers": [
+        { "transactionId": "0x2ca0383c0dc4855e1a5a776090062ac0c801a10e11e60c23b3d757ead30c6b60", "occurredAt": "2026-02-10T09:00:00Z", "direction": "IN", "amount": "5", "unit": "ETH", "counterparty": "0xd1220a0cf47c7b9be7a2e6ba89f429762e7b9adb" },
+        { "transactionId": "0x727d661ad89968e8018715113d0fdf0c945ac7070c2388511df81905d1363b13", "occurredAt": "2026-04-22T15:30:00Z", "direction": "IN", "amount": "7.5", "unit": "ETH", "counterparty": "0xd1220a0cf47c7b9be7a2e6ba89f429762e7b9adb" },
+        { "transactionId": "0x0ef5a97e6a11d051918b12796d13cdafae9ce7c2b4c57412c5433faf95ee46cb", "occurredAt": "2026-06-03T10:15:00Z", "direction": "OUT", "amount": "10", "unit": "ETH", "counterparty": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d" },
+        { "transactionId": "0x0ef5a97e6a11d051918b12796d13cdafae9ce7c2b4c57412c5433faf95ee46cb", "occurredAt": "2026-06-03T10:15:00Z", "direction": "IN", "amount": "30000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc" },
+        { "transactionId": "0xeb74f3eef221b440c5a99b57732991a554e420d195b9d570d72d2d5dd881652b", "occurredAt": "2026-06-05T12:00:00Z", "direction": "OUT", "amount": "12000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0xfb9f7f41319157ac5c5dccae308a63a4337ad5d9" },
+        { "transactionId": "0xa1bfed92b7f42d618a30289c4db1877f2992a58fab50dc4ed17e1c1a5ce2ba02", "occurredAt": "2026-07-14T18:45:00Z", "direction": "OUT", "amount": "1.5", "unit": "ETH", "counterparty": "0x2819c144d5946404c0516b6f817a960db37d4929" },
+        { "transactionId": "0x155229e19eaa91f41d64a04c36e51b3f898a38680163fa04b8f09917740fef73", "occurredAt": "2026-08-01T08:20:00Z", "direction": "OUT", "amount": "15000", "unit": "USDC", "tokenContract": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "counterparty": "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qym2cd57yxhzgwyk9g9st5gwu0yzenphmgav703",
+      "transfers": [
+        { "transactionId": "65f25b6f30d3bbd002c8ddf279892825317bac1739a8c92f14db744e5165a46f", "occurredAt": "2026-05-05T11:00:00Z", "direction": "IN", "amount": "0.05", "unit": "BTC", "counterparty": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1q6qq06qyp98pvwckcmqgmnqgjvw2u8r4pp4hzpm",
+      "transfers": [
+        { "transactionId": "4ce27cc863aab89c8a804d175964ec48a810223e4a9d52d25ac17b539410f6c1", "occurredAt": "2026-03-01T10:00:00Z", "direction": "IN", "amount": "1.2", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "df60c84904eeb300023478e9868bc891d94e31c42f790a6e8f8c5e874a14ea8e", "occurredAt": "2026-03-15T17:30:00Z", "direction": "OUT", "amount": "0.8", "unit": "BTC", "counterparty": "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s" }
+      ]
+    },
+    {
+      "network": "BTC",
+      "address": "bc1qfjy9mr8n5jtrwevzqrj38axjkstn9tlhupkg28",
+      "transfers": []
+    },
+    {
+      "network": "BTC",
+      "address": "bc1q592ze7z6w4pl5mp4xuaa494cjjt5fq7ksj7d8k",
+      "transfers": [
+        { "transactionId": "597bf8f78fada8f9773d38dfe5440e3e76b35e833f7e06283262294883a795ad", "occurredAt": "2026-01-20T09:00:00Z", "direction": "IN", "amount": "4", "unit": "BTC", "counterparty": "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" },
+        { "transactionId": "66f9faa6db0b4ee89157426b6aaebbf7520c316605810ec8e9a9bc11df8944dd", "occurredAt": "2026-02-02T14:00:00Z", "direction": "OUT", "amount": "3.9", "unit": "BTC", "counterparty": "1Bdag2zhDWLUDAbkgw1o6XVnnWaSiNNv4K" }
+      ]
     }
   ]
 }
