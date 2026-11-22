@@ -1,5 +1,5 @@
 import { Badge } from "@workspace/ui/components/badge";
-import { CircleX, LoaderCircle, TriangleAlert } from "lucide-react";
+import { Check, CircleX, LoaderCircle, TriangleAlert } from "lucide-react";
 
 import type { ReportView } from "./report-view-model";
 import { AnalysisStatusBadge } from "./status-badge";
@@ -8,9 +8,12 @@ export function ReportSummary({ view }: { view: ReportView }) {
   const { state, summary } = view;
 
   return (
-    <section aria-labelledby="report-heading" className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 id="report-heading" className="text-2xl font-bold">
+    <section aria-labelledby="report-heading" className="flex flex-col gap-5">
+      <div className="flex flex-col items-start gap-3">
+        <h2
+          id="report-heading"
+          className="text-[1.75rem] leading-tight font-bold"
+        >
           {summary.heading}
         </h2>
         <AnalysisStatusBadge
@@ -34,10 +37,6 @@ export function ReportSummary({ view }: { view: ReportView }) {
         <dd>{summary.startedAt}</dd>
         <dt className="text-muted-foreground">Zakończenie</dt>
         <dd>{summary.finishedAt ?? "—"}</dd>
-        <dt className="text-muted-foreground">Sieci</dt>
-        <dd>
-          {summary.networks.length > 0 ? summary.networks.join(", ") : "—"}
-        </dd>
         {summary.versionLines.map((line) => (
           <div key={line.label} className="contents">
             <dt className="text-muted-foreground">{line.label}</dt>
@@ -46,33 +45,58 @@ export function ReportSummary({ view }: { view: ReportView }) {
         ))}
       </dl>
 
-      <div className="flex flex-col gap-2">
-        <h3 className="font-semibold">{summary.sourcesHeading}</h3>
-        <ul className="flex flex-col gap-1">
-          {summary.sources.map((source, index) => (
-            // The name is not guaranteed unique by the contract.
-            <li
-              key={`${source.name}-${String(index)}`}
-              className="flex flex-wrap items-center gap-x-1.5 gap-y-1"
-            >
-              <span className="font-medium">{source.name}</span>
-              {source.checkedAtText !== null ? (
-                <span className="text-muted-foreground">
-                  {source.checkedAtText}
-                </span>
-              ) : null}
-              {source.unavailableText !== null ? (
-                <span className="inline-flex items-center gap-1 font-medium text-warning-text">
-                  <TriangleAlert className="size-4" aria-hidden="true" />
-                  {source.unavailableText}
-                </span>
-              ) : null}
-              {source.testDataLabel !== null ? (
-                <Badge variant="outline">{source.testDataLabel}</Badge>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+      {/* Design: Sources with a check per line | Networks, one per line. */}
+      <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-x-12 gap-y-6">
+        <div className="flex flex-col gap-2.5">
+          <h3 className="font-semibold">{summary.sourcesHeading}</h3>
+          <ul className="flex flex-col gap-2.5">
+            {summary.sources.map((source, index) => (
+              // The name is not guaranteed unique by the contract.
+              <li
+                key={`${source.name}-${String(index)}`}
+                className="flex flex-wrap items-center gap-x-2 gap-y-1"
+              >
+                {source.unavailableText === null ? (
+                  <Check
+                    className="size-4 shrink-0 text-success-text"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <TriangleAlert
+                    className="size-4 shrink-0 text-warning-text"
+                    aria-hidden="true"
+                  />
+                )}
+                <span>{source.name}</span>
+                {source.checkedAtText !== null ? (
+                  <span className="text-muted-foreground">
+                    {source.checkedAtText}
+                  </span>
+                ) : null}
+                {source.unavailableText !== null ? (
+                  <span className="font-semibold text-warning-text">
+                    {source.unavailableText}
+                  </span>
+                ) : null}
+                {source.testDataLabel !== null ? (
+                  <Badge variant="outline">{source.testDataLabel}</Badge>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="flex flex-col gap-2.5">
+          <h3 className="font-semibold">Sieci</h3>
+          {summary.networks.length > 0 ? (
+            <ul className="flex flex-col gap-2.5">
+              {summary.networks.map((network) => (
+                <li key={network}>{network}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>—</p>
+          )}
+        </div>
       </div>
 
       {state === "failed" ? (

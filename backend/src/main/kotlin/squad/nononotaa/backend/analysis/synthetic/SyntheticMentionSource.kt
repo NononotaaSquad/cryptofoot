@@ -27,7 +27,7 @@ class SyntheticMentionSource(
         earlierAnalyses: Int,
     ): List<RawMention> = fixture.mentions
         .filter { it.visibleIn?.covers(earlierAnalyses) ?: true }
-        .map { RawMention(it.url, Instant.parse(it.collectedAt), it.content) }
+        .map { RawMention(it.url, Instant.parse(it.collectedAt), it.content, it.author) }
 
     companion object {
         const val FIXTURE_RESOURCE = "fixtures/demo-v1.json"

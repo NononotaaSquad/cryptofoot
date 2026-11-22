@@ -130,6 +130,47 @@
       "collectedAt": "2026-11-21T08:05:00Z",
       "content": "oliwer_zmienny: zmieniam portfel, nowe wpłaty proszę kierować na bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n.",
       "visibleIn": "EVEN_ANALYSES"
+    },
+    {
+      "url": "https://social.example/ania_krypto",
+      "collectedAt": "2026-11-21T10:00:00Z",
+      "content": "ania_krypto · Anna Zmyślona. Mój jedyny portfel BTC: bc1qfjyejtfqy7ddm8glux9s9pvrfyukev87zqy6pe.",
+      "author": "ania_krypto"
+    },
+    {
+      "url": "https://forum.example/t/jak-kupic-krypto/140",
+      "collectedAt": "2026-11-21T10:20:00Z",
+      "content": "ania_krypto radzi początkującym: BTC kupuję na Binance (wpłaty na 1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s), a tokeny wymieniam przez router Uniswap 0x7a250d5630b4cf539739df2c5dacb4c659f2488d."
+    },
+    {
+      "url": "https://forum.example/t/uwaga-podszywanie/141",
+      "collectedAt": "2026-11-21T10:40:00Z",
+      "content": "ania_krypto: uwaga, ktoś się pode mnie podszywa! Nie wysyłajcie na 19oaoBhWZN3Yas2Y5ukdCuthGRR85R3tfW żadnych pieniędzy, to nie mój adres."
+    },
+    {
+      "url": "https://social.example/ania_krypto/komentarze/12",
+      "collectedAt": "2026-11-21T11:00:00Z",
+      "content": "Dzięki za poradnik! Mój adres na napiwki: bc1qrt64xs4kvn980c8syzhj5xx3w2d22ge5h2ja7v",
+      "author": "tomek_napiwki"
+    },
+    {
+      "url": "https://forum.example/t/kampania-krypto/142",
+      "collectedAt": "2026-11-21T11:20:00Z",
+      "content": "Rusza #kampania_krypto: zbieramy na nagrody dla uczestników, wpłaty na 1qx6Qsj1yVzN4XQ4CV2o8jwXemtm1Pd59."
+    },
+    {
+      "url": "https://market.example/oferta/aparat-analogowy-207",
+      "collectedAt": "2026-11-20T12:00:00Z",
+      "content": "Sprzedam aparat analogowy z dwoma obiektywami, płatność w BTC na 1HM2ZR4oftvhwLDxz8aiT8kUCmswYMJwkV.",
+      "author": "zofia_portfel",
+      "visibleIn": "ODD_ANALYSES"
+    },
+    {
+      "url": "https://forum.example/t/zmiana-portfela/208",
+      "collectedAt": "2026-11-21T12:00:00Z",
+      "content": "Nie wysyłajcie już na mój stary adres bc1qpvq0wy40vfw76nveutqcemkymzh2qp8u8xuv0n, mój nowy to bc1qngstu33ksmv0w9w6cy7vnqmsfkpdx58hyapg9q.",
+      "author": "zofia_portfel",
+      "visibleIn": "EVEN_ANALYSES"
     }
   ],
   "scenarios": [
@@ -209,6 +250,20 @@
       "title": "Ponowna analiza widzi zmienioną sieć",
       "identifiers": [{ "type": "NICKNAME", "value": "oliwer_zmienny" }, { "type": "PROFILE_URL", "value": "https://social.example/oliwer_zmienny" }],
       "expected": "Analiza 1., 3., …: bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca 40% (dyskusja), 14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy 60% (ogłoszenie). Analiza 2., 4., …: bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca 95% (własny profil i niezależne źródło), bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n 80% (własny profil, wyjście na giełdę), ogłoszenia brak. Każda ponowna analiza pokazuje nowe powiązanie, zmieniony stopień pewności i powiązanie nieobserwowane"
+    },
+    {
+      "id": "S12",
+      "category": "FALSE_POSITIVE",
+      "title": "Fałszywe tropy wokół jednej osoby: usługi, podszywanie, cudzy komentarz, nick wewnątrz dłuższego słowa",
+      "identifiers": [{ "type": "NICKNAME", "value": "ania_krypto" }, { "type": "PROFILE_URL", "value": "https://social.example/ania_krypto" }],
+      "expected": "bc1qfjyejtfqy7ddm8glux9s9pvrfyukev87zqy6pe 80% (własny profil). Adresy wykluczone (2): Binance (BTC) jako giełda z list etykiet i router Uniswap jako smart kontrakt (sprawdzenie kodu w sieci). 0% bez powiązania z osobą: adres oszusta z jej ostrzeżenia (ostrzeżenie), adres z komentarza innego użytkownika pod jej profilem (z modelem: adres podany jako własny przez inną osobę) i adres z wpisu, w którym nick jest tylko częścią słowa #kampania_krypto"
+    },
+    {
+      "id": "S13",
+      "category": "FALSE_NEGATIVE",
+      "title": "Własne ogłoszenie bez nicku i zmiana adresu; ponowna analiza widzi zmienioną sieć",
+      "identifiers": [{ "type": "NICKNAME", "value": "zofia_portfel" }],
+      "expected": "Analiza 1., 3., …: 1HM2ZR4oftvhwLDxz8aiT8kUCmswYMJwkV 60% (ogłoszenie napisane przez nią, bez nicku w treści). Analiza 2., 4., …: wpis o zmianie adresu; bez modelu nowy i stary adres 0% (wpis brzmi jak ostrzeżenie), z modelem bc1qngstu33ksmv0w9w6cy7vnqmsfkpdx58hyapg9q 80% (własna deklaracja, wyjście na giełdę) oraz stary adres także 80%, z adnotacją „wycofany przez autora”. Każda ponowna analiza pokazuje zmiany"
     }
   ]
 }

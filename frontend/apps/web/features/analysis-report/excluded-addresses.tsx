@@ -98,7 +98,7 @@ function ExcludedRow({ excluded }: { excluded: ExcludedAddressView }) {
             {excluded.mentions.map((mention) => (
               <li key={mention.key}>
                 <span className="font-medium">{mention.sourceName}</span>
-                {": "}
+                {" – "}
                 <MentionLink mention={mention} />
               </li>
             ))}

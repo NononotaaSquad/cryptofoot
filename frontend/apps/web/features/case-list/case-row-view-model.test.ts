@@ -259,7 +259,7 @@ describe("toCaseRow", () => {
     );
     expect(row?.title).toBe("Jan Kowalski");
     expect(row?.identifiers.map((i) => [i.label, i.full])).toEqual([
-      ["Nick", "krypto_janek"],
+      ["Nazwa użytkownika", "krypto_janek"],
       ["Login", "jk"],
     ]);
     expect(row?.hiddenIdentifierCount).toBe(2);

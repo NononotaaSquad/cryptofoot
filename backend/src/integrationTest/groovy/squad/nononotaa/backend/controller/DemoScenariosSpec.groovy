@@ -9,7 +9,7 @@ import squad.nononotaa.backend.BaseSpec
 import squad.nononotaa.backend.analysis.synthetic.SyntheticMentionSource
 import squad.nononotaa.testsupport.StubChainServer
 
-// frozen expected results of the fictional demo scenarios S1-S11 of fixtures/demo-v1.json (demo-scenarios.md)
+// frozen expected results of the fictional demo scenarios S1-S13 of fixtures/demo-v1.json (demo-scenarios.md)
 class DemoScenariosSpec extends BaseSpec {
 
     static final StubChainServer CHAIN = new StubChainServer()
@@ -28,6 +28,13 @@ class DemoScenariosSpec extends BaseSpec {
     static final String BTC_OLIWER_SAVINGS = 'bc1qtcrn6cnv7ycrsgsafch7mdtmtx5ahqxxla2pca'
     static final String BTC_OLIWER_SALE = '14MqWBPG6bAYFyxBqgWwBcJVLiCeodYcoy'
     static final String BTC_OLIWER_NEW = 'bc1q3pu24gfage2sqesa8gm6c245j5pzfkgse6tt0n'
+    static final String BTC_ANIA = 'bc1qfjyejtfqy7ddm8glux9s9pvrfyukev87zqy6pe'
+    static final String BTC_ANIA_IMPOSTOR = '19oaoBhWZN3Yas2Y5ukdCuthGRR85R3tfW'
+    static final String BTC_ANIA_COMMENTER = 'bc1qrt64xs4kvn980c8syzhj5xx3w2d22ge5h2ja7v'
+    static final String BTC_ANIA_CAMPAIGN = '1qx6Qsj1yVzN4XQ4CV2o8jwXemtm1Pd59'
+    static final String BTC_ZOFIA_SALE = '1HM2ZR4oftvhwLDxz8aiT8kUCmswYMJwkV'
+    static final String BTC_ZOFIA_OLD = 'bc1qpvq0wy40vfw76nveutqcemkymzh2qp8u8xuv0n'
+    static final String BTC_ZOFIA_NEW = 'bc1qngstu33ksmv0w9w6cy7vnqmsfkpdx58hyapg9q'
     static final String BINANCE_BTC = '1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s'
     static final String KRAKEN = '0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0'
     static final String ROUTER = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'
@@ -50,6 +57,8 @@ class DemoScenariosSpec extends BaseSpec {
         registry.add('app.exclusion.eth-rpc-url') { CHAIN.url('/rpc') }
         registry.add('app.exclusion.blockchair-url') { CHAIN.url('') }
         registry.add('app.exclusion.timeout') { 'PT1S' }
+        // the frozen values are the rules-only ones (confidence-2), also on a machine with ASSESSMENT_MODEL_API_KEY set
+        registry.add('app.assessment.model.enabled') { 'false' }
     }
 
     @Autowired
@@ -113,9 +122,9 @@ class DemoScenariosSpec extends BaseSpec {
         report.attributions.find { it.address == address }
     }
 
-    def "the fixture lists the ten scenarios this spec freezes"() {
+    def "the fixture lists the thirteen scenarios this spec freezes"() {
         expect:
-        source.fixture.scenarios*.id == (1..11).collect { "S$it".toString() }
+        source.fixture.scenarios*.id == (1..13).collect { "S$it".toString() }
         source.fixture.scenarios*.category.toSet() == [
             'HAPPY_PATH',
             'FALSE_POSITIVE',
@@ -483,6 +492,169 @@ class DemoScenariosSpec extends BaseSpec {
             [
                 BTC_OLIWER_SAVINGS,
                 'CONFIDENCE_LEVEL_CHANGED'
+            ]
+        ]
+    }
+
+    def "S12 false positive: of five traces of one person only her own profile address is attributed"() {
+        when:
+        def result = analyse('S12')
+        def report = result.report
+
+        then:
+        result.analysis.algorithmVersion == 'confidence-2'
+        result.analysis.assessmentMode == 'RULES_ONLY'
+        levels(report) == [
+            [
+                BTC_ANIA,
+                80,
+                ['OWN_PROFILE']
+            ],
+            [
+                BTC_ANIA_IMPOSTOR,
+                0,
+                ['WARNING_CONTEXT']
+            ],
+            [
+                BTC_ANIA_CAMPAIGN,
+                0,
+                ['NO_PERSON_LINK']
+            ],
+            [
+                BTC_ANIA_COMMENTER,
+                0,
+                ['NO_PERSON_LINK']
+            ]
+        ]
+
+        and: 'the exchange comes from the label lists, the router is a smart contract by its bytecode'
+        report.excludedAddresses.collect {
+            [
+                it.address,
+                it.reason,
+                it.classificationSource.replaceFirst(/^.*?\): /, '')
+            ]
+        } == [
+            [
+                BINANCE_BTC,
+                'EXCHANGE',
+                'Binance.com'
+            ],
+            [
+                ROUTER,
+                'SMART_CONTRACT',
+                'executable code present'
+            ]
+        ]
+        CHAIN.requests == ["rpc $ROUTER".toString()]
+
+        and: 'only the own address is checked for activity'
+        activity(report, BTC_ANIA).addressActivity.totalReceived == 0.08
+        activity(report, BTC_ANIA).addressActivity.transactionCount == 1
+        [
+            BTC_ANIA_IMPOSTOR,
+            BTC_ANIA_CAMPAIGN,
+            BTC_ANIA_COMMENTER
+        ].every {
+            activity(report, it).addressActivityStatus == 'NOT_CHECKED'
+        }
+
+        and: 'the comment of another user is found under her profile, the campaign post only by a part of a longer word'
+        result.mentions*.url == [
+            'https://social.example/ania_krypto',
+            'https://forum.example/t/jak-kupic-krypto/140',
+            'https://forum.example/t/uwaga-podszywanie/141',
+            'https://social.example/ania_krypto/komentarze/12',
+            'https://forum.example/t/kampania-krypto/142'
+        ]
+    }
+
+    def "S13 false negative: an own ad without the nickname counts by its author, a change of address worded like a warning does not"() {
+        given:
+        def caseId = scenarioCase('S13')
+
+        when:
+        def first = run(caseId)
+        def second = run(caseId)
+        def third = run(caseId)
+        def changes = json("/api/1/cases/${caseId}/comparison?earlierAnalysisId=${first.analysis.id}&laterAnalysisId=${second.analysis.id}")
+        def back = json("/api/1/cases/${caseId}/comparison?earlierAnalysisId=${second.analysis.id}&laterAnalysisId=${third.analysis.id}")
+
+        then: 'rules only (confidence-2)'
+        [first, second, third].every {
+            it.analysis.algorithmVersion == 'confidence-2' && it.analysis.assessmentMode == 'RULES_ONLY'
+        }
+
+        and: 'odd Analyses: the sale ad written by the person, without her nickname in the text'
+        levels(first.report) == [
+            [
+                BTC_ZOFIA_SALE,
+                60,
+                [
+                    'SALE_OR_SETTLEMENT',
+                    'NICKNAME_ONLY'
+                ]
+            ]
+        ]
+        activity(first.report, BTC_ZOFIA_SALE).addressActivity.totalReceived == 0.06
+        levels(third.report) == levels(first.report)
+
+        and: 'even Analyses: the new address is missed by the rules, because the post reads like a warning'
+        levels(second.report) == [
+            [
+                BTC_ZOFIA_NEW,
+                0,
+                ['WARNING_CONTEXT']
+            ],
+            [
+                BTC_ZOFIA_OLD,
+                0,
+                ['WARNING_CONTEXT']
+            ]
+        ]
+        second.report.attributions.every {
+            it.addressActivityStatus == 'NOT_CHECKED'
+        }
+
+        and: 'the comparison shows the ad not observed and both addresses of the post as new (sorted by address)'
+        changes.changes.collect {
+            [
+                it.address,
+                it.change,
+                it.earlierConfidenceLevel,
+                it.laterConfidenceLevel
+            ]
+        } == [
+            [
+                BTC_ZOFIA_SALE,
+                'NOT_OBSERVED',
+                60,
+                null
+            ],
+            [
+                BTC_ZOFIA_NEW,
+                'NEW',
+                null,
+                0
+            ],
+            [
+                BTC_ZOFIA_OLD,
+                'NEW',
+                null,
+                0
+            ]
+        ]
+        back.changes.collect {
+            [it.address, it.change]
+        } == [
+            [BTC_ZOFIA_SALE, 'NEW'],
+            [
+                BTC_ZOFIA_NEW,
+                'NOT_OBSERVED'
+            ],
+            [
+                BTC_ZOFIA_OLD,
+                'NOT_OBSERVED'
             ]
         ]
     }

@@ -30,7 +30,7 @@ export function CollapsibleSection({
   if (emptyMessage !== null) {
     return (
       <section className="flex flex-col gap-2">
-        <h2 className="text-xl font-bold">{heading}</h2>
+        <h2 className="text-2xl leading-tight font-bold">{heading}</h2>
         <p className="text-muted-foreground">{emptyMessage}</p>
       </section>
     );
@@ -42,15 +42,16 @@ export function CollapsibleSection({
       open={open}
       onOpenChange={setOpen}
       render={<section />}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-3"
     >
-      <h2 className="text-xl font-bold">
-        <CollapsibleTrigger className="-mx-2 inline-flex items-center gap-3 rounded-md px-2 py-1 outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50">
+      {/* Design: heading on the left, "Rozwiń" + chevron on the right. */}
+      <h2 className="text-2xl leading-tight font-bold">
+        <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 py-3 pr-4 text-left outline-none">
           {heading}
-          <span className="text-base font-medium text-primary">
+          <span className="inline-flex items-center gap-1.5 text-base font-semibold text-primary group-hover:underline">
             {open ? "Zwiń" : "Rozwiń"}
+            <Chevron className="size-6" aria-hidden="true" />
           </span>
-          <Chevron className="size-5 text-primary" aria-hidden="true" />
         </CollapsibleTrigger>
       </h2>
       <CollapsibleContent className="flex flex-col gap-4">

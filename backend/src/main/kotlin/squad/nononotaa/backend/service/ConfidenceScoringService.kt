@@ -76,7 +76,7 @@ class ConfidenceScoringService : ConfidenceScoring {
     override fun score(input: ScoringInput): ScoringResult {
         val mentions = input.mentions.associateBy { it.id }
         val wallets = input.identifiers.filter { it.type == IdentifierType.WALLET_ADDRESS }.map { it.value.trim() }.toSet()
-        // the model is on: confidence-3, also when it answered for no Premise (P22); with the model off answers are ignored
+        // the model is on: confidence-4, also when it answered for no Premise (P22); with the model off answers are ignored
         val withModel = input.mode == AssessmentMode.WITH_MODEL
         val version = if (withModel) MODEL_ALGORITHM_VERSION else ALGORITHM_VERSION
         val answers = if (withModel) input.answers else emptyMap()
@@ -168,7 +168,7 @@ class ConfidenceScoringService : ConfidenceScoring {
         )
     }
 
-    // the confidence-3 rule table, steps 1 to 7 in the order of P13
+    // the confidence-3 rule table with #96 (confidence-4), steps 1 to 7 in the order of P13
     private fun assessByModel(
         url: String,
         identifiers: List<CaseIdentifier>,
@@ -212,7 +212,11 @@ class ConfidenceScoringService : ConfidenceScoring {
                 else -> PremiseKind.DISCUSSION
             }
         // 7. an undetermined answer that could still change the status (P13)
-        val declarationMatters = author == AuthorMatch.NO || (author == AuthorMatch.YES && warning == Answer.UNDETERMINED)
+        // a model own declaration rests on the declaration answer (#96)
+        val declarationMatters =
+            author == AuthorMatch.NO ||
+                (author == AuthorMatch.YES && warning == Answer.UNDETERMINED) ||
+                (!ownProfile && modelKind == PremiseKind.OWN_DECLARATION)
         val undetermined =
             buildList {
                 if (!ownProfile && modelKind == null) add(ModelQuestion.KIND)
@@ -420,7 +424,7 @@ class ConfidenceScoringService : ConfidenceScoring {
 
     companion object {
         const val ALGORITHM_VERSION = "confidence-2"
-        const val MODEL_ALGORITHM_VERSION = "confidence-3"
+        const val MODEL_ALGORITHM_VERSION = "confidence-4"
         private const val YES_THRESHOLD = 0.7
         private const val NO_THRESHOLD = 0.3
         private const val KIND_THRESHOLD = 0.5

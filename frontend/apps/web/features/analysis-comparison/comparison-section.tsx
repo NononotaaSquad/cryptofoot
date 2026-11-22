@@ -96,7 +96,10 @@ export function ComparisonSection({
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-1">
-        <h2 id="comparison-heading" className="text-xl font-bold">
+        <h2
+          id="comparison-heading"
+          className="text-2xl leading-tight font-bold"
+        >
           {view.heading}
         </h2>
         <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-muted-foreground">

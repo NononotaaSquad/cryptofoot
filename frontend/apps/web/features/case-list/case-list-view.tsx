@@ -69,7 +69,7 @@ export function CaseListView() {
     return (
       <Page>
         <EmptyPanel>
-          <p className="text-lg leading-normal">
+          <p className="text-xl leading-normal font-semibold">
             Nie masz jeszcze żadnej sprawy.
           </p>
           <StartLink href="/">← Rozpocznij od nowej sprawy</StartLink>
@@ -95,7 +95,7 @@ export function CaseListView() {
 
   return (
     <Page>
-      <div className="flex max-w-120 flex-col gap-2">
+      <div className="flex max-w-140 flex-col gap-2">
         <Label htmlFor={searchId} className="text-base font-semibold">
           Szukaj sprawy
         </Label>
@@ -104,7 +104,7 @@ export function CaseListView() {
           id={searchId}
           type="text"
           autoComplete="off"
-          placeholder="np. krypto_janek"
+          placeholder="np. zenek_fix"
           aria-describedby={searchHintId}
           value={query}
           onChange={(event) => {
@@ -113,11 +113,10 @@ export function CaseListView() {
               setSearchOverride(null);
             }
           }}
-          className="h-12 px-4"
         />
         <p id={searchHintId} className="text-sm text-muted-foreground">
-          Wpisz numer sprawy, imię i nazwisko, nick, e-mail lub inny
-          identyfikator.
+          Wpisz numer sprawy, imię i nazwisko, nazwę użytkownika, e-mail lub
+          inny identyfikator.
         </p>
       </div>
 
@@ -132,7 +131,7 @@ export function CaseListView() {
 
       {model.matching === 0 ? (
         <EmptyPanel>
-          <p className="text-lg leading-normal break-words">
+          <p className="text-xl leading-normal font-semibold break-words">
             Nie znaleziono sprawy dla „{trimmed}”.
           </p>
           <p className="leading-normal">
@@ -167,7 +166,7 @@ export function CaseListView() {
 
           {model.reviewedRows.length > 0 ? (
             <section aria-labelledby="case-list-reviewed-title">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-3 py-3 pr-4">
                 <h2
                   id="case-list-reviewed-title"
                   className="text-2xl leading-tight font-bold"
@@ -193,7 +192,7 @@ export function CaseListView() {
                 </Button>
               </div>
               {open ? (
-                <div id={reviewedListId} className="mt-6 flex flex-col">
+                <div id={reviewedListId} className="mt-3 flex flex-col">
                   <RowList rows={model.reviewedRows} />
                 </div>
               ) : null}
@@ -208,7 +207,7 @@ export function CaseListView() {
 function Page({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2.5">
         <h1 className="text-[2.5rem] leading-tight font-bold">Lista spraw</h1>
         <p className="text-base leading-normal">
           Tu znajdziesz wszystkie sprawy. Wybierz sprawę, aby zobaczyć jej
@@ -230,7 +229,7 @@ function Group({
   emphasized?: boolean;
 }) {
   return (
-    <section aria-label={title} className="flex flex-col gap-6">
+    <section aria-label={title} className="flex flex-col gap-3">
       <h2 className="text-2xl leading-tight font-bold">{title}</h2>
       <RowList rows={rows} emphasized={emphasized} />
     </section>
@@ -245,9 +244,9 @@ function RowList({
   emphasized?: boolean;
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       <CaseListHeader />
-      <ul>
+      <ul className="flex flex-col gap-1">
         {rows.map((row) => (
           <CaseRow key={row.caseId} row={row} emphasized={emphasized} />
         ))}

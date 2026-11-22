@@ -66,6 +66,8 @@ data class FixtureMention(
     val content: String,
     // null: every Analysis sees it; otherwise only every other Analysis of a Case does (scenario S11)
     val visibleIn: FixtureVisibility? = null,
+    // the account that wrote it, as a real source reports it (scenarios S12, S13)
+    val author: String? = null,
 )
 
 // A fictional web that flips between two states, so every rerun of a demo Case has something to compare (E6.3),

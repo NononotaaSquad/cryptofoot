@@ -37,7 +37,8 @@ export function AnalysisSelect({
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    // Design: the select sits in a band with a line above and below.
+    <div className="flex flex-col gap-2 border-y border-border py-6">
       {/* A label on the trigger button names the combobox; Base UI adds its
           own aria-labelledby only with Select.Label, which the wrapper lacks. */}
       <Label htmlFor={triggerId} className="text-base font-semibold">
@@ -55,7 +56,7 @@ export function AnalysisSelect({
         <SelectTrigger
           id={triggerId}
           aria-describedby={hintId}
-          className="h-12 w-full max-w-120 px-4 text-base data-[size=default]:h-12"
+          className="h-11 w-full max-w-140 px-3 text-base data-[size=default]:h-11"
         >
           <SelectValue placeholder="Wybierz analizę" />
         </SelectTrigger>

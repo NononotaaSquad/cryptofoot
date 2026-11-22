@@ -19,7 +19,7 @@ export type NarrowingIdentifierKind = (typeof narrowingIdentifierKinds)[number];
 export type IdentifierKind = NarrowingIdentifierKind | "fullName";
 
 export const identifierKindLabels: Record<IdentifierKind, string> = {
-  nickname: "Nick",
+  nickname: "Nazwa użytkownika",
   login: "Login",
   email: "Adres e-mail",
   messengerId: "Identyfikator z komunikatora",

@@ -1,11 +1,11 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { cn } from "@workspace/ui/lib/utils";
 import {
+  CircleAlert,
   CircleCheck,
   CircleDashed,
   CircleX,
-  LoaderCircle,
-  TriangleAlert,
+  Loader,
   type LucideIcon,
 } from "lucide-react";
 
@@ -16,16 +16,16 @@ const statusIcons: Record<
   AnalysisResponseStatus | "NONE",
   { icon: LucideIcon; className: string }
 > = {
-  RUNNING: { icon: LoaderCircle, className: "bg-muted text-foreground" },
+  RUNNING: { icon: Loader, className: "bg-muted text-foreground" },
   COMPLETED: {
     icon: CircleCheck,
     className: "bg-success-tint text-success-text",
   },
   PARTIAL: {
-    icon: TriangleAlert,
+    icon: CircleAlert,
     className: "bg-warning-tint text-warning-text",
   },
-  FAILED: { icon: CircleX, className: "bg-destructive/10 text-destructive" },
+  FAILED: { icon: CircleX, className: "bg-error-tint text-error-dark" },
   NONE: { icon: CircleDashed, className: "bg-muted text-muted-foreground" },
 };
 
@@ -41,7 +41,13 @@ export function AnalysisStatusBadge({
 }: AnalysisStatusBadgeProps) {
   const { icon: StatusIcon, className } = statusIcons[status];
   return (
-    <Badge className={cn("h-6 px-2.5 text-sm", className)}>
+    // Design: 4px radius, 16px icon, 600 weight, padding 4/10/4/8.
+    <Badge
+      className={cn(
+        "h-auto gap-1.5 py-1 pr-2.5 pl-2 text-sm font-semibold has-data-[icon=inline-start]:pl-2 [&>svg]:size-4!",
+        className
+      )}
+    >
       <StatusIcon data-icon="inline-start" aria-hidden="true" />
       {label}
     </Badge>

@@ -46,9 +46,9 @@ export function PremiseList({
 }) {
   if (premises.length === 0) return null;
   return (
-    <div className="flex flex-col gap-2">
-      <h4 className="font-semibold">{heading}</h4>
-      <ol className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3.5">
+      <h4 className="text-lg leading-snug font-bold">{heading}</h4>
+      <ol className="flex flex-col gap-5">
         {premises.map((premise) => (
           <Premise key={premise.key} premise={premise} />
         ))}
@@ -61,10 +61,15 @@ function Premise({ premise }: { premise: PremiseView }) {
   const { icon: StatusIcon, className: statusClassName } =
     statusIcons[premise.status.icon];
   return (
-    <li className="flex min-w-0 flex-col gap-2">
+    <li className="flex min-w-0 flex-col gap-2.5 not-first:border-t not-first:border-border not-first:pt-5">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="font-medium">{premise.title}</span>
-        <Badge className={statusClassName}>
+        <span className="font-semibold">{premise.title}</span>
+        <Badge
+          className={cn(
+            "h-auto gap-1.5 py-1 pr-2.5 pl-2 text-sm font-semibold has-data-[icon=inline-start]:pl-2 [&>svg]:size-4!",
+            statusClassName
+          )}
+        >
           <StatusIcon data-icon="inline-start" aria-hidden="true" />
           {premise.status.label}
         </Badge>
@@ -102,7 +107,7 @@ function Premise({ premise }: { premise: PremiseView }) {
         <MentionLink mention={premise} />
       </div>
 
-      <blockquote className="border-l-2 border-border pl-3 break-words whitespace-pre-wrap text-muted-foreground">
+      <blockquote className="border-l-3 border-border-strong py-1 pl-3.5 break-words whitespace-pre-wrap text-muted-foreground">
         {premise.window.before}
         {premise.window.address !== null ? (
           <mark className="rounded-sm bg-warning-tint px-0.5 font-medium break-all text-foreground">
