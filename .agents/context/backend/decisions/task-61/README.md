@@ -37,4 +37,4 @@ The content filter needs the identifier in the text. A profile README rarely nam
 
 ## D61-006 GitHub token
 
-See the *GitHub token (prod)* paragraph in ackend-architecture.md. Names: Actions secret and Cloud Run env var SOURCES_GITHUB_TOKEN, Secret Manager secret <repo>-github-token, property sources.github.token, flag sources.github.require-token (true only in pplication-prod.yaml).
+See the *GitHub token (prod)* paragraph in `backend-architecture.md`. Names: Actions secret and Cloud Run env var `SOURCES_GITHUB_TOKEN`, Secret Manager secret `<repo>-github-token`, property `sources.github.token`, flag `sources.github.require-token` (true only in `application-prod.yaml`).
