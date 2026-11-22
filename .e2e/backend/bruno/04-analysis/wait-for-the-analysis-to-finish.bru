@@ -30,7 +30,7 @@ tests {
     expect(body.finishedAt).to.be.a('string');
     expect(body.trigger).to.equal('MANUAL');
     expect(body.networks).to.eql(['BTC', 'ETH']);
-    expect(body.algorithmVersion).to.equal('confidence-1');
+    expect(body.algorithmVersion).to.equal('confidence-2');
   });
   test('source coverage: the synthetic source was checked, the broken one is unavailable', () => {
     const coverage = {};

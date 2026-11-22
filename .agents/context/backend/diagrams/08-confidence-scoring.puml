@@ -1,11 +1,11 @@
 @startuml 08-confidence-scoring
-title E3: ConfidenceScoringService.score(ScoringInput), algorithm "confidence-1" (task #9, D9-001 to D9-008)
+title E3: ConfidenceScoringService.score(ScoringInput), algorithm "confidence-2" (task #9, spec 2026-11-22_confidence-premises-jev)
 
 skinparam shadowing false
 
 start
 :ScoringInput(accepted, unclassified,
-Mentions of the Analysis, Case identifiers);
+Mentions of the Analysis with address windows, Case identifiers);
 note right
   Excluded Addresses never get here (#22).
   Pure function: no database, no clock, no external call.
@@ -15,54 +15,65 @@ while (next candidate? (accepted first, then unclassified)) is (yes)
     :ENTERED_BY_ANALYST (0)
     input, not evidence (D50-006);
   endif
-  :for each Mention of the candidate (D9-004):
-  linked = Case identifiers in URL or snippet
-    (wallet never counts);
-  warning = warning word in the sentence holding the address;
-  conflicting = snippet has e-mails, none of them the Case's;
-  supports = linked has nickname / login / e-mail /
-    messenger ID / profile address (full name never)
-    and not warning and not conflicting;
-  if (any supporting Mention?) then (no)
-    :NO_PERSON_LINK (0) -> 0%;
-  else (yes)
-    :source kind of each supporting Mention (D9-003):
-    OWN_PROFILE 80 = URL under the profile address,
-      or nickname page + e-mail / messenger ID / full name
-    MASS_COMMENT 10 = giveaway, konkurs, promo...
-    SALE_OR_SETTLEMENT 60 = ogłosz, sprzeda, p2p, wpłat...
-    DISCUSSION 40 = otherwise
-    base = strongest kind (D9-002);
-    if (pair with different host AND different\naddress sentence? (D9-005)) then (yes)
-      :INDEPENDENT_SOURCES +15 (once);
-    elseif (pair with different host, same sentence?) then (yes)
-      :COPIED_TEXT (0);
-    elseif (several Mentions on one host?) then (yes)
-      :SAME_SERVICE (0);
-    else (single Mention)
+  :one Premise per Mention with a window for the address
+  (id "{mentionId}:{address}"; no window, no Premise);
+  :PremiseFacts per Premise (D3): author is the person,
+  under profile, identifier types in the window (whole words),
+  identifier distance, conflicting e-mail, address count, host;
+  while (next Premise?) is (yes)
+    if (link? author is the person, or URL under the profile with
+author the person / unknown, or identifier within 200 chars
+(never full name, never wallet)) then (no)
+      :DISMISSED, NO_PERSON_LINK, 0;
+    elseif (another person's e-mail?) then (yes)
+      :DISMISSED, CONFLICTING_EMAIL, 0;
+    elseif (address sentence in a warning?) then (yes)
+      :FOR_REVIEW, WARNING, 0 (L2);
+    else (counted)
+      :COUNTED, kind and points:
+      OWN_PROFILE 80, SALE_OR_SETTLEMENT 60,
+      DISCUSSION 40, MASS_COMMENT 10;
     endif
-    if (all supporting Mentions linked only by nickname / login?) then (yes)
+  endwhile (no)
+  if (any COUNTED Premise?) then (no)
+    :NO_PERSON_LINK (0) only if some Premise has that reason
+    (lists those Premises) -> 0%;
+  else (yes)
+    :base = strongest counted kind (D9-002);
+    if (two counted >= DISCUSSION, different services,\ndifferent address sentences?) then (yes)
+      :INDEPENDENT_SOURCES +15 (once);
+    elseif (pair on different services, same sentence?) then (yes)
+      :COPIED_TEXT (0);
+    elseif (several counted on one service?) then (yes)
+      :SAME_SERVICE (0);
+    else (single)
+    endif
+    if (all counted linked only by nickname / login / author?) then (yes)
       :NICKNAME_ONLY (0);
     endif
   endif
-  if (any warning Mention?) then (yes)
+  if (any FOR_REVIEW WARNING Premise?) then (yes)
     :WARNING_CONTEXT (0);
   endif
-  if (any conflicting e-mail Mention?) then (yes)
+  if (any CONFLICTING_EMAIL Premise?) then (yes)
     :CONFLICTING_EMAIL (0);
   endif
   if (candidate unclassified?) then (yes)
-    :CLASSIFICATION_UNAVAILABLE (0) (D9-007);
+    :CLASSIFICATION_UNAVAILABLE (0);
+    if (level > 59?) then (yes)
+      :CLASSIFICATION_CAP (59 - level, negative);
+    endif
   endif
   :ScoredAttribution(candidate,
-    confidenceLevel = sum of contributions, capped 0..100,
-    appliedRules in ScoringRule order,
-    justification = one Polish sentence per rule, no numbers (D9-006));
+    confidenceLevel = sum of contributions, 0..100,
+    appliedRules in ScoringRule order, each with premiseIds,
+    justification = one Polish sentence per rule, no numbers,
+    premises);
 endwhile (no)
-:ScoringResult(attributions, algorithmVersion = "confidence-1");
+:ScoringResult(attributions, algorithmVersion = "confidence-2");
 note right
   Same input -> same result (order independent).
-  The orchestrator still flags classificationStatus = UNAVAILABLE (D24-006).
+  The report joins each Premise to its Mention by mentionId.
 end note
 stop
 

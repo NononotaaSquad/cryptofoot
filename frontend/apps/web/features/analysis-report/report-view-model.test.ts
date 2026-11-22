@@ -11,6 +11,12 @@ import {
   ExcludedAddressResponseReason,
   type MentionResponse,
   type PersonIdentifiersResponse,
+  type PremiseAnswersResponse,
+  type PremiseResponse,
+  PremiseResponseDismissalReason,
+  PremiseResponseKind,
+  PremiseResponseStatus,
+  PremiseResponseUndeterminedItem,
   type ReportResponse,
   ReportResponseLimitationsItem,
   type SourceCoverageResponse,
@@ -177,6 +183,10 @@ describe("toReportView summary", () => {
     [
       ReportResponseLimitationsItem.CLASSIFICATION_UNAVAILABLE,
       "Nie udało się sprawdzić, czy adresy należą do serwisów (np. giełd), więc część powiązań może dotyczyć takich adresów.",
+    ],
+    [
+      ReportResponseLimitationsItem.MODEL_ASSESSMENT_UNAVAILABLE,
+      "Model nie ocenił części lub wszystkich przesłanek; te przesłanki oceniono samymi regułami.",
     ],
     [
       ReportResponseLimitationsItem.ANALYSIS_INCOMPLETE,
@@ -395,6 +405,14 @@ describe("toReportView Attributions", () => {
       "WARNING_CONTEXT",
       "CONFLICTING_EMAIL",
       "CLASSIFICATION_UNAVAILABLE",
+      // confidence-2 and confidence-3
+      "OWN_DECLARATION",
+      "DECLARED_BY_ANOTHER_PERSON",
+      "WITHDRAWN_ADDRESS",
+      "FOR_REVIEW",
+      "WARNING_DISMISSED",
+      "CLASSIFICATION_CAP",
+      "MODEL_ASSISTED",
     ];
     const result = onlyAttribution({
       scoringRules: codes.map((rule) => ({ rule, contribution: 0 })),
@@ -724,5 +742,357 @@ describe("toReportView Rejected Addresses", () => {
 
     expect(result.rejectedHeading).toBe("Adresy odrzucone (0)");
     expect(result.rejectedAddresses).toEqual([]);
+  });
+});
+
+function premise(values: Partial<PremiseResponse> = {}) {
+  return {
+    id: "premise-1",
+    mentionId: "mention-1",
+    sourceName: "forum.example",
+    url: "https://forum.example/t/1",
+    author: "krypto_janek",
+    collectedAt: "2026-11-21T13:33:00Z",
+    text: "mój adres to bc1qexampleaddress, dzięki",
+    addressStart: 13,
+    addressLength: 18,
+    status: "COUNTED",
+    kind: "DISCUSSION",
+    points: 40,
+    dismissalReason: null,
+    assessedBy: "RULE",
+    facts: {},
+    answers: null,
+    undetermined: [],
+    withdrawn: false,
+    ...values,
+  } satisfies PremiseResponse;
+}
+
+function answers(values: Partial<PremiseAnswersResponse> = {}) {
+  return {
+    kind: {
+      ownDeclaration: 0.81,
+      saleOrSettlement: 0.1,
+      discussion: 0.06,
+      massComment: 0.03,
+    },
+    declaration: { yes: 0.925, no: 0.075 },
+    warning: { yes: 0.04, no: 0.96 },
+    requestId: "req-1",
+    ...values,
+  } satisfies PremiseAnswersResponse;
+}
+
+function onlyPremise(values: Partial<PremiseResponse> = {}) {
+  const [first] = onlyAttribution({ premises: [premise(values)] }).premises;
+  if (first === undefined) throw new Error("expected one Premise");
+  return first;
+}
+
+// The backend may send a code newer than the generated client.
+const NEW_STATUS = JSON.parse('"NEW_STATUS"') as PremiseResponseStatus; // `as`: simulates an untyped response body
+const NEW_REASON = JSON.parse('"NEW_REASON"') as PremiseResponseDismissalReason; // `as`: simulates an untyped response body
+
+describe("toReportView Premises", () => {
+  it.each([
+    [PremiseResponseStatus.COUNTED, "counted", "Zaliczona"],
+    [PremiseResponseStatus.FOR_REVIEW, "forReview", "Do weryfikacji"],
+    [PremiseResponseStatus.DISMISSED, "dismissed", "Odrzucona"],
+    [NEW_STATUS, "unknown", "NEW_STATUS"],
+  ])(
+    "gives the status %s the icon %s and the word %s",
+    (status, icon, label) => {
+      expect(onlyPremise({ status }).status).toEqual({ icon, label });
+    }
+  );
+
+  it.each([
+    [PremiseResponseDismissalReason.WARNING, "Ostrzeżenie przed tym adresem"],
+    [
+      PremiseResponseDismissalReason.DECLARED_BY_ANOTHER_PERSON,
+      "Adres podany przez inną osobę",
+    ],
+    [
+      PremiseResponseDismissalReason.NO_PERSON_LINK,
+      "Brak powiązania z badaną osobą",
+    ],
+    [PremiseResponseDismissalReason.CONFLICTING_EMAIL, "E-mail innej osoby"],
+    [NEW_REASON, "NEW_REASON"],
+    [null, null],
+  ])("labels the dismissal reason %s as %s", (dismissalReason, label) => {
+    expect(onlyPremise({ dismissalReason }).reason).toBe(label);
+  });
+
+  it.each([
+    [PremiseResponseKind.OWN_PROFILE, 80, "Profil badanej osoby", "80"],
+    [PremiseResponseKind.OWN_DECLARATION, 80, "Własna deklaracja", "80"],
+    [
+      PremiseResponseKind.SALE_OR_SETTLEMENT,
+      60,
+      "Sprzedaż lub rozliczenie",
+      "60",
+    ],
+    [PremiseResponseKind.DISCUSSION, 40, "Dyskusja", "40"],
+    [PremiseResponseKind.MASS_COMMENT, 10, "Wpis masowy", "10"],
+    [null, 0, null, "0"],
+  ])("labels the kind %s with %i points", (kind, points, label, pointsText) => {
+    const result = onlyPremise({ kind, points });
+
+    expect(result.kind).toBe(label);
+    expect(result.points).toBe(pointsText);
+  });
+
+  it("orders Zaliczona, Do weryfikacji, Odrzucona, keeps the API order in a group and counts all", () => {
+    const result = onlyAttribution({
+      premises: [
+        premise({ id: "d", status: "DISMISSED" }),
+        premise({ id: "c1", status: "COUNTED" }),
+        premise({ id: "r", status: "FOR_REVIEW" }),
+        premise({ id: "c2", status: "COUNTED" }),
+      ],
+    });
+
+    expect(result.premisesHeading).toBe("Przesłanki (4)");
+    expect(result.premises.map((p) => [p.key, p.title])).toEqual([
+      ["c1", "Przesłanka 1"],
+      ["c2", "Przesłanka 2"],
+      ["r", "Przesłanka 3"],
+      ["d", "Przesłanka 4"],
+    ]);
+  });
+
+  it.each([
+    ["at the start", "bc1qabc to mój", 0, 7, "", "bc1qabc", " to mój"],
+    ["in the middle", "mój bc1qabc adres", 4, 7, "mój ", "bc1qabc", " adres"],
+    ["at the end", "mój adres bc1qabc", 10, 7, "mój adres ", "bc1qabc", ""],
+    // The emoji is two UTF-16 code units, as in the backend's indices.
+    ["after an emoji", "💰 bc1qabc ok", 3, 7, "💰 ", "bc1qabc", " ok"],
+    ["outside the window", "mój bc1qabc", 8, 7, "mój bc1qabc", null, ""],
+    [
+      "without a position",
+      "mój bc1qabc",
+      undefined,
+      undefined,
+      "mój bc1qabc",
+      null,
+      "",
+    ],
+  ])(
+    "splits the window for an address %s",
+    (_name, text, addressStart, addressLength, before, address, after) => {
+      expect(onlyPremise({ text, addressStart, addressLength }).window).toEqual(
+        { before, address, after }
+      );
+    }
+  );
+
+  it("writes one line per code fact, each assessed by the rules, and none for an absent fact", () => {
+    const assessedBy = "Oceniono: reguła";
+    const result = onlyPremise({
+      facts: {
+        authorIsPerson: "UNKNOWN",
+        underProfile: true,
+        identifierTypes: ["NICKNAME", "EMAIL"],
+        identifierDistance: 42,
+        conflictingEmail: false,
+        addressCount: 2,
+        host: "forum.example",
+      },
+    });
+
+    expect(result.facts).toEqual([
+      { label: "Autor to badana osoba", value: "nieznany", assessedBy },
+      { label: "Strona pod profilem osoby", value: "tak", assessedBy },
+      {
+        label: "Identyfikatory osoby w tekście",
+        value: "nick, e-mail",
+        assessedBy,
+      },
+      {
+        label: "Odległość identyfikatora od adresu (znaki)",
+        value: "42",
+        assessedBy,
+      },
+      { label: "E-mail innej osoby w tekście", value: "nie", assessedBy },
+      { label: "Liczba adresów we wzmiance", value: "2", assessedBy },
+      { label: "Serwis", value: "forum.example", assessedBy },
+    ]);
+    expect(
+      onlyPremise({
+        facts: { authorIsPerson: "YES", identifierDistance: null },
+      }).facts
+    ).toEqual([{ label: "Autor to badana osoba", value: "tak", assessedBy }]);
+  });
+
+  it("has the Mention's source, link, author and collection time, and no link for a non-http address", () => {
+    expect(onlyPremise()).toMatchObject({
+      sourceName: "forum.example",
+      url: "https://forum.example/t/1",
+      urlText: "https://forum.example/t/1",
+      author: "krypto_janek",
+      collectedAt: "21.11.2026, 14:33",
+    });
+    expect(
+      onlyPremise({ url: "javascript:alert(1)", author: null })
+    ).toMatchObject({
+      url: null,
+      urlText: "javascript:alert(1)",
+      author: null,
+    });
+  });
+
+  it("names in a Punktacja line only the Premises of its premiseIds and shows the cap with a minus", () => {
+    const result = onlyAttribution({
+      mentions: [mention({ sourceName: "other.example" })],
+      premises: [
+        premise({
+          id: "p-dismissed",
+          status: "DISMISSED",
+          sourceName: "x.example",
+        }),
+        premise({ id: "p-counted", sourceName: "GitHub" }),
+      ],
+      scoringRules: [
+        {
+          rule: "OWN_PROFILE",
+          contribution: 80,
+          premiseIds: ["p-counted", "p-gone"],
+        },
+        {
+          rule: "WARNING_DISMISSED",
+          contribution: 0,
+          premiseIds: ["p-dismissed"],
+        },
+        { rule: "CLASSIFICATION_CAP", contribution: -21, premiseIds: [] },
+      ],
+    });
+
+    expect(result.scoringLines).toEqual([
+      { label: "Adres na profilu osoby (przesłanka 1: GitHub)", points: "80" },
+      {
+        label:
+          "Ostrzeżenie przed adresem, przesłanka odrzucona (przesłanka 2: x.example)",
+        points: "0",
+      },
+      {
+        label: "Ograniczenie z powodu niedostępnej klasyfikacji",
+        points: "-21",
+      },
+    ]);
+  });
+
+  it.each([[undefined], [[]]])(
+    "has no Premise block and keeps Punktacja as before for premises %j",
+    (premises) => {
+      const result = onlyAttribution({
+        premises,
+        mentions: [mention()],
+        scoringRules: [
+          { rule: "DISCUSSION", contribution: 40, premiseIds: [] },
+        ],
+      });
+
+      expect(result.premises).toEqual([]);
+      expect(result.scoringLines).toEqual([
+        { label: "Adres w dyskusji (forum.example)", points: "40" },
+      ]);
+    }
+  );
+
+  it.each([
+    [0.3, 0.7, false, "nie (30%)"],
+    [0.5, 0.5, true, "niepewne (50%)"],
+    [0.7, 0.3, false, "tak (70%)"],
+    [0.925, 0.075, false, "tak (93%)"],
+    // The word follows the backend's flag, not the percentage.
+    [0.695, 0.305, true, "niepewne (70%)"],
+  ])(
+    "writes the declaration answer %f / %f (undetermined: %s) as %s",
+    (yes, no, flagged, text) => {
+      const result = onlyPremise({
+        assessedBy: "MODEL",
+        answers: answers({ declaration: { yes, no } }),
+        undetermined: flagged
+          ? [PremiseResponseUndeterminedItem.DECLARATION]
+          : [],
+      });
+
+      expect(result.answers[1]).toEqual({
+        label: "Deklaracja",
+        value: text,
+        assessedBy: "Oceniono: model",
+      });
+    }
+  );
+
+  it("writes the kind answer as the top option or niepewne, and every raw number in the technical details", () => {
+    const result = onlyPremise({ assessedBy: "MODEL", answers: answers() });
+
+    expect(result.kindAssessedBy).toBe("Oceniono: model");
+    expect(result.answers.map((a) => `${a.label}: ${a.value}`)).toEqual([
+      "Rodzaj wpisu: Własna deklaracja (81%)",
+      "Deklaracja: tak (93%)",
+      "Ostrzeżenie: nie (4%)",
+    ]);
+    expect(result.technicalDetails).toEqual([
+      { label: "Rodzaj wpisu, Własna deklaracja", value: "0.81" },
+      { label: "Rodzaj wpisu, Sprzedaż lub rozliczenie", value: "0.1" },
+      { label: "Rodzaj wpisu, Dyskusja", value: "0.06" },
+      { label: "Rodzaj wpisu, Wpis masowy", value: "0.03" },
+      { label: "Deklaracja, tak", value: "0.93" },
+      { label: "Deklaracja, nie", value: "0.08" },
+      { label: "Ostrzeżenie, tak", value: "0.04" },
+      { label: "Ostrzeżenie, nie", value: "0.96" },
+    ]);
+    expect(
+      onlyPremise({ answers: answers(), undetermined: ["KIND"] }).answers[0]
+        ?.value
+    ).toBe("niepewne (81%)");
+  });
+
+  it("has no answer lines and no technical details when the model did not answer", () => {
+    const result = onlyPremise({ assessedBy: "RULE", answers: null });
+
+    expect(result.kindAssessedBy).toBe("Oceniono: reguła");
+    expect(result.answers).toEqual([]);
+    expect(result.technicalDetails).toBe(null);
+  });
+
+  it("keeps Zaliczona and adds the note for a withdrawn address", () => {
+    expect(onlyPremise({ withdrawn: true })).toMatchObject({
+      status: { label: "Zaliczona" },
+      withdrawnNote: "Adres wycofany przez autora",
+    });
+    expect(onlyPremise().withdrawnNote).toBe(null);
+  });
+});
+
+describe("toReportView summary versions", () => {
+  it("shows the algorithm version, the mode and the model versions that are set", () => {
+    expect(
+      summaryOf({
+        algorithmVersion: "confidence-3",
+        assessmentMode: "WITH_MODEL",
+        modelVersion: "jev-1",
+        questionSetVersion: "questions-1",
+      }).versionLines
+    ).toEqual([
+      { label: "Wersja algorytmu", value: "confidence-3" },
+      { label: "Tryb oceny", value: "z modelem" },
+      { label: "Wersja modelu", value: "jev-1" },
+      { label: "Wersja zestawu pytań", value: "questions-1" },
+    ]);
+    expect(
+      summaryOf({
+        algorithmVersion: "confidence-2",
+        assessmentMode: "RULES_ONLY",
+        modelVersion: null,
+      }).versionLines
+    ).toEqual([
+      { label: "Wersja algorytmu", value: "confidence-2" },
+      { label: "Tryb oceny", value: "tylko reguły" },
+    ]);
+    expect(summaryOf({ algorithmVersion: null }).versionLines).toEqual([]);
   });
 });

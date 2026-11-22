@@ -1,6 +1,7 @@
 [versions]
 kotlin = "2.3.21"
-springBoot = "4.1.2"
+springBoot = "4.2.0"
+springAi = "2.1.0"
 springDependencyManagement = "1.1.7"
 springdoc = "3.2.0"
 spotless = "8.11.0"
@@ -26,6 +27,8 @@ jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" 
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 bouncycastle-bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+spring-ai-bom = { module = "org.springframework.ai:spring-ai-bom", version.ref = "springAi" }
+spring-ai-starter-model-systemone = { module = "org.springframework.ai:spring-ai-starter-model-systemone" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

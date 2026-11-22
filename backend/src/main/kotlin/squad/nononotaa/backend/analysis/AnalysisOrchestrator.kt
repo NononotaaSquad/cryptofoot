@@ -2,6 +2,7 @@ package squad.nononotaa.backend.analysis
 
 import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AnalysisStatus
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.SourceStatus
@@ -11,6 +12,7 @@ class AnalysisOrchestrator(
     private val search: MentionSearch,
     private val preparation: CandidatePreparation,
     private val exclusions: ExclusionClassifier,
+    private val assessment: PremiseAssessment,
     private val scoring: ConfidenceScoring,
     private val activity: AddressActivityCollector,
     private val recorder: AnalysisRecorder,
@@ -58,13 +60,31 @@ class AnalysisOrchestrator(
         val scorable = classified.accepted + classified.unclassified
         if (scorable.isEmpty()) return completedOrPartial(allFailures, found, prepared, classified)
 
+        // after exclusion and before scoring, so scoring stays pure (P17); asked again on every Analysis, never reused (D7)
+        val assessed = assess(scorable, found.mentions, request.identifiers)
         val scored =
             guarded(AnalysisStage.SCORING) {
-                scoring.score(ScoringInput(classified.accepted, classified.unclassified, found.mentions, request.identifiers))
+                scoring.score(
+                    ScoringInput(
+                        classified.accepted,
+                        classified.unclassified,
+                        found.mentions,
+                        request.identifiers,
+                        assessed.answers,
+                        assessed.mode,
+                    ),
+                )
             }
                 ?: return failed(AnalysisStage.SCORING, "MODULE_ERROR", found, allFailures, prepared, classified)
         val (withActivity, activityFailures) = withAddressActivity(flagUnclassified(scored, classified.unclassified))
         return completedOrPartial(allFailures + activityFailures, found, prepared, classified, withActivity)
+            .copy(
+                assessmentMode = assessed.mode,
+                modelVersion = assessed.modelVersion,
+                questionSetVersion = QUESTION_SET_VERSION.takeIf { assessed.mode == AssessmentMode.WITH_MODEL },
+                // kept by withLimitations; the result has no other place to carry "some Premise fell back"
+                limitations = listOfNotNull(ReportLimitation.MODEL_ASSESSMENT_UNAVAILABLE.takeIf { assessed.fellBack }),
+            )
     }
 
     // Address Activity is supplementary: its failure makes the Analysis partial, never failed (D23-005)
@@ -84,6 +104,43 @@ class AnalysisOrchestrator(
             }
         return scored.copy(attributions = attributions) to failures
     }
+
+    // only Premises of accepted and unclassified addresses are sent; Rejected and Excluded Addresses never (P18)
+    private fun assess(
+        scorable: List<Candidate>,
+        mentions: List<FoundMention>,
+        identifiers: List<CaseIdentifier>,
+    ): Assessed {
+        val mode = assessment.mode
+        if (mode != AssessmentMode.WITH_MODEL) return Assessed(mode)
+        val byId = mentions.associateBy { it.id }
+        val premises =
+            scorable
+                .flatMap { candidate ->
+                    premiseWindows(candidate, byId).map { (mention, window) ->
+                        PremiseToAssess(Premise.idOf(mention.id, candidate.address), candidate.address, window.text, premiseFacts(mention, window, identifiers))
+                    }
+                }.distinctBy { it.premiseId }
+        val assessments =
+            try {
+                assessment.assess(premises, identifiers)
+            } catch (e: Exception) {
+                // the class name only: a message could carry a text window or a body
+                logger.warn("Premise assessment failed, every Premise falls back to rules premises={} error={}", premises.size, e.javaClass.simpleName)
+                PremiseAssessments()
+            }
+        val sent = premises.map { it.premiseId }.toSet()
+        val answers = assessments.answers.filterKeys { it in sent }
+        logger.info("Premises assessed sent={} answered={} fellBack={}", sent.size, answers.size, sent.size - answers.size)
+        return Assessed(mode, answers, assessments.modelVersion, fellBack = answers.size < sent.size)
+    }
+
+    private data class Assessed(
+        val mode: AssessmentMode,
+        val answers: Map<String, PremiseAnswers> = emptyMap(),
+        val modelVersion: String? = null,
+        val fellBack: Boolean = false,
+    )
 
     private fun flagUnclassified(
         scored: ScoringResult,
@@ -128,6 +185,7 @@ class AnalysisOrchestrator(
         listOfNotNull(
             ReportLimitation.SOURCE_UNAVAILABLE.takeIf { result.sources.any { it.status == SourceStatus.UNAVAILABLE } },
             ReportLimitation.CLASSIFICATION_UNAVAILABLE.takeIf { result.unclassified.isNotEmpty() },
+            ReportLimitation.MODEL_ASSESSMENT_UNAVAILABLE.takeIf { it in result.limitations },
             ReportLimitation.BLOCKCHAIN_DATA_UNAVAILABLE.takeIf {
                 result.attributions.any { it.addressActivity?.status == AddressActivityStatus.UNAVAILABLE }
             },

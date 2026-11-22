@@ -35,7 +35,7 @@ class SearchServiceSpec extends Specification {
     def validator = new AddressValidator()
 
     private static Mention withId(Mention m, String id) {
-        new Mention(id, m.sourceName, m.url, m.collectedAt, m.context, m.detectedAddresses, m.identity)
+        new Mention(id, m.sourceName, m.url, m.collectedAt, m.context, m.detectedAddresses, m.identity, m.author, m.addressWindows)
     }
 
     def nickname = new CaseIdentifier(IdentifierType.NICKNAME, 'CryptoNick')
@@ -110,7 +110,7 @@ class SearchServiceSpec extends Specification {
         saved.url == 'https://stub.example/p/1'
         saved.context == mention.context
         saved.detectedAddresses == mention.detectedAddresses
-        saved.identity == Mention.computeIdentity('stub-ok', 'https://stub.example/p/1', saved.context)
+        saved.identity == Mention.computeIdentity('stub-ok', 'https://stub.example/p/1', rawMention.content)
     }
 
     def "failing source maps to UNAVAILABLE and search does not throw"() {
@@ -424,6 +424,84 @@ class SearchServiceSpec extends Specification {
         ]
         post.mentions*.url == [
             'https://bitcointalk.org/index.php?topic=5.msg7#msg7'
+        ]
+    }
+
+    def "an address far from the identifier is detected in the whole content and gets a window with its canonical form"() {
+        given:
+        def btc = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
+        def content = 'post by CryptoNick ' + ('.' * 700) + " pay ${btc} thanks"
+        def source = new FakeSource('stub-ok', [
+            new RawMention('https://stub.example/p/10', Instant.parse('2026-11-21T10:00:00Z'), content.toString())
+        ])
+        def service = new SearchService([source], detector, repository, validator, Duration.ofSeconds(10))
+        repository.findByIdentity(_) >> []
+        Mention saved = null
+        repository.save(_) >> { args ->
+            saved = args[0] as Mention; withId(saved, 'm-1')
+        }
+
+        when:
+        def mention = service.search([nickname], 0).mentions[0]
+
+        then:
+        !mention.context.contains(btc)
+        mention.context.length() <= 200
+        mention.detectedAddresses == [btc]
+        mention.addressWindows.size() == 1
+        with(mention.addressWindows[0]) {
+            rawAddress == btc
+            address == btc
+            text.substring(addressStart, addressStart + addressLength) == btc
+        }
+        saved.addressWindows == mention.addressWindows
+    }
+
+    def "a window holds the canonical address of a valid address and null for an invalid one, and a repeated address is listed once"() {
+        given:
+        def eth = '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed'
+        def broken = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5'
+        def source = new FakeSource('stub-ok', [
+            new RawMention('https://stub.example/p/11', Instant.parse('2026-11-21T10:00:00Z'), "CryptoNick: ${eth} or ${broken}, again ${eth}".toString())
+        ])
+        def service = new SearchService([source], detector, repository, validator, Duration.ofSeconds(10))
+        repository.findByIdentity(_) >> []
+        repository.save(_) >> { args -> withId(args[0] as Mention, 'm-1') }
+
+        when:
+        def mention = service.search([nickname], 0).mentions[0]
+
+        then:
+        mention.detectedAddresses == [eth, broken]
+        mention.addressWindows*.rawAddress == [eth, broken]
+        mention.addressWindows*.address == [
+            '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed',
+            null
+        ]
+    }
+
+    def "the identity is hashed from the full content, so two pages with the same excerpt are two Mentions"() {
+        given:
+        def head = 'post by CryptoNick ' + ('.' * 300)
+        def first = new RawMention('https://stub.example/p/12', Instant.parse('2026-11-21T10:00:00Z'), head + ' first ending')
+        def second = new RawMention('https://stub.example/p/12', Instant.parse('2026-11-21T10:00:00Z'), head + ' second ending')
+        def source = new FakeSource('stub-ok', [first, second])
+        def service = new SearchService([source], detector, repository, validator, Duration.ofSeconds(10))
+        repository.findByIdentity(_) >> []
+        List<Mention> saved = []
+        repository.save(_) >> { args ->
+            saved << (args[0] as Mention); withId(args[0] as Mention, "m-${saved.size()}".toString())
+        }
+
+        when:
+        def mentions = service.search([nickname], 0).mentions
+
+        then:
+        mentions.size() == 2
+        mentions[0].context == mentions[1].context
+        saved*.identity == [
+            Mention.computeIdentity('stub-ok', 'https://stub.example/p/12', first.content),
+            Mention.computeIdentity('stub-ok', 'https://stub.example/p/12', second.content),
         ]
     }
 }

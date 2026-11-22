@@ -13,21 +13,27 @@ import {
   type AddressActivityFigures,
   toAddressActivityFigures,
 } from "./address-activity-figures";
+import { httpUrl, type PremiseView, premiseViews } from "./premise-view-model";
 import {
   analysisStatusLabels,
   analysisTriggerLabels,
+  assessmentModeLabel,
   attributionLabels,
   confidenceBandLabel,
   excludedReasonLabel,
   formatDateTime,
   formatTime,
   mentionCountText,
+  premiseLabels,
   rejectedReasonLabel,
   reportLimitationSentence,
   reportNotices,
   scoringRule,
   sourceLabels,
+  summaryVersionLabels,
 } from "./report-labels";
+
+export type { PremiseLine, PremiseView } from "./premise-view-model";
 
 /**
  * Which top-level block the report shows.
@@ -64,6 +70,9 @@ export interface ReportSummaryView {
   sourcesHeading: string;
   sources: ReportSourceLine[];
   networks: string[];
+  /** "Wersja algorytmu", "Tryb oceny", "Wersja modelu", "Wersja zestawu
+   *  pytań", once per Analysis; a line whose field is absent is left out. */
+  versionLines: { label: string; value: string }[];
   /** One sentence per Report Limitation. */
   reportLimitations: string[];
   /** Running, partial or failed sentence; `null` for a completed Analysis. */
@@ -82,7 +91,9 @@ export interface MentionView {
 }
 
 export interface ScoringLine {
-  /** "Adres na profilu osoby (GitHub, Forum)", or the raw code. */
+  /** "Adres na profilu osoby (przesłanka 1: GitHub)" with the Premises that
+   *  made the rule apply; "Adres na profilu osoby (GitHub, Forum)" for an
+   *  older Analysis without Premises; or the raw code. */
   label: string;
   /** "40" for the first line, "+15" for the next ones, "0" for a rule
    *  that adds nothing. */
@@ -111,6 +122,10 @@ export interface AttributionView {
   confidenceTotal: string;
   /** The backend's Justification text or the missing-Justification message. */
   justification: string;
+  /** "Przesłanki (3)": all of them, dismissed ones included. */
+  premisesHeading: string;
+  /** Empty for an older Analysis: the block is then not shown. */
+  premises: PremiseView[];
   /** "Wzmianki (2)" */
   mentionsHeading: string;
   mentions: MentionView[];
@@ -232,6 +247,29 @@ function summaryView(
     sourcesHeading: `Sprawdzone źródła (${String(checkedCount)} z ${String(sources.length)})`,
     sources: sources.map(sourceLine),
     networks: analysis.networks ?? [],
+    versionLines: [
+      {
+        label: summaryVersionLabels.algorithmVersion,
+        value: analysis.algorithmVersion,
+      },
+      {
+        label: summaryVersionLabels.assessmentMode,
+        value:
+          analysis.assessmentMode == null
+            ? null
+            : assessmentModeLabel(analysis.assessmentMode),
+      },
+      {
+        label: summaryVersionLabels.modelVersion,
+        value: analysis.modelVersion,
+      },
+      {
+        label: summaryVersionLabels.questionSetVersion,
+        value: analysis.questionSetVersion,
+      },
+    ].flatMap(({ label, value }) =>
+      value == null || value === "" ? [] : [{ label, value }]
+    ),
     reportLimitations: limitationCodes.map(reportLimitationSentence),
     notice: statusNotice(status),
   };
@@ -273,6 +311,8 @@ function attributionView(
   const justification = attribution.justification;
   const mentions = attribution.mentions ?? [];
   const rules = attribution.scoringRules ?? [];
+  const premises = premiseViews(attribution.premises ?? []);
+  const premiseByKey = new Map(premises.map((p) => [p.key, p]));
   const sourceNames = unique(mentions.map((m) => m.sourceName ?? "")).join(
     ", "
   );
@@ -303,15 +343,28 @@ function attributionView(
     scoringLines: rules.map((rule, index) => {
       const known = scoringRule(rule.rule ?? "");
       const contribution = rule.contribution ?? 0;
+      // With Premises, a line names the Premises of its `premiseIds` (an id
+      // that matches none is ignored). An older Analysis has no Premises and
+      // names the sources of all Mentions, as before.
+      const references =
+        premises.length === 0 || rule.premiseIds === undefined
+          ? null
+          : rule.premiseIds
+              .flatMap((id) => premiseByKey.get(id) ?? [])
+              .sort((a, b) => a.number - b.number)
+              .map((p) => premiseLabels.reference(p.number, p.sourceName))
+              .join(", ");
       return {
-        // An unknown code gets no source names: the frontend cannot tell
-        // which Mention triggered it.
+        // An unknown code of an older Analysis gets no source names: the
+        // frontend cannot tell which Mention triggered it.
         label:
-          known === null
-            ? (rule.rule ?? "")
-            : known.withSources
-              ? withSources(known.label, sourceNames)
-              : known.label,
+          references !== null
+            ? withSources(known?.label ?? rule.rule ?? "", references)
+            : known === null
+              ? (rule.rule ?? "")
+              : known.withSources
+                ? withSources(known.label, sourceNames)
+                : known.label,
         // A rule that adds nothing reads "0", not "+0".
         points:
           index > 0 && contribution > 0
@@ -323,6 +376,8 @@ function attributionView(
     justification: justification?.trim()
       ? justification
       : attributionLabels.missingJustification,
+    premisesHeading: premiseLabels.heading(premises.length),
+    premises,
     mentionsHeading: `Wzmianki (${String(mentions.length)})`,
     mentions: mentions.map(mentionView),
     verification: [
@@ -395,7 +450,7 @@ function mentionView(mention: MentionResponse, index: number): MentionView {
   return {
     key: mention.id ?? String(index),
     sourceName: mention.sourceName ?? "",
-    url: /^https?:\/\//i.test(url) ? url : null,
+    url: httpUrl(url),
     urlText: url,
     collectedAt:
       mention.collectedAt === undefined

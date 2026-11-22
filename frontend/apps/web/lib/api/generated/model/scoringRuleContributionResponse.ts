@@ -8,4 +8,5 @@
 export interface ScoringRuleContributionResponse {
   rule?: string;
   contribution?: number;
+  premiseIds?: string[];
 }

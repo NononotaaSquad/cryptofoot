@@ -20,6 +20,8 @@ services:
       SPRING_PROFILES_ACTIVE: local
       APP_NAME: template # change after cloning template
       MONGODB_URI: mongodb://mongodb:27017/db
+      # the value comes from the host environment or backend/.env (git-ignored), never from this file
+      ASSESSMENT_MODEL_API_KEY: ${ASSESSMENT_MODEL_API_KEY:-}
     ports:
       - "8080:8080"
     healthcheck:

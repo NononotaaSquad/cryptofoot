@@ -105,6 +105,8 @@ const comparisonLimitationSentences: Record<
     "Analizy objęły różne sieci, więc część adresów mogła nie zostać sprawdzona w obu.",
   ALGORITHM_VERSION_DIFFERS:
     "Stopień pewności obliczono w analizach według różnych reguł, więc jego zmiana może wynikać z reguł, a nie z nowych wzmianek.",
+  MODEL_VERSION_DIFFERS:
+    "Przesłanki oceniły w analizach różne wersje modelu, więc zmiana stopnia pewności może wynikać ze zmiany modelu, a nie z nowych wzmianek.",
   PARTIAL_ANALYSIS:
     "Co najmniej jedna z analiz zakończyła się częściowo, więc porównanie może być niepełne.",
 };

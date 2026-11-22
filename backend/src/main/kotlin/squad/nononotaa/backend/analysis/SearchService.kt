@@ -87,12 +87,23 @@ class SearchService(
         seenIdentities: MutableSet<String>,
     ): Mention? {
         val match = findMatch(raw.content, identifiers) ?: findByProvenance(raw, identifiers) ?: return null
-        val context = snippet(raw.content, match)
-        val detectedAddresses = detector.detect("", context).map { it.rawAddress }
-        val identity = Mention.computeIdentity(source.sourceName, raw.url, context)
+        val identity = Mention.computeIdentity(source.sourceName, raw.url, raw.content)
         if (!seenIdentities.add(identity)) return null
         mentionRepository.findByIdentity(identity).firstOrNull()?.let { return it }
-        return mentionRepository.save(Mention.create(source.sourceName, raw.url, raw.collectedAt, context, detectedAddresses, raw.author))
+        // addresses come from the whole content (D2); context stays the excerpt shown to the Analyst
+        val windows = detector.windows(raw.content).map { it.copy(address = canonical(it.rawAddress)?.address) }
+        val mention =
+            Mention.create(
+                sourceName = source.sourceName,
+                url = raw.url,
+                collectedAt = raw.collectedAt,
+                content = raw.content,
+                context = snippet(raw.content, match),
+                detectedAddresses = windows.map { it.rawAddress },
+                author = raw.author,
+                addressWindows = windows,
+            )
+        return mentionRepository.save(mention)
     }
 
     private fun findMatch(

@@ -38,6 +38,12 @@ export function ReportSummary({ view }: { view: ReportView }) {
         <dd>
           {summary.networks.length > 0 ? summary.networks.join(", ") : "—"}
         </dd>
+        {summary.versionLines.map((line) => (
+          <div key={line.label} className="contents">
+            <dt className="text-muted-foreground">{line.label}</dt>
+            <dd className="break-all">{line.value}</dd>
+          </div>
+        ))}
       </dl>
 
       <div className="flex flex-col gap-2">

@@ -1,0 +1,2344 @@
+{
+  "version": "golden-set-v1",
+  "items": [
+    {
+      "id": "G1",
+      "from": "S1",
+      "category": "false negative",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "bitcointalk",
+          "url": "https://bitcointalk.example/index.php?topic=1001",
+          "author": "kryptomarek",
+          "content": "Sprzedam koparkę, płatność na bc1qAAA"
+        }
+      ],
+      "addresses": {
+        "bc1qAAA": "1DGhtQRpEGgVd2yGk6YAF1rCPTSPpVCnch"
+      },
+      "classification": {
+        "bc1qAAA": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qAAA": {
+          "kind": {
+            "ownDeclaration": 0.05,
+            "saleOrSettlement": 0.85,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.03
+        }
+      }
+    },
+    {
+      "id": "G2",
+      "from": "S2",
+      "category": "false positive",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        },
+        {
+          "type": "PROFILE_URL",
+          "value": "https://github.com/kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "github",
+          "url": "https://github.com/kryptomarek/tipjar/issues/3",
+          "author": "janek99",
+          "content": "Dzięki za poradnik! Mój adres na napiwki: 0xCCC"
+        }
+      ],
+      "addresses": {
+        "0xCCC": "0xf7206d45831ff4e77d864d69c0c9438052f867d5"
+      },
+      "classification": {
+        "0xCCC": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "0xCCC",
+              "level": 80,
+              "rules": [
+                "OWN_PROFILE"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "0xCCC",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:0xCCC",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xCCC"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "0xCCC",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:0xCCC",
+                  "status": "DISMISSED",
+                  "reason": "DECLARED_BY_ANOTHER_PERSON"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DECLARED_BY_ANOTHER_PERSON",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xCCC"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xCCC"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:0xCCC": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.92,
+          "warning": 0.03
+        }
+      }
+    },
+    {
+      "id": "G3",
+      "from": "S3",
+      "category": "false negative",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "bitcointalk",
+          "url": "https://bitcointalk.example/index.php?topic=1003",
+          "author": "kryptomarek",
+          "content": "Nie wysyłajcie już na stary adres, mój nowy to bc1qNEW"
+        }
+      ],
+      "addresses": {
+        "bc1qNEW": "1213S2D4nMw23mzQQRfaE3rJGi9atHEdrj"
+      },
+      "classification": {
+        "bc1qNEW": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK",
+                "WARNING_CONTEXT"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "FOR_REVIEW",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_CONTEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qNEW": {
+          "kind": {
+            "ownDeclaration": 0.82,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.94,
+          "warning": 0.07
+        }
+      }
+    },
+    {
+      "id": "G4",
+      "from": "S4",
+      "category": "uncertain",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "bitcointalk",
+          "url": "https://bitcointalk.example/index.php?topic=1004",
+          "author": "anon12",
+          "content": "kryptomarek coś wspominał o bc1qDDD chyba"
+        }
+      ],
+      "addresses": {
+        "bc1qDDD": "1LNZChty1ynnakW1P8JTKcpsoZVqK8HXvW"
+      },
+      "classification": {
+        "bc1qDDD": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qDDD",
+              "level": 40,
+              "rules": [
+                "DISCUSSION",
+                "NICKNAME_ONLY"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qDDD",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qDDD",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qDDD",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qDDD",
+                  "status": "FOR_REVIEW",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "FOR_REVIEW",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qDDD"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qDDD": {
+          "kind": {
+            "ownDeclaration": 0.15,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.78,
+            "massComment": 0.02
+          },
+          "declaration": 0.48,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "id": "G5",
+      "from": "S5",
+      "category": "no link",
+      "identifiers": [
+        {
+          "type": "WALLET_ADDRESS",
+          "value": "bc1qEEE"
+        },
+        {
+          "type": "FULL_NAME",
+          "value": "Marek Kowalski"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/portfele/505",
+          "author": null,
+          "content": "Mój portfel: bc1qEEE. Marek Kowalski"
+        }
+      ],
+      "addresses": {
+        "bc1qEEE": "162EKT9e444M4CGif8pugE7T5yXvsn5Tc3"
+      },
+      "classification": {
+        "bc1qEEE": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qEEE",
+              "level": 0,
+              "rules": [
+                "ENTERED_BY_ANALYST",
+                "NO_PERSON_LINK"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qEEE",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qEEE",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "ENTERED_BY_ANALYST",
+                  "contribution": 0,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qEEE",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qEEE",
+                  "status": "FOR_REVIEW",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "ENTERED_BY_ANALYST",
+                  "contribution": 0,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                },
+                {
+                  "rule": "FOR_REVIEW",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qEEE"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qEEE": {
+          "kind": {
+            "ownDeclaration": 0.88,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.95,
+          "warning": 0.02
+        }
+      }
+    },
+    {
+      "id": "G6",
+      "from": "S6",
+      "category": "fallback",
+      "modelUnavailable": true,
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "bitcointalk",
+          "url": "https://bitcointalk.example/index.php?topic=1001",
+          "author": "kryptomarek",
+          "content": "Sprzedam koparkę, płatność na bc1qAAA"
+        }
+      ],
+      "addresses": {
+        "bc1qAAA": "1DGhtQRpEGgVd2yGk6YAF1rCPTSPpVCnch"
+      },
+      "classification": {
+        "bc1qAAA": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {}
+    },
+    {
+      "id": "G7",
+      "from": "P1-P3",
+      "category": "two Premises in one Mention",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        },
+        {
+          "type": "PROFILE_URL",
+          "value": "https://github.com/kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "bitcointalk",
+          "url": "https://bitcointalk.example/index.php?topic=1007",
+          "author": "kryptomarek",
+          "content": "Sprzedam koparkę, płatność na mój adres bc1qAAA. Uwaga, ktoś się pode mnie podszywa i podaje bc1qBBB, nie wysyłajcie tam nic."
+        },
+        {
+          "key": "m2",
+          "sourceName": "github",
+          "url": "https://github.com/kryptomarek/donations",
+          "author": "kryptomarek",
+          "content": "Donations: bc1qAAA"
+        }
+      ],
+      "addresses": {
+        "bc1qAAA": "1DGhtQRpEGgVd2yGk6YAF1rCPTSPpVCnch",
+        "bc1qBBB": "1FphmcFN4TtrBzRATFzbjsKrsbzG6YmoYD"
+      },
+      "classification": {
+        "bc1qAAA": "ACCEPTED",
+        "bc1qBBB": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 80,
+              "rules": [
+                "OWN_PROFILE"
+              ]
+            },
+            {
+              "address": "bc1qBBB",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK",
+                "WARNING_CONTEXT"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 95,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_PROFILE",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m2:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:bc1qAAA",
+                    "m2:bc1qAAA"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qBBB",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qBBB",
+                  "status": "FOR_REVIEW",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_CONTEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qBBB"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qAAA",
+              "level": 95,
+              "premises": [
+                {
+                  "id": "m1:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qAAA",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_PROFILE",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m2:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:bc1qAAA",
+                    "m2:bc1qAAA"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qAAA",
+                    "m2:bc1qAAA"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qBBB",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qBBB",
+                  "status": "DISMISSED",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_DISMISSED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qBBB"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qBBB"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qAAA": {
+          "kind": {
+            "ownDeclaration": 0.15,
+            "saleOrSettlement": 0.75,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.03
+        },
+        "m1:bc1qBBB": {
+          "kind": {
+            "ownDeclaration": 0.05,
+            "saleOrSettlement": 0.71,
+            "discussion": 0.2,
+            "massComment": 0.04
+          },
+          "declaration": 0.06,
+          "warning": 0.95
+        },
+        "m2:bc1qAAA": {
+          "kind": {
+            "ownDeclaration": 0.7,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.25,
+            "massComment": 0.03
+          },
+          "declaration": 0.85,
+          "warning": 0.02
+        }
+      }
+    },
+    {
+      "id": "G8",
+      "from": "D10",
+      "category": "withdrawn address",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "bitcointalk",
+          "url": "https://bitcointalk.example/index.php?topic=1008",
+          "author": "kryptomarek",
+          "content": "Nie wysyłajcie już na mój stary adres bc1qOLD, mój nowy to bc1qNEW"
+        }
+      ],
+      "addresses": {
+        "bc1qOLD": "1CubfHxrjcB9ugHpE89RnpjrfAf2sVT9LQ",
+        "bc1qNEW": "1213S2D4nMw23mzQQRfaE3rJGi9atHEdrj"
+      },
+      "classification": {
+        "bc1qOLD": "ACCEPTED",
+        "bc1qNEW": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK",
+                "WARNING_CONTEXT"
+              ]
+            },
+            {
+              "address": "bc1qOLD",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK",
+                "WARNING_CONTEXT"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "FOR_REVIEW",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_CONTEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qOLD",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qOLD",
+                  "status": "FOR_REVIEW",
+                  "reason": "WARNING"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "WARNING_CONTEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qNEW",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qNEW",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qNEW"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qOLD",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qOLD",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "WITHDRAWN_ADDRESS",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qOLD"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qOLD": {
+          "kind": {
+            "ownDeclaration": 0.7,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.25,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.9
+        },
+        "m1:bc1qNEW": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.03,
+            "discussion": 0.15,
+            "massComment": 0.02
+          },
+          "declaration": 0.94,
+          "warning": 0.07
+        }
+      }
+    },
+    {
+      "id": "G9",
+      "from": "weakness 4",
+      "category": "false positive",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "max"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/fees/909",
+          "author": null,
+          "content": "maximum fee, send to bc1qMMM"
+        }
+      ],
+      "addresses": {
+        "bc1qMMM": "1GQp4u1mYMKkoCZDs43rZAo8fEmAFGgX1U"
+      },
+      "classification": {
+        "bc1qMMM": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qMMM",
+              "level": 40,
+              "rules": [
+                "DISCUSSION",
+                "NICKNAME_ONLY"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qMMM",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qMMM",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qMMM"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qMMM",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qMMM",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qMMM"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qMMM"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qMMM": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.2,
+            "discussion": 0.65,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "id": "G10",
+      "from": "weakness 2",
+      "category": "false positive",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/adresy/1010",
+          "author": null,
+          "content": "kryptomarek: mój adres bc1qGGG"
+        },
+        {
+          "key": "m2",
+          "sourceName": "social",
+          "url": "https://social.example/post/1010",
+          "author": null,
+          "content": "Wielki giveaway! Wyślij 0.01 BTC, a kryptomarek odeśle podwójnie na bc1qGGG"
+        }
+      ],
+      "addresses": {
+        "bc1qGGG": "1HnyqXxYHQXMj9zmuiRschrQiSA5h1sxzv"
+      },
+      "classification": {
+        "bc1qGGG": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qGGG",
+              "level": 55,
+              "rules": [
+                "DISCUSSION",
+                "INDEPENDENT_SOURCES",
+                "NICKNAME_ONLY"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qGGG",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qGGG",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qGGG",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qGGG"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qGGG",
+                    "m2:bc1qGGG"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qGGG",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qGGG",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qGGG",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qGGG"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qGGG",
+                    "m2:bc1qGGG"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qGGG",
+                    "m2:bc1qGGG"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qGGG": {
+          "kind": {
+            "ownDeclaration": 0.3,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.65,
+            "massComment": 0.03
+          },
+          "declaration": 0.8,
+          "warning": 0.02
+        },
+        "m2:bc1qGGG": {
+          "kind": {
+            "ownDeclaration": 0.02,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.08,
+            "massComment": 0.85
+          },
+          "declaration": 0.1,
+          "warning": 0.2
+        }
+      }
+    },
+    {
+      "id": "G11",
+      "from": "weakness 3",
+      "category": "false positive",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        },
+        {
+          "type": "PROFILE_URL",
+          "value": "https://github.com/kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "github",
+          "url": "https://github.com/kryptomarek/dotfiles/blob/main/README.md",
+          "author": "kryptomarek",
+          "content": "ETH: 0xFFF"
+        }
+      ],
+      "addresses": {
+        "0xFFF": "0x00fad5389cb456809d212fac2e94dda5f3385c72"
+      },
+      "classification": {
+        "0xFFF": "UNCLASSIFIED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "0xFFF",
+              "level": 80,
+              "rules": [
+                "OWN_PROFILE",
+                "CLASSIFICATION_UNAVAILABLE"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "0xFFF",
+              "level": 59,
+              "premises": [
+                {
+                  "id": "m1:0xFFF",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_PROFILE",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:0xFFF"
+                  ]
+                },
+                {
+                  "rule": "CLASSIFICATION_UNAVAILABLE",
+                  "contribution": 0,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "CLASSIFICATION_CAP",
+                  "contribution": -21,
+                  "premiseIds": []
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "0xFFF",
+              "level": 59,
+              "premises": [
+                {
+                  "id": "m1:0xFFF",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_PROFILE",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:0xFFF"
+                  ]
+                },
+                {
+                  "rule": "CLASSIFICATION_UNAVAILABLE",
+                  "contribution": 0,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "CLASSIFICATION_CAP",
+                  "contribution": -21,
+                  "premiseIds": []
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0xFFF"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:0xFFF": {
+          "kind": {
+            "ownDeclaration": 0.75,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.18,
+            "massComment": 0.02
+          },
+          "declaration": 0.88,
+          "warning": 0.02
+        }
+      }
+    },
+    {
+      "id": "G12",
+      "from": "D9-004",
+      "category": "false positive",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        },
+        {
+          "type": "EMAIL",
+          "value": "marek@example.com"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/kontakt/1012",
+          "author": null,
+          "content": "kryptomarek poleca, kontakt: janek@example.org, BTC bc1qHHH"
+        }
+      ],
+      "addresses": {
+        "bc1qHHH": "1PM2TPrCjXWsL52ufiCQinBxZh9qskxR38"
+      },
+      "classification": {
+        "bc1qHHH": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qHHH",
+              "level": 0,
+              "rules": [
+                "NO_PERSON_LINK",
+                "CONFLICTING_EMAIL"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qHHH",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qHHH",
+                  "status": "DISMISSED",
+                  "reason": "CONFLICTING_EMAIL"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "CONFLICTING_EMAIL",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qHHH"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qHHH",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qHHH",
+                  "status": "DISMISSED",
+                  "reason": "CONFLICTING_EMAIL"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "CONFLICTING_EMAIL",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qHHH"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qHHH"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qHHH": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.25,
+            "discussion": 0.6,
+            "massComment": 0.05
+          },
+          "declaration": 0.3,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "id": "G13",
+      "from": "D9-005",
+      "category": "copy",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/btc/1013",
+          "author": null,
+          "content": "kryptomarek BTC: bc1qCCC"
+        },
+        {
+          "key": "m2",
+          "sourceName": "paste",
+          "url": "https://paste.example/raw/1013",
+          "author": null,
+          "content": "kryptomarek BTC: bc1qCCC"
+        }
+      ],
+      "addresses": {
+        "bc1qCCC": "1bxoVJVUGsRNPJs35KSUuKgfRWfGpiEc2"
+      },
+      "classification": {
+        "bc1qCCC": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "bc1qCCC",
+              "level": 40,
+              "rules": [
+                "DISCUSSION",
+                "COPIED_TEXT",
+                "NICKNAME_ONLY"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qCCC",
+              "level": 40,
+              "premises": [
+                {
+                  "id": "m1:bc1qCCC",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qCCC",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "DISCUSSION",
+                  "contribution": 40,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "COPIED_TEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qCCC",
+              "level": 80,
+              "premises": [
+                {
+                  "id": "m1:bc1qCCC",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:bc1qCCC",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "contribution": 80,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "COPIED_TEXT",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qCCC",
+                    "m2:bc1qCCC"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qCCC": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.16,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        },
+        "m2:bc1qCCC": {
+          "kind": {
+            "ownDeclaration": 0.8,
+            "saleOrSettlement": 0.02,
+            "discussion": 0.16,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        }
+      }
+    },
+    {
+      "id": "G14",
+      "from": "P5",
+      "category": "false positive",
+      "note": "confidence-1: not detected. The 200-character excerpt is taken around the nickname, so the address about 700 characters later is never seen by the detector (DS1-007 G1).",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/dlugi-wpis/1014",
+          "author": "ktos_inny",
+          "content": "kryptomarek napisał kiedyś ciekawy poradnik o portfelach. Wczoraj wieczorem długo czytałem stare wątki o historii tego forum i o tym, jak zmieniało się przez lata. Pogoda w górach była zmienna, rano padał deszcz, a po południu wyszło słońce i zrobiło się ciepło. Na szlaku spotkałem kilku znajomych, którzy opowiadali o swoich wyprawach rowerowych nad morze. Potem wróciliśmy do schroniska, gdzie podano gorącą zupę i herbatę z cytryną. Wieczorem rozmawialiśmy o książkach, filmach i o tym, co warto zobaczyć w przyszłym roku. Ktoś zaproponował wspólny wyjazd na jesień, ale nikt nie potrafił jeszcze ustalić terminu. Następnego dnia zeszliśmy do doliny i pojechaliśmy autobusem do miasta. Mój adres to bc1qLLL. Ktoś zaproponował wspólny wyjazd na jesień, ale nikt nie potrafił jeszcze ustalić terminu. Następnego dnia zeszliśmy do doliny i pojechaliśmy autobusem do miasta. W pociągu do domu przeczytałem prawie całą powieść, którą dostałem na urodziny. Moim zdaniem takie wyjazdy dają więcej odpoczynku niż tydzień spędzony przed ekranem. Na koniec dnia zrobiłem jeszcze kilka zdjęć zachodu słońca nad jeziorem. Jutro planuję posprzątać mieszkanie i wreszcie odpisać na zaległe listy od rodziny. Pozdrawiam wszystkich czytelników tego wątku i życzę spokojnego tygodnia. Wczoraj wieczorem długo czytałem stare wątki o historii tego forum i o tym, jak zmieniało się przez lata."
+        }
+      ],
+      "addresses": {
+        "bc1qLLL": "1PKXKgZh2g99xzzPDmMmJ5vG5VXsuDLv3H"
+      },
+      "classification": {
+        "bc1qLLL": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": []
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qLLL",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qLLL",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qLLL"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qLLL",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qLLL",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qLLL"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qLLL"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qLLL": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.8,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "id": "G14b",
+      "from": "P5 (proposal)",
+      "category": "false positive",
+      "note": "Proposal of task 01 (not in the spec table). confidence-1: not detected, same reason as G14: the 200-character excerpt starts at the nickname and ends before the address.",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "kryptomarek"
+        }
+      ],
+      "mentions": [
+        {
+          "key": "m1",
+          "sourceName": "forum",
+          "url": "https://forum.example/t/dlugi-wpis/10142",
+          "author": "ktos_inny",
+          "content": "kryptomarek napisał kiedyś ciekawy poradnik o portfelach. Wczoraj wieczorem długo czytałem stare wątki o historii tego forum i o tym, jak zmieniało się przez lata. Pogoda w górach była zmienna, rano padał deszcz, a po południu wyszło słońce i zrobiło się ciepło. Na szlaku spotkałem kilku znajomych, którzy opowiadali o swoich wyprawach rowerowych nad morze. Mój adres to bc1qKKK. Ktoś zaproponował wspólny wyjazd na jesień, ale nikt nie potrafił jeszcze ustalić terminu. Następnego dnia zeszliśmy do doliny i pojechaliśmy autobusem do miasta. W pociągu do domu przeczytałem prawie całą powieść, którą dostałem na urodziny. Moim zdaniem takie wyjazdy dają więcej odpoczynku niż tydzień spędzony przed ekranem. Na koniec dnia zrobiłem jeszcze kilka zdjęć zachodu słońca nad jeziorem. Jutro planuję posprzątać mieszkanie i wreszcie odpisać na zaległe listy od rodziny. Pozdrawiam wszystkich czytelników tego wątku i życzę spokojnego tygodnia. Wczoraj wieczorem długo czytałem stare wątki o historii tego forum i o tym, jak zmieniało się przez lata."
+        }
+      ],
+      "addresses": {
+        "bc1qKKK": "1J4qadtjmVMHAcfRqBFGqo59c8fF7KzaHD"
+      },
+      "classification": {
+        "bc1qKKK": "ACCEPTED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": []
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "bc1qKKK",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qKKK",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qKKK"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "bc1qKKK",
+              "level": 0,
+              "premises": [
+                {
+                  "id": "m1:bc1qKKK",
+                  "status": "DISMISSED",
+                  "reason": "NO_PERSON_LINK"
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "NO_PERSON_LINK",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qKKK"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:bc1qKKK"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:bc1qKKK": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.05,
+            "discussion": 0.8,
+            "massComment": 0.05
+          },
+          "declaration": 0.1,
+          "warning": 0.05
+        }
+      }
+    },
+    {
+      "id": "G15",
+      "from": "demo-v1",
+      "category": "regression",
+      "fixture": "demo-v1",
+      "identifiers": [
+        {
+          "type": "NICKNAME",
+          "value": "zenek_fx"
+        }
+      ],
+      "mentions": [],
+      "addresses": {},
+      "classification": {
+        "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": "ACCEPTED",
+        "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed": "ACCEPTED",
+        "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4": "ACCEPTED",
+        "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae": "EXCLUDED"
+      },
+      "expected": {
+        "confidence-1": {
+          "attributions": [
+            {
+              "address": "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+              "level": 75,
+              "rules": [
+                "SALE_OR_SETTLEMENT",
+                "INDEPENDENT_SOURCES",
+                "NICKNAME_ONLY"
+              ]
+            },
+            {
+              "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+              "level": 75,
+              "rules": [
+                "SALE_OR_SETTLEMENT",
+                "INDEPENDENT_SOURCES",
+                "NICKNAME_ONLY"
+              ]
+            },
+            {
+              "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+              "level": 60,
+              "rules": [
+                "SALE_OR_SETTLEMENT",
+                "NICKNAME_ONLY"
+              ]
+            }
+          ]
+        },
+        "confidence-2": {
+          "attributions": [
+            {
+              "address": "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+              "level": 75,
+              "premises": [
+                {
+                  "id": "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+              "level": 75,
+              "premises": [
+                {
+                  "id": "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "contribution": 15,
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+              "level": 60,
+              "premises": [
+                {
+                  "id": "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "contribution": 60,
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "contribution": 0,
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "confidence-3": {
+          "attributions": [
+            {
+              "address": "0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+              "band": [
+                60,
+                100
+              ],
+              "premises": [
+                {
+                  "id": "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "premiseIds": [
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "premiseIds": [
+                    "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed",
+                    "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+              "band": [
+                60,
+                100
+              ],
+              "premises": [
+                {
+                  "id": "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                  "status": "COUNTED",
+                  "reason": null
+                },
+                {
+                  "id": "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "OWN_DECLARATION",
+                  "premiseIds": [
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "INDEPENDENT_SOURCES",
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "premiseIds": [
+                    "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                  ]
+                }
+              ]
+            },
+            {
+              "address": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+              "band": [
+                60,
+                100
+              ],
+              "premises": [
+                {
+                  "id": "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4",
+                  "status": "COUNTED",
+                  "reason": null
+                }
+              ],
+              "rules": [
+                {
+                  "rule": "SALE_OR_SETTLEMENT",
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                },
+                {
+                  "rule": "NICKNAME_ONLY",
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                },
+                {
+                  "rule": "MODEL_ASSISTED",
+                  "premiseIds": [
+                    "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "cannedAnswers": {
+        "m1:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.75,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        },
+        "m1:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.75,
+            "discussion": 0.13,
+            "massComment": 0.02
+          },
+          "declaration": 0.9,
+          "warning": 0.02
+        },
+        "m2:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa": {
+          "kind": {
+            "ownDeclaration": 0.65,
+            "saleOrSettlement": 0.1,
+            "discussion": 0.22,
+            "massComment": 0.03
+          },
+          "declaration": 0.85,
+          "warning": 0.02
+        },
+        "m2:0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed": {
+          "kind": {
+            "ownDeclaration": 0.65,
+            "saleOrSettlement": 0.1,
+            "discussion": 0.22,
+            "massComment": 0.03
+          },
+          "declaration": 0.85,
+          "warning": 0.02
+        },
+        "m3:bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4": {
+          "kind": {
+            "ownDeclaration": 0.1,
+            "saleOrSettlement": 0.8,
+            "discussion": 0.08,
+            "massComment": 0.02
+          },
+          "declaration": 0.85,
+          "warning": 0.05
+        }
+      }
+    }
+  ]
+}

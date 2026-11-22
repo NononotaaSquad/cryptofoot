@@ -40,7 +40,7 @@ tests {
       'Adres łączy z badaną osobą tylko nick lub login, które mogą należeć do innej osoby.'
     );
   });
-  test('ETH 0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed (canonical): an Excluded Address, or 75 with the same rules as BTC', () => {
+  test('ETH 0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed (canonical): an Excluded Address, or 75 (59 when unclassified) with the same rules as BTC', () => {
   {
     const attributed = body.attributions.filter((a) => a.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
     const excluded = body.excludedAddresses.filter((e) => e.address === '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed');
@@ -54,12 +54,12 @@ tests {
       const a = attributed[0];
       expect(a.network).to.equal('ETH');
       expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);
-      // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence
+      // an unclassified Attribution is still scored, flagged with a 0-point rule and capped at 59 by CLASSIFICATION_CAP
       const unavailable = a.classificationStatus === 'UNAVAILABLE';
-      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];
-      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';
+      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE', 'CLASSIFICATION_CAP'] : [];
+      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi. Z tego powodu stopień pewności ograniczono, tak aby nie wskazywał wysokiego prawdopodobieństwa.' : '';
       if (unavailable) expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');
-      expect(a.confidenceLevel).to.equal(75);
+      expect(a.confidenceLevel).to.equal(unavailable ? 59 : 75);
       expect(a.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'INDEPENDENT_SOURCES', 'NICKNAME_ONLY'].concat(flagRules));
     }
   }
@@ -84,13 +84,13 @@ tests {
       const a = attributed[0];
       expect(a.network).to.equal('ETH');
       expect(a.classificationStatus).to.be.oneOf(['NOT_EXCLUDED', 'UNAVAILABLE']);
-      // an unclassified Attribution is still scored, with a 0-point rule and one more Justification sentence
+      // an unclassified Attribution is still scored, flagged with a 0-point rule and capped at 59 by CLASSIFICATION_CAP
       const unavailable = a.classificationStatus === 'UNAVAILABLE';
-      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE'] : [];
-      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi.' : '';
+      const flagRules = unavailable ? ['CLASSIFICATION_UNAVAILABLE', 'CLASSIFICATION_CAP'] : [];
+      const flagText = unavailable ? ' Nie udało się sprawdzić, czy adres należy do giełdy, kontraktu lub innej usługi. Z tego powodu stopień pewności ograniczono, tak aby nie wskazywał wysokiego prawdopodobieństwa.' : '';
       if (unavailable) expect(body.limitations).to.include('CLASSIFICATION_UNAVAILABLE');
       expect(a.classificationStatus).to.equal('UNAVAILABLE');
-      expect(a.confidenceLevel).to.equal(60);
+      expect(a.confidenceLevel).to.equal(59);
       expect(a.scoringRules.map((r) => r.rule)).to.eql(['SALE_OR_SETTLEMENT', 'NICKNAME_ONLY'].concat(flagRules));
     }
   }
@@ -99,6 +99,13 @@ tests {
     attributions.forEach((a) => {
       expect(a.justification).to.be.a('string').and.not.empty;
       expect(a.mentions).to.not.be.empty;
+    });
+  });
+  test('every Attribution has Premises and every premiseIds entry is one of them', () => {
+    attributions.forEach((a) => {
+      expect(a.premises).to.not.be.empty;
+      const ids = a.premises.map((p) => p.id);
+      a.scoringRules.forEach((r) => expect(ids).to.include.members(r.premiseIds));
     });
   });
   test('Address Activity: the demo addresses carry synthetic data with cash-out signals in time order', () => {

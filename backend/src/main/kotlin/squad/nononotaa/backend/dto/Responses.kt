@@ -1,16 +1,24 @@
 package squad.nononotaa.backend.dto
 
+import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.model.AddressActivityCoverageLimitation
 import squad.nononotaa.backend.model.AddressActivityStatus
 import squad.nononotaa.backend.model.AddressValidationFailure
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessedBy
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.AttributionChangeType
+import squad.nononotaa.backend.model.AuthorMatch
 import squad.nononotaa.backend.model.CashOutSignalKind
 import squad.nononotaa.backend.model.ClassificationStatus
 import squad.nononotaa.backend.model.ComparabilityLimitation
+import squad.nononotaa.backend.model.DismissalReason
 import squad.nononotaa.backend.model.ExclusionReason
+import squad.nononotaa.backend.model.ModelQuestion
 import squad.nononotaa.backend.model.Network
+import squad.nononotaa.backend.model.PremiseKind
+import squad.nononotaa.backend.model.PremiseStatus
 import squad.nononotaa.backend.model.ReportLimitation
 import squad.nononotaa.backend.model.ScheduleAttemptOutcome
 import squad.nononotaa.backend.model.ScheduleIntervalUnit
@@ -56,6 +64,10 @@ data class AnalysisResponse(
     val sources: List<SourceCoverageResponse>,
     val networks: List<Network>,
     val algorithmVersion: String?,
+    // null for Analyses stored before algorithm confidence-3; the versions are null in RULES_ONLY
+    val assessmentMode: AssessmentMode?,
+    val modelVersion: String?,
+    val questionSetVersion: String?,
     val attributionCount: Int?,
     val excludedAddressCount: Int?,
     val highestConfidenceLevel: Int?,
@@ -81,6 +93,63 @@ data class MentionResponse(
 data class ScoringRuleContributionResponse(
     val rule: String,
     val contribution: Int,
+    val premiseIds: List<String>,
+)
+
+/** Facts code computed about one Premise; [identifierTypes] holds types only, never the identifier values. */
+data class PremiseFactsResponse(
+    val authorIsPerson: AuthorMatch,
+    val underProfile: Boolean,
+    val identifierTypes: List<IdentifierType>,
+    val identifierDistance: Int?,
+    val conflictingEmail: Boolean,
+    val addressCount: Int,
+    val host: String?,
+)
+
+/** Raw probabilities of a yes/no question; the words and percentages are made by the frontend (P28). */
+data class YesNoProbabilitiesResponse(
+    val yes: Double,
+    val no: Double,
+)
+
+/** Raw probability of every option of `rodzaj_wpisu`. */
+data class KindProbabilitiesResponse(
+    val ownDeclaration: Double,
+    val saleOrSettlement: Double,
+    val discussion: Double,
+    val massComment: Double,
+)
+
+/** The three answers of the decision model for one Premise, kept per question; [requestId] when the server returned one. */
+data class PremiseAnswersResponse(
+    val kind: KindProbabilitiesResponse,
+    val declaration: YesNoProbabilitiesResponse,
+    val warning: YesNoProbabilitiesResponse,
+    val requestId: String?,
+)
+
+/** One address in one Mention; [text] is the window, the address is at [addressStart] (UTF-16 code units). */
+data class PremiseResponse(
+    val id: String,
+    val mentionId: String,
+    val sourceName: String,
+    val url: String,
+    val author: String?,
+    val collectedAt: Instant,
+    val text: String,
+    val addressStart: Int,
+    val addressLength: Int,
+    val status: PremiseStatus,
+    val kind: PremiseKind?,
+    val points: Int,
+    val dismissalReason: DismissalReason?,
+    val assessedBy: AssessedBy,
+    val facts: PremiseFactsResponse,
+    // null when the model was off or gave no answer for this Premise, and for old Analyses
+    val answers: PremiseAnswersResponse?,
+    val undetermined: List<ModelQuestion>,
+    val withdrawn: Boolean,
 )
 
 data class CashOutSignalResponse(
@@ -120,6 +189,7 @@ data class AttributionResponse(
     val scoringRules: List<ScoringRuleContributionResponse>,
     val addressActivityStatus: AddressActivityStatus,
     val addressActivity: AddressActivityResponse?,
+    val premises: List<PremiseResponse>,
 )
 
 data class ExcludedAddressResponse(
@@ -148,6 +218,8 @@ data class AttributionChangeResponse(
     val earlierMentionIds: List<String>,
     val laterMentionIds: List<String>,
     val absenceVerifiable: Boolean?,
+    // CONFIDENCE_LEVEL_CHANGED with the same Mentions while at least one Analysis used the model (P23)
+    val modelAssessmentChanged: Boolean,
 )
 
 data class AnalysisComparisonResponse(

@@ -196,6 +196,21 @@ Decided by the lead in the grilling of 2026-11-21 (Q1–Q18); the full record is
 - **Polling:** every 30 s while the Schedule is enabled, every 5 s with `demo: true`. A Scheduled Analysis appears in the select; the displayed report does not change.
 - **Time:** Schedule dates and hours are always shown in Polish time.
 
+## Premises in the report (2026-11-22)
+
+Built in task 03 of `.agents/specs/2026-11-22_confidence-premises-jev/` (the full record, with the differences from the plan, is `tasks/03_premises-in-report.md`). Where this section and the older text of this file differ (the "three blocks" of an expanded Attribution, the Punktacja example, Out of Scope "the algorithm version"), this section wins.
+
+- **Files:** in `frontend/apps/web/features/analysis-report/`, two new files: `premise-view-model.ts` (pure mapping of the Premises of one Attribution; imported only by `report-view-model.ts` and tested only through `toReportView`) and `premise-list.tsx` (renders the block). Texts are in `report-labels.ts`.
+- **Block "Przesłanki (N)":** in an expanded Attribution, between "Uzasadnienie" and "Wzmianki". N counts all Premises (PL: Przesłanki) of the Attribution, dismissed ones included. Always open. Order: "Zaliczona", then "Do weryfikacji", then "Odrzucona"; inside a group the order of the API. Not shown for an older Analysis without Premises.
+- **One Premise:** the first line is "Przesłanka {n}", the status badge (icon and word: "Zaliczona", "Do weryfikacji", "Odrzucona"), the kind ("Dyskusja"), the points ("40 pkt") and "Oceniono: reguła" or "Oceniono: model". A withdrawn address adds the note "Adres wycofany przez autora" next to the status. Below: "Powód: {reason}" when the Premise has one, the source name with "autor: …" and "zebrano {date}", the link, and the text window as a quote with the address highlighted by `<mark>`.
+- **Facts and answers:** a list of "label: value · Oceniono: …" lines. Facts found by code are always "reguła" ("Autor to badana osoba", "Strona pod profilem osoby", "Identyfikatory osoby w tekście", "Odległość identyfikatora od adresu (znaki)", "E-mail innej osoby w tekście", "Liczba adresów we wzmiance", "Serwis"). When the model answered, three more lines: "Rodzaj wpisu: Własna deklaracja (81%)", "Deklaracja: tak (93%)", "Ostrzeżenie: nie (4%)". Below the `sm` breakpoint the list is one column.
+- **Answer words:** "niepewne" only when the backend lists the question in `undetermined`; otherwise the more probable option. The percentage of a yes/no answer is always the probability of "yes". The frontend keeps no thresholds. Known effect: an undetermined answer that did not matter for the status is shown as "tak" or "nie" (related issue #96).
+- **"szczegóły techniczne":** one per Premise, only when the model answered, collapsed on entry ("Pokaż szczegóły techniczne" / "Ukryj szczegóły techniczne"). It lists the raw probability of each option, rounded to 2 decimal places. The request id of the model is not shown.
+- **Punktacja:** a line names its Premises inside the label, "Adres na profilu osoby (przesłanka 1: GitHub)". An Attribution without Premises (older Analysis) keeps the source names in brackets, "Adres na profilu osoby (GitHub)". The rule codes of `confidence-2` and `confidence-3` have Polish labels, for example `CLASSIFICATION_CAP` "Ograniczenie z powodu niedostępnej klasyfikacji".
+- **Report summary:** up to four new lines, once per Analysis: "Wersja algorytmu", "Tryb oceny" ("z modelem" / "tylko reguły"), "Wersja modelu", "Wersja zestawu pytań". A line with an absent field is not shown.
+- **Report limitations:** the new code `MODEL_ASSESSMENT_UNAVAILABLE` gives "Model nie ocenił części lub wszystkich przesłanek; te przesłanki oceniono samymi regułami."
+- **No Pencil frame:** the block is built from the existing patterns of the expanded Attribution, without drawing it first.
+
 ## Comparison with the previous Analysis (2026-11-22)
 
 Proposed in [ADR-0014](decisions/0014-analysis-comparison-on-case-details.md); the categories still wait for E6-D2. Where this section and the older text of this file differ (Out of Scope, D2), this section wins.

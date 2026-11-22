@@ -115,4 +115,100 @@ class AddressCandidateDetectorSpec extends Specification {
                     new RawAddressCandidate('m1', '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', Network.BTC),
                 ]
     }
+
+    static final String BTC = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'
+    static final String ETH = '0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed'
+
+    def "a window holds 600 characters on each side of an address in the middle of the text"() {
+        given:
+        def text = ('.' * 1000) + BTC + ('-' * 1000)
+
+        when:
+        def windows = detector.windows(text)
+
+        then:
+        windows.size() == 1
+        with(windows[0]) {
+            rawAddress == BTC
+            address == null
+            delegate.text == text.substring(400, 1000 + BTC.length() + 600)
+            addressStart == 600
+            addressLength == BTC.length()
+            delegate.text.substring(addressStart, addressStart + addressLength) == BTC
+        }
+    }
+
+    def "a window near the start of the text moves inward and keeps its length"() {
+        given:
+        def text = ('.' * 100) + BTC + ('-' * 2000)
+
+        when:
+        def window = detector.windows(text)[0]
+
+        then:
+        window.text == text.substring(0, BTC.length() + 1200)
+        window.addressStart == 100
+        window.text.substring(window.addressStart, window.addressStart + window.addressLength) == BTC
+    }
+
+    def "a window near the end of the text moves inward and keeps its length"() {
+        given:
+        def text = ('.' * 2000) + BTC + ('-' * 100)
+
+        when:
+        def window = detector.windows(text)[0]
+
+        then:
+        window.text == text.substring(text.length() - (BTC.length() + 1200))
+        window.addressStart == 1100
+        window.text.substring(window.addressStart, window.addressStart + window.addressLength) == BTC
+    }
+
+    def "a text shorter than a window gives the whole text"() {
+        given:
+        def text = "pay ${BTC} now".toString()
+
+        when:
+        def window = detector.windows(text)[0]
+
+        then:
+        window.text == text
+        window.addressStart == 4
+        window.addressLength == BTC.length()
+    }
+
+    def "two addresses give one window each, in order of appearance"() {
+        given:
+        def text = ('.' * 700) + BTC + ('-' * 700) + ETH + ('~' * 700)
+
+        when:
+        def windows = detector.windows(text)
+
+        then:
+        windows*.rawAddress == [BTC, ETH]
+        windows.every {
+            it.text.substring(it.addressStart, it.addressStart + it.addressLength) == it.rawAddress
+        }
+        windows[0].text == text.substring(100, 700 + BTC.length() + 600)
+        windows[1].text == text.substring(700 + BTC.length() + 100, 700 + BTC.length() + 700 + ETH.length() + 600)
+    }
+
+    def "an address that occurs twice gives one window around its first occurrence"() {
+        given:
+        def text = ('.' * 700) + BTC + ('-' * 1500) + BTC + ('~' * 700)
+
+        when:
+        def windows = detector.windows(text)
+
+        then:
+        windows.size() == 1
+        windows[0].text == text.substring(100, 700 + BTC.length() + 600)
+        windows[0].addressStart == 600
+    }
+
+    def "a text without addresses gives no windows"() {
+        expect:
+        detector.windows('just a normal forum post') == []
+        detector.windows('') == []
+    }
 }

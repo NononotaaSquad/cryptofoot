@@ -205,10 +205,7 @@ class DemoScenariosSpec extends BaseSpec {
             [
                 BTC_CELINA_SCAM,
                 0,
-                [
-                    'NO_PERSON_LINK',
-                    'WARNING_CONTEXT'
-                ]
+                ['WARNING_CONTEXT']
             ]
         ]
         activity(report, BTC_CELINA).addressActivity.totalReceived == 0.05
@@ -229,10 +226,7 @@ class DemoScenariosSpec extends BaseSpec {
             [
                 BTC_DAREK_NAMESAKE,
                 0,
-                [
-                    'NO_PERSON_LINK',
-                    'CONFLICTING_EMAIL'
-                ]
+                ['CONFLICTING_EMAIL']
             ]
         ]
         activity(report, BTC_DAREK).addressActivity.cashOutSignals.collect {
@@ -320,17 +314,29 @@ class DemoScenariosSpec extends BaseSpec {
         report.limitations.contains('BLOCKCHAIN_DATA_UNAVAILABLE')
     }
 
-    def "S8 false negative: an address split by spaces and one outside the context are not detected"() {
+    def "S8: a space-separated address is missed, but an address outside the excerpt is detected with 0% confidence"() {
         when:
         def result = analyse('S8')
+        def forum = result.mentions.find {
+            it.url == 'https://forum.example/t/henio/88'
+        }
+        def blog = result.mentions.find {
+            it.url == 'https://blog.example/henio/o-mnie'
+        }
 
         then:
         result.mentions.size() == 2
-        result.mentions.every {
-            it.detectedAddresses.isEmpty()
-        }
-        !result.mentions*.context.join(' ').contains(BTC_HENIO_FAR)
-        result.report.attributions.isEmpty()
+        forum.detectedAddresses.isEmpty()
+        !blog.context.contains(BTC_HENIO_FAR)
+        blog.detectedAddresses*.address == [BTC_HENIO_FAR]
+        blog.detectedAddresses*.valid == [true]
+        levels(result.report) == [
+            [
+                BTC_HENIO_FAR,
+                0,
+                ['NO_PERSON_LINK']
+            ]
+        ]
     }
 
     def "S9 false negative: a cash-out to an unlisted exchange deposit address gives no signal"() {

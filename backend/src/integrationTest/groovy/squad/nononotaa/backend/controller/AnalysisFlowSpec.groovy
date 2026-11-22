@@ -93,7 +93,7 @@ class AnalysisFlowSpec extends BaseSpec {
         analysis.status == 'PARTIAL'
         analysis.finishedAt != null
         analysis.networks == ['BTC', 'ETH']
-        analysis.algorithmVersion == 'confidence-1'
+        analysis.algorithmVersion == 'confidence-2'
         analysis.attributionCount == 3
         analysis.excludedAddressCount == 1
         analysis.sources.collectEntries {

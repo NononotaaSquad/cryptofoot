@@ -1,11 +1,18 @@
 import type {
   AddressActivityResponseCoverageLimitationsItem,
   AnalysisResponse,
+  AnalysisResponseAssessmentMode,
   AnalysisResponseStatus,
   AnalysisResponseTrigger,
   CashOutSignalResponseKind,
   DetectedAddressResponseValidationFailure,
   ExcludedAddressResponseReason,
+  PremiseFactsResponseAuthorIsPerson,
+  PremiseFactsResponseIdentifierTypesItem,
+  PremiseResponseAssessedBy,
+  PremiseResponseDismissalReason,
+  PremiseResponseKind,
+  PremiseResponseStatus,
   ReportResponseLimitationsItem,
 } from "@/lib/api/generated/model";
 
@@ -33,6 +40,8 @@ const reportLimitationSentences: Record<ReportResponseLimitationsItem, string> =
       "Nie udało się pobrać danych o aktywności adresów w sieci, więc ta część raportu może być pusta lub niepełna.",
     CLASSIFICATION_UNAVAILABLE:
       "Nie udało się sprawdzić, czy adresy należą do serwisów (np. giełd), więc część powiązań może dotyczyć takich adresów.",
+    MODEL_ASSESSMENT_UNAVAILABLE:
+      "Model nie ocenił części lub wszystkich przesłanek; te przesłanki oceniono samymi regułami.",
     ANALYSIS_INCOMPLETE:
       "Analiza nie została ukończona, więc raport może być niepełny.",
   };
@@ -75,8 +84,9 @@ export function confidenceBandLabel(level: number): string {
   return "Niski / szum";
 }
 
-// Known codes of `confidence-1` and saved `provisional-1` Analyses.
-// `withSources` marks rules whose line names the Mention sources in brackets.
+// Known codes of `confidence-1` to `confidence-3` and saved `provisional-1`
+// Analyses. `withSources` marks rules whose line names the Mention sources in
+// brackets when the Attribution has no Premises (an older Analysis).
 const scoringRules = {
   MENTIONED_WITH_IDENTIFIER: {
     label: "Adres przy identyfikatorze osoby",
@@ -87,6 +97,7 @@ const scoringRules = {
     withSources: false,
   },
   OWN_PROFILE: { label: "Adres na profilu osoby", withSources: true },
+  OWN_DECLARATION: { label: "Własna deklaracja adresu", withSources: true },
   SALE_OR_SETTLEMENT: {
     label: "Ogłoszenie sprzedaży lub rozliczenie",
     withSources: true,
@@ -94,6 +105,10 @@ const scoringRules = {
   DISCUSSION: { label: "Adres w dyskusji", withSources: true },
   MASS_COMMENT: { label: "Wpis konkursowy lub promocyjny", withSources: true },
   NO_PERSON_LINK: { label: "Brak powiązania z osobą", withSources: false },
+  DECLARED_BY_ANOTHER_PERSON: {
+    label: "Adres podany przez inną osobę",
+    withSources: false,
+  },
   INDEPENDENT_SOURCES: {
     label: "Potwierdzenie w niezależnych źródłach",
     withSources: true,
@@ -107,12 +122,26 @@ const scoringRules = {
     label: "Powiązanie tylko przez nick lub login",
     withSources: false,
   },
+  WITHDRAWN_ADDRESS: {
+    label: "Adres wycofany przez autora",
+    withSources: false,
+  },
+  FOR_REVIEW: { label: "Przesłanki do weryfikacji", withSources: false },
   WARNING_CONTEXT: { label: "Adres w ostrzeżeniu", withSources: false },
+  WARNING_DISMISSED: {
+    label: "Ostrzeżenie przed adresem, przesłanka odrzucona",
+    withSources: false,
+  },
   CONFLICTING_EMAIL: { label: "E-mail innej osoby", withSources: false },
   CLASSIFICATION_UNAVAILABLE: {
     label: "Klasyfikacja niedostępna",
     withSources: false,
   },
+  CLASSIFICATION_CAP: {
+    label: "Ograniczenie z powodu niedostępnej klasyfikacji",
+    withSources: false,
+  },
+  MODEL_ASSISTED: { label: "Ocena z pomocą modelu", withSources: false },
 };
 
 /** Punktacja label of a rule; `null` for an unknown code. */
@@ -133,6 +162,152 @@ export const attributionLabels = {
   noFormatCheck: "Brak danych o sprawdzeniu formatu adresu.",
   network: (network: string) => `Sieć: ${network}`,
   confidenceTotal: "Stopień pewności",
+} as const;
+
+export type PremiseStatusIcon =
+  "counted" | "forReview" | "dismissed" | "unknown";
+
+const premiseStatuses: Record<
+  PremiseResponseStatus,
+  { icon: PremiseStatusIcon; label: string }
+> = {
+  COUNTED: { icon: "counted", label: "Zaliczona" },
+  FOR_REVIEW: { icon: "forReview", label: "Do weryfikacji" },
+  DISMISSED: { icon: "dismissed", label: "Odrzucona" },
+};
+
+/** Word and icon key of a Premise status; an unknown code is shown as is. */
+export function premiseStatus(code: string): {
+  icon: PremiseStatusIcon;
+  label: string;
+} {
+  return isKnownCode(premiseStatuses, code)
+    ? premiseStatuses[code]
+    : { icon: "unknown", label: code };
+}
+
+const premiseReasonLabels: Record<
+  NonNullable<PremiseResponseDismissalReason>,
+  string
+> = {
+  WARNING: "Ostrzeżenie przed tym adresem",
+  DECLARED_BY_ANOTHER_PERSON: "Adres podany przez inną osobę",
+  NO_PERSON_LINK: "Brak powiązania z badaną osobą",
+  CONFLICTING_EMAIL: "E-mail innej osoby",
+};
+
+export function premiseReasonLabel(code: string): string {
+  return isKnownCode(premiseReasonLabels, code)
+    ? premiseReasonLabels[code]
+    : code;
+}
+
+const premiseKindLabels: Record<NonNullable<PremiseResponseKind>, string> = {
+  OWN_PROFILE: "Profil badanej osoby",
+  OWN_DECLARATION: "Własna deklaracja",
+  SALE_OR_SETTLEMENT: "Sprzedaż lub rozliczenie",
+  DISCUSSION: "Dyskusja",
+  MASS_COMMENT: "Wpis masowy",
+};
+
+export function premiseKindLabel(code: string): string {
+  return isKnownCode(premiseKindLabels, code) ? premiseKindLabels[code] : code;
+}
+
+const assessedByWords: Record<PremiseResponseAssessedBy, string> = {
+  RULE: "reguła",
+  MODEL: "model",
+};
+
+/** "Oceniono: reguła" / "Oceniono: model". */
+export function assessedByLabel(code: string): string {
+  return `Oceniono: ${isKnownCode(assessedByWords, code) ? assessedByWords[code] : code}`;
+}
+
+const authorIsPersonLabels: Record<PremiseFactsResponseAuthorIsPerson, string> =
+  {
+    YES: "tak",
+    NO: "nie",
+    UNKNOWN: "nieznany",
+  };
+
+export function premiseAuthorIsPersonLabel(code: string): string {
+  return isKnownCode(authorIsPersonLabels, code)
+    ? authorIsPersonLabels[code]
+    : code;
+}
+
+const identifierTypeLabels: Record<
+  PremiseFactsResponseIdentifierTypesItem,
+  string
+> = {
+  NICKNAME: "nick",
+  LOGIN: "login",
+  EMAIL: "e-mail",
+  MESSENGER_ID: "identyfikator komunikatora",
+  PROFILE_URL: "adres profilu",
+  WALLET_ADDRESS: "adres portfela",
+  FULL_NAME: "imię i nazwisko",
+};
+
+export function identifierTypeLabel(code: string): string {
+  return isKnownCode(identifierTypeLabels, code)
+    ? identifierTypeLabels[code]
+    : code;
+}
+
+export const premiseLabels = {
+  heading: (count: number) => `Przesłanki (${String(count)})`,
+  title: (number: number) => `Przesłanka ${String(number)}`,
+  /** "przesłanka 1: GitHub", inside the brackets of a Punktacja line. */
+  reference: (number: number, sourceName: string) =>
+    sourceName === ""
+      ? `przesłanka ${String(number)}`
+      : `przesłanka ${String(number)}: ${sourceName}`,
+  withdrawn: "Adres wycofany przez autora",
+} as const;
+
+export const premiseFactLabels = {
+  authorIsPerson: "Autor to badana osoba",
+  underProfile: "Strona pod profilem osoby",
+  identifierTypes: "Identyfikatory osoby w tekście",
+  identifierDistance: "Odległość identyfikatora od adresu (znaki)",
+  conflictingEmail: "E-mail innej osoby w tekście",
+  addressCount: "Liczba adresów we wzmiance",
+  host: "Serwis",
+} as const;
+
+export const premiseAnswerLabels = {
+  kind: "Rodzaj wpisu",
+  declaration: "Deklaracja",
+  warning: "Ostrzeżenie",
+} as const;
+
+export const premiseAnswerWords = {
+  yes: "tak",
+  no: "nie",
+  undetermined: "niepewne",
+} as const;
+
+const assessmentModeLabels: Record<
+  NonNullable<AnalysisResponseAssessmentMode>,
+  string
+> = {
+  WITH_MODEL: "z modelem",
+  RULES_ONLY: "tylko reguły",
+};
+
+export function assessmentModeLabel(code: string): string {
+  return isKnownCode(assessmentModeLabels, code)
+    ? assessmentModeLabels[code]
+    : code;
+}
+
+export const summaryVersionLabels = {
+  algorithmVersion: "Wersja algorytmu",
+  assessmentMode: "Tryb oceny",
+  modelVersion: "Wersja modelu",
+  questionSetVersion: "Wersja zestawu pytań",
 } as const;
 
 const mentionPlural = new Intl.PluralRules("pl-PL");
@@ -287,4 +462,12 @@ const amountFormat = new Intl.NumberFormat("pl-PL", {
 export function formatAmount(amount: number, unit: string | null): string {
   const text = amountFormat.format(amount);
   return unit === null ? text : `${text} ${unit}`;
+}
+
+/**
+ * "93%" from 0.925: a whole number, rounded half up (P28). The inner rounding
+ * removes binary noise first (0.285 * 100 is 28.499…).
+ */
+export function formatPercent(probability: number): string {
+  return `${String(Math.round(Math.round(probability * 10000) / 100))}%`;
 }

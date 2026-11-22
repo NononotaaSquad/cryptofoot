@@ -15,12 +15,14 @@ import squad.nononotaa.backend.analysis.ConfidenceScoring
 import squad.nononotaa.backend.analysis.ExclusionClassifier
 import squad.nononotaa.backend.analysis.IdentifierType
 import squad.nononotaa.backend.analysis.MentionSearch
+import squad.nononotaa.backend.analysis.PremiseAssessment
 import squad.nononotaa.backend.analysis.SearchResult
 import squad.nononotaa.backend.analysis.SourceReport
 import squad.nononotaa.backend.exception.ConflictException
 import squad.nononotaa.backend.exception.NotFoundException
 import squad.nononotaa.backend.model.AnalysisStatus
 import squad.nononotaa.backend.model.AnalysisTrigger
+import squad.nononotaa.backend.model.AssessmentMode
 import squad.nononotaa.backend.model.SourceStatus
 import squad.nononotaa.backend.repository.AnalysisRepository
 
@@ -47,7 +49,9 @@ class AnalysisRerunSpec extends BaseSpec {
     } as CaseIdentifierSource
 
     private AnalysisRerunService rerunService() {
-        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(ConfidenceScoring), Stub(AddressActivityCollector), recorder)
+        def orchestrator = new AnalysisOrchestrator(search, Stub(CandidatePreparation), Stub(ExclusionClassifier), Stub(PremiseAssessment) {
+            getMode() >> AssessmentMode.RULES_ONLY
+        }, Stub(ConfidenceScoring), Stub(AddressActivityCollector), recorder)
         new AnalysisRerunService(orchestrator, repository, identifiers, history, deferring)
     }
 

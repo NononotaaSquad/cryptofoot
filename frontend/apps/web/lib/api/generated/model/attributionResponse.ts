@@ -9,6 +9,7 @@ import type { AttributionResponseAddressActivityStatus } from "./attributionResp
 import type { AttributionResponseClassificationStatus } from "./attributionResponseClassificationStatus";
 import type { AttributionResponseNetwork } from "./attributionResponseNetwork";
 import type { MentionResponse } from "./mentionResponse";
+import type { PremiseResponse } from "./premiseResponse";
 import type { ScoringRuleContributionResponse } from "./scoringRuleContributionResponse";
 
 export interface AttributionResponse {
@@ -21,4 +22,5 @@ export interface AttributionResponse {
   scoringRules?: ScoringRuleContributionResponse[];
   addressActivityStatus?: AttributionResponseAddressActivityStatus;
   addressActivity?: AddressActivityResponse | null;
+  premises?: PremiseResponse[];
 }
