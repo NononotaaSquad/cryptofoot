@@ -28,6 +28,7 @@ Option 1.
 | `LABELLED_COUNTERPARTIES_ONLY` | always | signals are found only for counterparties on the label lists; no signal does not mean no cash-out |
 | `RECENT_TRANSACTIONS_ONLY` | the explorer returned only its most recent page | older signals may be missing; unknown totals stay empty |
 | `INTERNAL_TRANSFERS_NOT_COUNTED` | ETH from Blockscout | coin totals count the address's own transactions, not internal transfers from contracts |
+| `TRANSACTIONS_UNAVAILABLE` | the explorer gave the totals or count but not the transaction list (D23-013) | signals and the period were not checked; no signal does not mean no cash-out |
 
 ## Consequences and risks
 - The Analyst sees no plain transfer list; the transaction count and the period give the scale.

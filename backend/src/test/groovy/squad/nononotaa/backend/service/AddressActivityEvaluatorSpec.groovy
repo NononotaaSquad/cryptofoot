@@ -3,6 +3,7 @@ package squad.nononotaa.backend.service
 import static squad.nononotaa.backend.model.AddressActivityCoverageLimitation.INTERNAL_TRANSFERS_NOT_COUNTED
 import static squad.nononotaa.backend.model.AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY
 import static squad.nononotaa.backend.model.AddressActivityCoverageLimitation.RECENT_TRANSACTIONS_ONLY
+import static squad.nononotaa.backend.model.AddressActivityCoverageLimitation.TRANSACTIONS_UNAVAILABLE
 import static squad.nononotaa.backend.model.TransferDirection.IN
 import static squad.nononotaa.backend.model.TransferDirection.OUT
 
@@ -104,6 +105,22 @@ class AddressActivityEvaluatorSpec extends Specification {
         activity.coverageLimitations == [
             RECENT_TRANSACTIONS_ONLY,
             LABELLED_COUNTERPARTIES_ONLY
+        ]
+    }
+
+    def "a transaction list that could not be read is stated as such, not as a recent page"() {
+        when:
+        def activity = evaluate(chain([], [complete: false, received: 236.43446701, sent: 236.43445519, count: 5448,
+            limitations: [TRANSACTIONS_UNAVAILABLE]]))
+
+        then:
+        activity.totalReceived == 236.43446701
+        activity.transactionCount == 5448
+        activity.firstActivityAt == null
+        activity.lastActivityAt == null
+        activity.coverageLimitations == [
+            LABELLED_COUNTERPARTIES_ONLY,
+            TRANSACTIONS_UNAVAILABLE
         ]
     }
 

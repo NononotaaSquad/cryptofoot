@@ -81,8 +81,8 @@ class StubChainServer {
         body: """{"data":{"$address":{"address":{"type":"$type"}}},"context":{"code":200}}""")
     }
 
-    void explorer(String pathAndQuery, String body) {
-        explorerAnswers[pathAndQuery] = new Answer(status: 200, body: body)
+    void explorer(String pathAndQuery, String body, long delayMillis = 0) {
+        explorerAnswers[pathAndQuery] = new Answer(status: 200, body: body, delayMillis: delayMillis)
     }
 
     // an address with a complete, empty history: Address Activity is AVAILABLE with zero activity

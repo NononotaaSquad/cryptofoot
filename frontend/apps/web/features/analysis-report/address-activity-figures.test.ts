@@ -200,12 +200,14 @@ describe("toAddressActivityFigures", () => {
           "RECENT_TRANSACTIONS_ONLY",
           "LABELLED_COUNTERPARTIES_ONLY",
           "INTERNAL_TRANSFERS_NOT_COUNTED",
+          "TRANSACTIONS_UNAVAILABLE",
         ],
       }).coverageLimitations
     ).toEqual([
       "Odczytano tylko najnowsze transakcje, więc starsze sygnały mogą nie być widoczne.",
       "Sygnały są wykrywane tylko dla serwisów ze znanych list. Brak sygnału nie oznacza, że środków nie wymieniono na waluty tradycyjne.",
       "Sumy nie obejmują przelewów wewnętrznych z kontraktów.",
+      "Nie udało się odczytać listy transakcji, więc nie sprawdzono sygnałów wyjścia do walut tradycyjnych.",
     ]);
     expect(
       toAddressActivityFigures("AVAILABLE", {

@@ -43,7 +43,10 @@ class AddressActivityEvaluator(
             coverageLimitations =
             (
                 listOfNotNull(
-                    AddressActivityCoverageLimitation.RECENT_TRANSACTIONS_ONLY.takeIf { !chain.complete },
+                    // a list that could not be read is its own limitation, not "only the recent page"
+                    AddressActivityCoverageLimitation.RECENT_TRANSACTIONS_ONLY.takeIf {
+                        !chain.complete && AddressActivityCoverageLimitation.TRANSACTIONS_UNAVAILABLE !in chain.limitations
+                    },
                     AddressActivityCoverageLimitation.LABELLED_COUNTERPARTIES_ONLY,
                 ) + chain.limitations
                 ).distinct().sorted(),
