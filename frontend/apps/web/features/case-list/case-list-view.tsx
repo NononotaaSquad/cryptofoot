@@ -187,7 +187,7 @@ export function CaseListView() {
           id={searchId}
           type="text"
           autoComplete="off"
-          placeholder="np. zenek_fix"
+          placeholder="np. halka_eth"
           aria-describedby={searchHintId}
           value={query}
           onChange={(event) => {
