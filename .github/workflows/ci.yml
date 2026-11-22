@@ -261,6 +261,26 @@ jobs:
           fi
           echo "GITHUB_SOURCE_ENABLED=true" >> "$GITHUB_ENV"
 
+      # The key of the decision model (Premise assessment, jev-1) is the GitHub Actions secret
+      # ASSESSMENT_MODEL_API_KEY (org or repository level), copied to the Secret Manager secret
+      # "<repo>-assessment-model-api-key" and mounted into Cloud Run as ASSESSMENT_MODEL_API_KEY. Without it the
+      # model is switched off explicitly and the Confidence Level is computed by rules only (ADR 0005).
+      - name: Sync decision model key to Secret Manager
+        env:
+          ASSESSMENT_MODEL_API_KEY: ${{ secrets.ASSESSMENT_MODEL_API_KEY }}
+        run: |
+          if [ -z "$ASSESSMENT_MODEL_API_KEY" ]; then
+            echo "::warning::ASSESSMENT_MODEL_API_KEY secret is not set: deploying with the decision model disabled (rules only)"
+            echo "ASSESSMENT_MODEL_ENABLED=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          secret="$APP-assessment-model-api-key"
+          gcloud secrets describe "$secret" >/dev/null 2>&1 || gcloud secrets create "$secret" --replication-policy=automatic
+          if [ "$(gcloud secrets versions access latest --secret="$secret" 2>/dev/null)" != "$ASSESSMENT_MODEL_API_KEY" ]; then
+            printf '%s' "$ASSESSMENT_MODEL_API_KEY" | gcloud secrets versions add "$secret" --data-file=-
+          fi
+          echo "ASSESSMENT_MODEL_ENABLED=true" >> "$GITHUB_ENV"
+
       # The Schedule (@Scheduled runner) and analyses started in the background need a running instance with
       # CPU outside requests: --min-instances 1 and --no-cpu-throttling (#73). Duplicate terms across instances
       # are excluded by the optimistic lock of the schedule record.
@@ -269,6 +289,9 @@ jobs:
           secrets="MONGODB_URI=$APP-mongodb-uri:latest"
           if [ "$GITHUB_SOURCE_ENABLED" = "true" ]; then
             secrets="$secrets,SOURCES_GITHUB_TOKEN=$APP-github-token:latest"
+          fi
+          if [ "$ASSESSMENT_MODEL_ENABLED" = "true" ]; then
+            secrets="$secrets,ASSESSMENT_MODEL_API_KEY=$APP-assessment-model-api-key:latest"
           fi
           gcloud run deploy "$SERVICE" \
             --image "$IMAGE" \
@@ -280,7 +303,7 @@ jobs:
             --min-instances 1 \
             --no-cpu-throttling \
             --max-instances 3 \
-            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=true,SOURCES_SYNTHETIC_BROKEN_ENABLED=false,SOURCES_GITHUB_ENABLED=$GITHUB_SOURCE_ENABLED" \
+            --set-env-vars "SPRING_PROFILES_ACTIVE=prod,APP_NAME=$APP,MONGODB_DATABASE=$APP,SOURCES_SYNTHETIC_ENABLED=true,SOURCES_SYNTHETIC_BROKEN_ENABLED=false,SOURCES_GITHUB_ENABLED=$GITHUB_SOURCE_ENABLED,ASSESSMENT_MODEL_ENABLED=$ASSESSMENT_MODEL_ENABLED" \
             --set-secrets "$secrets" \
             --quiet
 
