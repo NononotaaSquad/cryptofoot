@@ -16,6 +16,10 @@ _Avoid_: investigation, project
 A cryptocurrency address entered by the Analyst as an identifier of the Case. Input data, not a finding: never a Mention, never independent confirmation.
 _Avoid_: address candidate
 
+**Premise** (PL: Przesłanka):
+One cryptocurrency address in one Mention, together with its assessment: whether it supports the Attribution or was dismissed, and why. A Mention with two addresses gives two Premises. A dismissed Premise stays visible in the report.
+_Avoid_: evidence, reading, hit
+
 **Analysis** (PL: Analiza):
 One run of search and scoring for a Case, saved in its history. Has a trigger (manual or scheduled) and a status.
 _Avoid_: run, scan, pass

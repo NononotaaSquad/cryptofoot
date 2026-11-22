@@ -50,6 +50,10 @@ _Avoid_: read, closed, done
 A place in a public source where the data of the investigated person or a cryptocurrency address appeared.
 _Avoid_: trace, hit, finding
 
+**Premise** (PL: Przesłanka):
+One cryptocurrency address in one Mention, together with its assessment: whether it supports the Attribution or was dismissed, and why. A Mention with two addresses gives two Premises, which may be assessed differently. A dismissed Premise (e.g. the address appears in a warning) stays visible in the report.
+_Avoid_: evidence (an Attribution is a lead, not evidence), reading, hit
+
 **Attribution** (PL: Powiązanie):
 A pair: the investigated person and a cryptocurrency address, with a Confidence Level and a Justification. It is a lead for further verification, not evidence.
 _Avoid_: match, link, assignment
@@ -59,11 +63,11 @@ A number from 0 to 100% that says how likely it is that the address belongs to t
 _Avoid_: Confidence Score, scoring, result
 
 **Justification** (PL: Uzasadnienie):
-A short plain-language text that tells the Analyst why the address is connected with the investigated person. It is built from a template of the scoring rules that applied, so the same Mentions always give the same text. It shows no numbers and is not written by an AI model. The Mentions it is based on are shown next to it. The backend builds the text (field `justification`); the Mentions are a separate list (field `mentions`).
-_Avoid_: premises, explanation, AI narrative
+A short plain-language text that tells the Analyst why the address is connected with the investigated person. It is built from a template of the scoring rules that applied, so the same Premise assessments always give the same text. It shows no numbers and is not written by an AI model. The Mentions it is based on are shown next to it. The backend builds the text (field `justification`); the Mentions are a separate list (field `mentions`).
+_Avoid_: explanation, AI narrative (a Premise is a different concept: one address in one Mention)
 
 **Scoring breakdown** (PL: Punktacja):
-The list of scoring rules that applied to an Attribution, each with the points it added, and the Confidence Level they sum to. It lets the Analyst recompute the result. Unlike the Justification, it shows numbers. The algorithm version is not part of it.
+The list of scoring rules that applied to an Attribution, each with the points it added, and the Confidence Level they sum to. Each rule points to the Premises that made it apply. It lets the Analyst recompute the result. Unlike the Justification, it shows numbers. The algorithm version is not part of it.
 _Avoid_: score details, calculation, scoring rules list
 
 **Excluded Address** (PL: Adres wykluczony):
@@ -88,4 +92,5 @@ _Avoid_: indicators, metrics
 - A **Case** has at most one **Schedule**; an enabled **Schedule** has one **Frequency** and starts **Scheduled Analyses**.
 - An **Analysis** collects many **Mentions** and produces zero or more **Attributions**.
 - An **Attribution** is based on one or more **Mentions** and has one **Justification**.
+- A **Mention** gives one **Premise** for each cryptocurrency address in it; an **Attribution** collects the **Premises** of its address.
 - An **Excluded Address** does not create an **Attribution**.
