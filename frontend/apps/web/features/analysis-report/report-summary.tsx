@@ -1,38 +1,11 @@
 import { Badge } from "@workspace/ui/components/badge";
-import { cn } from "@workspace/ui/lib/utils";
-import {
-  CircleCheck,
-  CircleX,
-  LoaderCircle,
-  TriangleAlert,
-  type LucideIcon,
-} from "lucide-react";
-
-import type { AnalysisResponseStatus } from "@/lib/api/generated/model";
+import { CircleX, LoaderCircle, TriangleAlert } from "lucide-react";
 
 import type { ReportView } from "./report-view-model";
-
-// Icon + word per status, so the status is never carried by color alone.
-const statusIcons: Record<
-  AnalysisResponseStatus,
-  { icon: LucideIcon; className: string }
-> = {
-  RUNNING: { icon: LoaderCircle, className: "bg-muted text-foreground" },
-  COMPLETED: {
-    icon: CircleCheck,
-    className: "bg-success-tint text-success-text",
-  },
-  PARTIAL: {
-    icon: TriangleAlert,
-    className: "bg-warning-tint text-warning-text",
-  },
-  FAILED: { icon: CircleX, className: "bg-destructive/10 text-destructive" },
-};
+import { AnalysisStatusBadge } from "./status-badge";
 
 export function ReportSummary({ view }: { view: ReportView }) {
   const { state, summary } = view;
-  const { icon: StatusIcon, className: statusClassName } =
-    statusIcons[summary.status.key];
 
   return (
     <section aria-labelledby="report-heading" className="flex flex-col gap-6">
@@ -40,10 +13,10 @@ export function ReportSummary({ view }: { view: ReportView }) {
         <h2 id="report-heading" className="text-2xl font-bold">
           {summary.heading}
         </h2>
-        <Badge className={cn("h-6 px-2.5 text-sm", statusClassName)}>
-          <StatusIcon data-icon="inline-start" aria-hidden="true" />
-          {summary.status.label}
-        </Badge>
+        <AnalysisStatusBadge
+          status={summary.status.key}
+          label={summary.status.label}
+        />
       </div>
 
       {state === "running" && summary.notice !== null ? (
