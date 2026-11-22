@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { ComparisonSection } from "@/features/analysis-comparison/comparison-section";
+import { previousAnalysisWithResults } from "@/features/analysis-comparison/comparison-view-model";
 import { ReportView } from "@/features/analysis-report/report-view";
 import { toUserMessage } from "@/lib/api/client";
 import {
@@ -148,6 +150,12 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
   const selectedId = missing
     ? null
     : (analysisId ?? pinned ?? history[0]?.id ?? null);
+  // Manual and Scheduled Analyses alike: the displayed one is compared with
+  // the previous one that has results (E6.3).
+  const previousId =
+    selectedId === null
+      ? undefined
+      : previousAnalysisWithResults(history, selectedId)?.id;
 
   return (
     <div className="flex flex-col gap-10">
@@ -196,6 +204,15 @@ export function CaseDetailsView({ caseId, analysisId }: CaseDetailsViewProps) {
           caseId={caseId}
           analysisId={selectedId}
           caseIdentifiers={identifiers}
+          comparison={
+            previousId === undefined ? null : (
+              <ComparisonSection
+                caseId={caseId}
+                earlierAnalysisId={previousId}
+                laterAnalysisId={selectedId}
+              />
+            )
+          }
         />
       )}
     </div>
